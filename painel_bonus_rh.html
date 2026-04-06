@@ -6,7 +6,7 @@
 <title>Painel Bônus RH — Fat Buddha</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
-body{background:#f0f2f5;min-height:100vh}
+body{background:#f0f2f5;min-height:100vh}h
 .header{background:linear-gradient(135deg,#1a1a2e,#16213e);color:white;padding:16px 28px;display:flex;align-items:center;justify-content:space-between}
 .header h1{font-size:19px;font-weight:700}.header p{font-size:11px;opacity:.6;margin-top:2px}
 .header-right{font-size:11px;opacity:.5;text-align:right}
@@ -528,7 +528,7 @@ function removeEmployee(id){
   data.months[currentMonth].employees=data.months[currentMonth].employees.filter(e=>e.id!==id);
   autoSave();renderAll();
 }
-function autoSave(){bonusRef.set(data).catch(e=>console.error('Firebase save:',e));}
+function encodeMonthKeys(months){const r={};Object.keys(months).forEach(k=>{r[k.replace(/\//g,'_')]=months[k];});return r;}function decodeMonthKeys(months){const r={};Object.keys(months).forEach(k=>{r[k.replace(/_/g,'/')]=months[k];});return r;}
 function saveData(){autoSave();const m=document.getElementById('savedMsg');m.style.display='inline';setTimeout(()=>m.style.display='none',2500);}
 function openImport(){document.getElementById('import-overlay-bonus').classList.add('open');}
 function closeImport(){document.getElementById('import-overlay-bonus').classList.remove('open');document.getElementById('csv-input-bonus').value='';}
