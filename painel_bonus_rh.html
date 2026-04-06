@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Bônus RH — Fat Buddha</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
+body{background:#f0f2f5;min-height:100vh}
+.header{background:linear-gradient(135deg,#1a1a2e,#16213e);color:white;padding:16px 28px;display:flex;align-items:center;justify-content:space-between}
+.header h1{font-size:19px;font-weight:700}.header p{font-size:11px;opacity:.6;margin-top:2px}
+.header-right{font-size:11px;opacity:.5;text-align:right}
+.month-bar{background:white;border-bottom:2px solid #e5e7eb;padding:10px 28px;display:flex;align-items:center;gap:8px;overflow-x:auto}
+.month-tab{padding:5px 16px;border-radius:20px;border:2px solid #e5e7eb;cursor:pointer;font-weight:700;font-size:12px;background:white;color:#6b7280;white-space:nowrap;transition:all .2s}
+.month-tab:hover{border-color:#1a1a2e;color:#1a1a2e}.month-tab.active{background:#1a1a2e;color:white;border-color:#1a1a2e}
+.add-month-btn{padding:5px 12px;border-radius:20px;border:2px dashed #d1d5db;cursor:pointer;font-size:12px;color:#9ca3af;background:white;margin-left:4px}
+.add-month-btn:hover{border-color:#6b7280;color:#374151}
+.month-tab-wrap{display:inline-flex;align-items:center;gap:0px}
+.month-del{background:none;border:none;cursor:pointer;font-size:10px;color:#9ca3af;padding:2px 5px;border-radius:0 20px 20px 0;line-height:1;height:29px;margin-left:-6px;border:2px solid transparent}
+.month-del:hover{background:#fee2e2;color:#dc2626;border-color:#fecaca}
+.month-tab-wrap .month-tab{border-radius:20px 6px 6px 20px}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 28px 0}
+.kpi-card{background:white;border-radius:10px;padding:16px;box-shadow:0 1px 5px rgba(0,0,0,.07);border-left:4px solid #e5e7eb}
+.kpi-card.green{border-left-color:#10b981}.kpi-card.red{border-left-color:#ef4444}.kpi-card.blue{border-left-color:#3b82f6}.kpi-card.amber{border-left-color:#f59e0b}
+.kpi-label{font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px}
+.kpi-value{font-size:28px;font-weight:800;color:#111827;margin:5px 0 2px;line-height:1}.kpi-sub{font-size:11px;color:#9ca3af}
+.controls{background:white;margin:14px 28px 0;border-radius:10px;padding:14px 16px;box-shadow:0 1px 5px rgba(0,0,0,.07);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.controls select,.controls input[type=number]{padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:white}
+.controls label{font-size:11px;font-weight:600;color:#6b7280}
+.btn-primary{background:#1a1a2e;color:white;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700;margin-left:auto}
+.btn-primary:hover{background:#16213e}
+.btn-secondary{background:white;color:#374151;border:1px solid #e5e7eb;padding:7px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600}
+.btn-secondary:hover{background:#f9fafb}
+.btn-danger{background:#fef2f2;color:#dc2626;border:1px solid #fecaca;padding:4px 9px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:600}
+.btn-danger:hover{background:#fee2e2}
+.section{background:white;margin:12px 28px;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);overflow:hidden}
+.section-header{padding:14px 16px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between}
+.section-title{font-size:13px;font-weight:700;color:#1a1a2e}
+.badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px}
+.badge-green{background:#dcfce7;color:#166534}.badge-red{background:#fef2f2;color:#991b1b}.badge-blue{background:#dbeafe;color:#1e40af}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:#f8fafc;color:#374151;padding:9px 10px;text-align:left;font-weight:700;font-size:11px;border-bottom:2px solid #e5e7eb;white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid #f3f4f6;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafafa}
+.status-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;user-select:none}
+.status-badge::after{content:'▾';font-size:9px;opacity:.7}
+.s-elegivel{background:#dcfce7;color:#166534}.s-atestado{background:#fef3c7;color:#92400e}
+.s-advertencia{background:#fef2f2;color:#991b1b}.s-advertencia-ponto{background:#fef2f2;color:#991b1b}
+.s-falta{background:#fee2e2;color:#dc2626}.s-nota-praca{background:#ede9fe;color:#5b21b6}.s-demitido{background:#f3f4f6;color:#6b7280}
+.status-menu{display:none;position:fixed;background:white;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.15);z-index:300;min-width:230px;padding:6px}
+.status-menu.open{display:block}
+.status-menu-item{padding:7px 10px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px}
+.status-menu-item:hover{background:#f3f4f6}
+.obs-input-wrap{padding:6px 10px;border-top:1px solid #f3f4f6;margin-top:4px}
+.obs-input-wrap input{width:100%;padding:5px 8px;border:1px solid #e5e7eb;border-radius:5px;font-size:11px}
+.obs-input-wrap input:focus{outline:none;border-color:#1a1a2e}
+.apply-btn{display:block;width:calc(100% - 20px);margin:4px 10px 6px;padding:6px;background:#1a1a2e;color:white;border:none;border-radius:5px;cursor:pointer;font-size:11px;font-weight:700}
+.nome-cell{cursor:pointer;font-weight:600;color:#1a1a2e}.nome-cell:hover{text-decoration:underline}
+.obs-text{font-size:11px;color:#6b7280;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block}
+.loja-tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;white-space:nowrap}
+.loja-brooklin{background:#e0f2fe;color:#0369a1}.loja-perdizes{background:#fce7f3;color:#9d174d}
+.loja-vila{background:#ede9fe;color:#5b21b6}.loja-matriz{background:#fef3c7;color:#92400e}.loja-outro{background:#f3f4f6;color:#374151}
+.lojas-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:14px 16px}
+.loja-card{background:#f8fafc;border-radius:8px;padding:12px;border:1px solid #e5e7eb}
+.loja-card-title{font-size:11px;font-weight:700;color:#374151;margin-bottom:8px}
+.loja-stat{display:flex;justify-content:space-between;font-size:11px;color:#6b7280;margin-bottom:3px}
+.loja-stat b{color:#111827}.loja-total{margin-top:8px;padding-top:8px;border-top:1px solid #e5e7eb;font-size:13px;font-weight:700;color:#10b981}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:white;border-radius:12px;padding:24px;width:420px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal h3{font-size:15px;font-weight:700;color:#1a1a2e;margin-bottom:16px}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:11px;font-weight:700;color:#374151;margin-bottom:4px}
+.form-group input,.form-group select{width:100%;padding:8px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:#1a1a2e}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.proximo-list{padding:12px 16px;display:flex;flex-wrap:wrap;gap:8px;min-height:50px}
+.proximo-item{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:6px 10px;font-size:12px;display:flex;align-items:center;gap:6px}
+.proximo-item button{background:none;border:none;color:#10b981;cursor:pointer;font-size:14px;font-weight:700;line-height:1}
+.add-proximo{background:white;border:1px dashed #d1d5db;border-radius:8px;padding:6px 10px;font-size:12px;display:flex;align-items:center;gap:6px;color:#6b7280}
+.add-proximo input{border:none;outline:none;font-size:12px;width:150px;background:transparent}
+.save-bar{background:white;border-top:1px solid #e5e7eb;padding:10px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;bottom:0;margin-top:12px}
+.save-left{font-size:11px;color:#9ca3af}.save-right{display:flex;gap:8px;align-items:center}
+.saved-msg{font-size:11px;color:#059669;font-weight:600;display:none}
+.copy-btn{font-size:11px;background:#f0fdf4;color:#065f46;border:1px solid #bbf7d0;padding:5px 12px;border-radius:5px;cursor:pointer;font-weight:600}
+.copy-btn:hover{background:#dcfce7}
+@media(max-width:900px){.kpi-row{grid-template-columns:repeat(2,1fr)}.lojas-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div><h1>🎯 Painel de Gestão de Bônus</h1><p>Fat Buddha — Controle mensal de elegibilidade e motivos</p></div>
+  <div class="header-right" id="headerInfo">—</div>
+</div>
+<div class="month-bar" id="monthBar"></div>
+<div class="kpi-row">
+  <div class="kpi-card green"><div class="kpi-label">✅ Elegíveis</div><div class="kpi-value" id="kpi-elegiveis">—</div><div class="kpi-sub">recebem bônus</div></div>
+  <div class="kpi-card red"><div class="kpi-label">❌ Perderam Bônus</div><div class="kpi-value" id="kpi-perdem">—</div><div class="kpi-sub" id="kpi-perdem-sub">—</div></div>
+  <div class="kpi-card blue"><div class="kpi-label">👥 Total Ativos</div><div class="kpi-value" id="kpi-total">—</div><div class="kpi-sub">na folha do mês</div></div>
+  <div class="kpi-card amber"><div class="kpi-label">💰 Total a Pagar</div><div class="kpi-value" id="kpi-valor">—</div><div class="kpi-sub">apenas elegíveis</div></div>
+</div>
+<div class="controls">
+  <div><label>Filtrar por loja</label><br><select id="filterLoja" onchange="renderTable()"><option value="">Todas as lojas</option><option>BROOKLIN</option><option>PERDIZES</option><option>VILA MARIANA</option><option>MATRIZ PRODUÇÃO</option></select></div>
+  <div style="position:relative">
+    <label>Filtrar por status</label><br>
+    <div id="multiStatusBtn" onclick="toggleMultiStatus(event)" style="cursor:pointer;padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:white;min-width:160px;user-select:none;display:flex;align-items:center;justify-content:space-between;gap:8px">
+      <span id="multiStatusLabel">Todos</span><span style="font-size:10px;opacity:.6">▾</span>
+    </div>
+    <div id="multiStatusDropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:400;background:white;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.15);min-width:220px;padding:6px">
+      <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background=''">
+        <input type="checkbox" id="ms-todos" onchange="multiStatusAll(this)" checked> Todos
+      </label>
+      <hr style="margin:4px 8px;border:none;border-top:1px solid #f3f4f6">
+      <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background=''"><input type="checkbox" class="ms-opt" value="ELEGÍVEL" onchange="multiStatusChange()"> ✅ ELEGÍVEL</label>
+      <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background=''"><input type="checkbox" class="ms-opt" value="ATESTADO" onchange="multiStatusChange()"> 📋 ATESTADO</label>
+      <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background=''"><input type="checkbox" class="ms-opt" value="ADVERTÊNCIA" onchange="multiStatusChange()"> ⚠️ ADVERTÊNCIA</label>
+      <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background=''"><input type="checkbox" class="ms-opt" value="ADVERTÊNCIA/PONTO" onchange="multiStatusChange()"> 🕐 ADVERTÊNCIA/PONTO</label>
+      <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background=''"><input type="checkbox" class="ms-opt" value="FALTA INJUSTIFICADA" onchange="multiStatusChange()"> 🚫 FALTA INJUSTIFICADA</label>
+      <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background=''"><input type="checkbox" class="ms-opt" value="NOTA PRAÇA" onchange="multiStatusChange()"> 📉 NOTA PRAÇA</label>
+    </div>
+  </div>
+  <div style="display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap">
+    <div>
+      <label>Nº de pedidos</label><br>
+      <input type="number" id="numPedidos" placeholder="ex: 12000" min="0" step="1"
+        oninput="calcBonusByPedidos()"
+        style="width:120px;padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:white">
+    </div>
+    <div style="color:#9ca3af;font-size:18px;padding-bottom:6px">=</div>
+    <div>
+      <label>Valor do bônus (R$)</label><br>
+      <input type="number" id="bonusValue" value="586.20" step="0.01" onchange="updateKPIs();renderLojas()" style="width:110px;padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:white">
+    </div>
+  </div>
+  <button class="btn-primary" onclick="openAddModal()">＋ Adicionar Funcionário</button>
+</div>
+<div class="section">
+  <div class="section-header">
+    <span class="section-title">📋 Funcionários do Mês</span>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="copy-btn" onclick="copyToNextMonth()">📋 Copiar para próximo mês</button>
+      <span class="badge badge-green" id="table-count">0 funcionários</span>
+    </div>
+  </div>
+  <div class="tbl-wrap">
+    <table><thead><tr><th>#</th><th>Nome</th><th>Loja</th><th>Tipo</th><th>Status</th><th>Observação / Motivo</th><th>PIX</th><th>Ações</th></tr></thead>
+    <tbody id="tableBody"></tbody></table>
+  </div>
+</div>
+<div class="section">
+  <div class="section-header"><span class="section-title">🏪 Resumo por Loja</span></div>
+  <div class="lojas-grid" id="lojasGrid"></div>
+</div>
+<div class="section">
+  <div class="section-header">
+    <span class="section-title">📅 Fila — Incluir no Próximo Mês</span>
+    <span class="badge badge-blue" id="proximo-count">0 na fila</span>
+  </div>
+  <div class="proximo-list" id="proximoList"></div>
+</div>
+<!-- Import overlay -->
+<div class="modal-overlay" id="import-overlay-bonus" onclick="if(event.target===this)closeImport()">
+  <div class="modal" style="width:500px">
+    <h3>⬆️ Importar CSV</h3>
+    <p style="font-size:12px;color:#6b7280;margin-bottom:14px">Compatível com: exportação deste painel, exportação da Folha Salarial, CSV da aba FGLR ou FAT BUDDHA.</p>
+    <div class="form-group">
+      <label>Arquivo CSV</label>
+      <input type="file" accept=".csv" onchange="loadCSVFileBonus(this)" style="font-size:12px;padding:6px">
+    </div>
+    <div class="form-group">
+      <label>Cole o conteúdo aqui (opcional)</label>
+      <textarea id="csv-input-bonus" rows="6" style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:6px;font-size:11px;font-family:monospace;resize:vertical" placeholder="Ou cole o conteúdo do CSV aqui..."></textarea>
+    </div>
+    <div class="form-group">
+      <label>Modo de importação</label>
+      <select id="import-mode-bonus" style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px">
+        <option value="add">Adicionar (manter funcionários existentes)</option>
+        <option value="replace">Substituir tudo</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeImport()">Cancelar</button>
+      <button class="btn-primary" onclick="processImportBonus()">Importar</button>
+    </div>
+  </div>
+</div>
+
+<div class="save-bar">
+  <div class="save-left">💾 Dados salvos automaticamente no navegador</div>
+  <div class="save-right">
+    <span class="saved-msg" id="savedMsg">✅ Salvo!</span>
+    <button class="btn-secondary" onclick="openImport()">⬆️ Importar CSV</button>
+    <button class="btn-secondary" onclick="exportCSV()">⬇️ Exportar CSV</button>
+    <button class="btn-primary" onclick="saveData()">💾 Salvar</button>
+  </div>
+</div>
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3 id="modal-title">➕ Adicionar Funcionário</h3>
+    <div class="form-group"><label>Nome Completo *</label><input type="text" id="f-nome" placeholder="Ex: BARBARA NASCIMENTO"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-group"><label>Loja *</label><select id="f-loja"><option>BROOKLIN</option><option>PERDIZES</option><option>VILA MARIANA</option><option>MATRIZ PRODUÇÃO</option><option>OUTRO</option></select></div>
+      <div class="form-group"><label>Tipo</label><select id="f-tipo"><option>CLT</option><option>PJ</option></select></div>
+    </div>
+    <div class="form-group"><label>Status</label><select id="f-status"><option>ELEGÍVEL</option><option>ATESTADO</option><option>ADVERTÊNCIA</option><option>ADVERTÊNCIA/PONTO</option><option>FALTA INJUSTIFICADA</option><option>NOTA PRAÇA</option></select></div>
+    <div class="form-group"><label>Observação / Motivo</label><input type="text" id="f-obs" placeholder="Ex: Marcação indevida de ponto"></div>
+    <div class="form-group"><label>PIX / Chave bancária</label><input type="text" id="f-pix" placeholder="Ex: CPF, e-mail, chave pix"></div>
+    <div class="modal-actions"><button class="btn-secondary" onclick="closeModal()">Cancelar</button><button class="btn-primary" onclick="saveEmployee()">Salvar</button></div>
+  </div>
+</div>
+<div id="statusMenu" class="status-menu">
+  <div class="status-menu-item s-elegivel" onclick="setPending('ELEGÍVEL')">✅ ELEGÍVEL</div>
+  <div class="status-menu-item s-atestado" onclick="setPending('ATESTADO')">📋 ATESTADO</div>
+  <div class="status-menu-item s-advertencia" onclick="setPending('ADVERTÊNCIA')">⚠️ ADVERTÊNCIA</div>
+  <div class="status-menu-item s-advertencia-ponto" onclick="setPending('ADVERTÊNCIA/PONTO')">🕐 ADVERTÊNCIA/PONTO</div>
+  <div class="status-menu-item s-falta" onclick="setPending('FALTA INJUSTIFICADA')">🚫 FALTA INJUSTIFICADA</div>
+  <div class="status-menu-item s-nota-praca" onclick="setPending('NOTA PRAÇA')">📉 NOTA PRAÇA</div>
+  <div class="obs-input-wrap"><input type="text" id="statusObs" placeholder="Observação / motivo (opcional)"></div>
+  <button class="apply-btn" onclick="applyStatus()">✔ Aplicar</button>
+</div>
+<script>
+const DEFAULT = {
+  months:{
+    "Jan/2026":{
+      bonusValue:586.20,
+      employees:[
+        {id:1,nome:"BARBARA NASCIMENTO",loja:"BROOKLIN",tipo:"CLT",status:"ELEGÍVEL",obs:"",pix:"itau"},
+        {id:2,nome:"BARBARA XAVIER",loja:"BROOKLIN",tipo:"CLT",status:"ELEGÍVEL",obs:"",pix:"itau"},
+        {id:3,nome:"BEATRIZ CARNEIRO",loja:"PERDIZES",tipo:"CLT",status:"ELEGÍVEL",obs:"",pix:""},
+        {id:4,nome:"BEATRIZ SANTOS",loja:"PERDIZES",tipo:"CLT",status:"ATESTADO",obs:"",pix:""},
+        {id:5,nome:"BRUNA XAVIER",loja:"VILA MARIANA",tipo:"CLT",status:"ELEGÍVEL",obs:"",pix:"itau"},
+        {id:6,nome:"CESAR BONAFE",loja:"PERDIZES",tipo:"CLT",status:"ELEGÍVEL",obs:"",pix:"itau"},
+        {id:7,nome:"DANDARA NEGREIROS",loja:"BROOKLIN",tipo:"CLT",status:"ELEGÍVEL",obs:"",pix:"itau"},
+        {id:8,nome:"ERICK PASTANA",loja:"BROOKLIN",tipo:"CLT",status:"ADVERTÊNCIA/PONTO",obs:"",pix:"itau"},
+        {id:9,nome:"FRANCIELLY CARDOSO",loja:"VILA MARIANA",tipo:"CLT",status:"ELEGÍVEL",obs:"",pix:"itau"},
+        {id:10,nome:"GISELE RODRIGUES DOS SANTOS",loja:"VILA MARIANA",tipo:"CLT",status:"ATESTADO",obs:"",pix:""},
+        {id:11,nome:"HENRIQUE LINS",loja:"PERDIZES",tipo:"CLT",status:"ADVERTÊNCIA/PONTO",obs:"Marcação Indevida de Ponto",pix:""},
+        {id:12,nome:"INGRYD SOUSA",loja:"VILA MARIANA",tipo:"CLT",status:"ELEGÍVEL",obs:"",pix:""},
+        {id:13,nome:"JOSELI MATOS",loja:"BROOKLIN",tipo:"CLT",status:"NOTA PRAÇA",obs:"",pix:""},
+        {id:14,nome:"KARINE ONIRA",loja:"PERDIZES",tipo:"CLT",status:"ELEGÍVEL",obs:"",pix:""},
+        {id:15,nome:"KELI SANTOS",loja:"PERDIZES",tipo:"CLT",status:"ELEGÍVEL",obs:"",pix:""},
+        {id:16,nome:"MADELON NASCIMENTO",loja:"PERDIZES",tipo:"CLT",status:"ATESTADO",obs:"",pix:""},
+        {id:17,nome:"MATHEUS LOPES",loja:"PERDIZES",tipo:"CLT",status:"ADVERTÊNCIA",obs:"",pix:""},
+        {id:18,nome:"MAURICIO QUIRINO",loja:"MATRIZ PRODUÇÃO",tipo:"CLT",status:"FALTA INJUSTIFICADA",obs:"",pix:""},
+        {id:19,nome:"PLINIO FERRAZ",loja:"MATRIZ PRODUÇÃO",tipo:"CLT",status:"ELEGÍVEL",obs:"",pix:""},
+        {id:20,nome:"RAIANE MATOS",loja:"BROOKLIN",tipo:"CLT",status:"ELEGÍVEL",obs:"",pix:""},
+        {id:21,nome:"RODRIGO MENDES",loja:"PERDIZES",tipo:"CLT",status:"ELEGÍVEL",obs:"",pix:""},
+        {id:22,nome:"RONALDO BRAGA",loja:"BROOKLIN",tipo:"CLT",status:"FALTA INJUSTIFICADA",obs:"",pix:""},
+        {id:23,nome:"SAMMUEL MELO",loja:"BROOKLIN",tipo:"CLT",status:"NOTA PRAÇA",obs:"",pix:"itau"},
+        {id:24,nome:"SANDRO SANTOS",loja:"PERDIZES",tipo:"CLT",status:"ELEGÍVEL",obs:"",pix:"itau"},
+        {id:25,nome:"WANESSA ALVES",loja:"BROOKLIN",tipo:"CLT",status:"ELEGÍVEL",obs:"",pix:"itau"},
+        {id:26,nome:"WESLLEY SANTOS",loja:"VILA MARIANA",tipo:"CLT",status:"ELEGÍVEL",obs:"",pix:""},
+        {id:27,nome:"ROMAILTON MIRANDA",loja:"PERDIZES",tipo:"CLT",status:"ELEGÍVEL",obs:"",pix:"094.039.265-89"},
+        {id:28,nome:"NETINHO",loja:"MATRIZ PRODUÇÃO",tipo:"PJ",status:"ELEGÍVEL",obs:"",pix:"63.700.426/0001-78"},
+        {id:29,nome:"THIAGO COSTA DA SILVA",loja:"MATRIZ PRODUÇÃO",tipo:"PJ",status:"ELEGÍVEL",obs:"",pix:"thiago.costa1711@gmail.com"},
+        {id:30,nome:"KAUE XAVIER DIAS",loja:"BROOKLIN",tipo:"PJ",status:"ELEGÍVEL",obs:"",pix:"11958090560"},
+        {id:31,nome:"IGOR RODRIGUES",loja:"PERDIZES",tipo:"PJ",status:"ELEGÍVEL",obs:"",pix:"109.741.436-18"},
+        {id:32,nome:"PAULO COSTA",loja:"PERDIZES",tipo:"PJ",status:"ELEGÍVEL",obs:"",pix:"064.673.573-02"},
+        {id:33,nome:"MARIANE TANGIONI PEREIRA",loja:"VILA MARIANA",tipo:"PJ",status:"ELEGÍVEL",obs:"",pix:"11991442446"}
+      ],
+      proximoMes:["augusto reis","leandro","carla","bruno chimendes"]
+    }
+  },
+  currentMonth:"Jan/2026"
+};
+let data=JSON.parse(JSON.stringify(DEFAULT));
+try{const s=localStorage.getItem('bonus_fb_v2');if(s)data=JSON.parse(s);}catch(e){}
+let currentMonth=data.currentMonth||"Jan/2026";
+let editingId=null,statusTargetId=null,pendingStatus=null,menuOpen=false;
+
+function lojaClass(l){return l==='BROOKLIN'?'loja-brooklin':l==='PERDIZES'?'loja-perdizes':l==='VILA MARIANA'?'loja-vila':(l==='MATRIZ'||l==='MATRIZ PRODUÇÃO')?'loja-matriz':'loja-outro';}
+function statusClass(s){const m={'ELEGÍVEL':'s-elegivel','ATESTADO':'s-atestado','ADVERTÊNCIA':'s-advertencia','ADVERTÊNCIA/PONTO':'s-advertencia-ponto','FALTA INJUSTIFICADA':'s-falta','NOTA PRAÇA':'s-nota-praca','DEMITIDO':'s-demitido'};return m[s]||'s-elegivel';}
+function getM(){return data.months[currentMonth]||{employees:[],proximoMes:[]};}
+
+function renderMonths(){
+  const bar=document.getElementById('monthBar');bar.innerHTML='';
+  Object.keys(data.months).forEach(m=>{
+    const wrap=document.createElement('span');wrap.className='month-tab-wrap';
+    const b=document.createElement('button');b.className='month-tab'+(m===currentMonth?' active':'');b.textContent=m;
+    b.onclick=()=>{currentMonth=m;data.currentMonth=m;renderAll();};
+    b.ondblclick=(e)=>{e.stopPropagation();renameMonth(m);};
+    b.title='Duplo clique para renomear';
+    const del=document.createElement('button');del.className='month-del';del.textContent='✕';del.title='Deletar mês "'+m+'"';
+    del.onclick=(e)=>{e.stopPropagation();deleteMonth(m);};
+    wrap.appendChild(b);wrap.appendChild(del);bar.appendChild(wrap);
+  });
+  const a=document.createElement('button');a.className='add-month-btn';a.textContent='＋ Novo mês';a.onclick=addNewMonth;bar.appendChild(a);
+}
+function deleteMonth(m){
+  if(Object.keys(data.months).length<=1){alert('Não é possível deletar o único mês existente.');return;}
+  if(!confirm('⚠️ Deletar o mês "'+m+'" e todos os seus dados?\n\nEsta ação não pode ser desfeita.'))return;
+  delete data.months[m];
+  if(currentMonth===m){currentMonth=Object.keys(data.months)[0];data.currentMonth=currentMonth;}
+  autoSave();renderAll();
+}
+function renameMonth(old){
+  const novo=prompt('Novo nome para o mês "'+old+'":',old);
+  if(!novo||novo===old)return;
+  if(data.months[novo]){alert('Já existe um mês com esse nome!');return;}
+  const meses={};
+  Object.keys(data.months).forEach(k=>{
+    meses[k===old?novo:k]=data.months[k];
+  });
+  data.months=meses;
+  if(currentMonth===old){currentMonth=novo;data.currentMonth=novo;}
+  autoSave();renderAll();
+}
+function addNewMonth(){
+  const n=prompt('Nome do mês (ex: Mar/2026):');if(!n||data.months[n])return;
+  data.months[n]={bonusValue:586.20,employees:[],proximoMes:[]};currentMonth=n;data.currentMonth=n;autoSave();renderAll();
+}
+function copyToNextMonth(){
+  const n=prompt('Nome do próximo mês (ex: Mar/2026):','');if(!n)return;
+  if(data.months[n]&&!confirm('Mês já existe. Sobrescrever?'))return;
+  const c=getM();
+  const el=c.employees.filter(e=>e.status==='ELEGÍVEL').map(e=>({...e,obs:'',status:'ELEGÍVEL'}));
+  const fi=(c.proximoMes||[]).map((nm,i)=>({id:Date.now()+i,nome:nm.toUpperCase(),loja:'BROOKLIN',tipo:'CLT',status:'ELEGÍVEL',obs:'',pix:''}));
+  data.months[n]={bonusValue:c.bonusValue,employees:[...el,...fi],proximoMes:[]};
+  currentMonth=n;data.currentMonth=n;autoSave();renderAll();
+  alert('✅ Copiado para '+n+'!\n'+el.length+' elegíveis + '+fi.length+' da fila adicionados.');
+}
+
+function renderAll(){renderMonths();renderTable();updateKPIs();renderLojas();renderProximo();
+  document.getElementById('bonusValue').value=getM().bonusValue||586.20;
+  document.getElementById('headerInfo').textContent=currentMonth+' — '+new Date().toLocaleDateString('pt-BR');
+}
+function calcBonusByPedidos(){
+  const pedidos=parseInt(document.getElementById('numPedidos').value)||0;
+  if(pedidos>0){
+    const el=getM().employees.filter(e=>e.status==='ELEGÍVEL');
+    const perPessoa=el.length>0?(pedidos/el.length):0;
+    document.getElementById('bonusValue').value=perPessoa.toFixed(2);
+  }
+  updateKPIs();renderLojas();
+}
+function getSelectedStatuses(){
+  const opts=[...document.querySelectorAll('.ms-opt:checked')].map(c=>c.value);
+  return opts;
+}
+function toggleMultiStatus(e){
+  e.stopPropagation();
+  const d=document.getElementById('multiStatusDropdown');
+  d.style.display=d.style.display==='none'?'block':'none';
+}
+function multiStatusAll(cb){
+  document.querySelectorAll('.ms-opt').forEach(c=>c.checked=false);
+  renderTable();
+  updateMultiStatusLabel();
+}
+function multiStatusChange(){
+  const any=[...document.querySelectorAll('.ms-opt:checked')].length>0;
+  document.getElementById('ms-todos').checked=!any;
+  renderTable();
+  updateMultiStatusLabel();
+}
+function updateMultiStatusLabel(){
+  const sel=[...document.querySelectorAll('.ms-opt:checked')].map(c=>c.value);
+  const lbl=document.getElementById('multiStatusLabel');
+  if(!sel.length){lbl.textContent='Todos';}
+  else if(sel.length===1){lbl.textContent=sel[0];}
+  else{lbl.textContent=sel.length+' selecionados';}
+}
+document.addEventListener('click',function(e){
+  const d=document.getElementById('multiStatusDropdown');
+  if(d&&!document.getElementById('multiStatusBtn').contains(e.target)&&!d.contains(e.target)){d.style.display='none';}
+});
+function getFiltered(){
+  const lj=document.getElementById('filterLoja').value;
+  const sel=getSelectedStatuses();
+  return getM().employees.filter(e=>{
+    if(lj&&e.loja!==lj)return false;
+    if(sel.length&&!sel.includes(e.status))return false;
+    return true;
+  });
+}
+function renderTable(){
+  const emps=getFiltered(),body=document.getElementById('tableBody');body.innerHTML='';
+  if(!emps.length){body.innerHTML='<tr><td colspan="8" style="text-align:center;color:#9ca3af;padding:24px">Nenhum funcionário encontrado.</td></tr>';document.getElementById('table-count').textContent='0 funcionários';return;}
+  document.getElementById('table-count').textContent=emps.length+' funcionário'+(emps.length!==1?'s':'');
+  const cltList=emps.filter(e=>e.tipo==='CLT');
+  const pjList=emps.filter(e=>e.tipo==='PJ');
+  const outros=emps.filter(e=>e.tipo!=='CLT'&&e.tipo!=='PJ');
+  let counter=1;
+  function addRow(e){
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td style="color:#9ca3af;font-size:11px">${counter++}</td>
+      <td><span class="nome-cell" onclick="openEditModal(${e.id})">${e.nome}</span></td>
+      <td><span class="loja-tag ${lojaClass(e.loja)}">${e.loja}</span></td>
+      <td style="color:#6b7280;font-size:11px">${e.tipo}</td>
+      <td><span class="status-badge ${statusClass(e.status)}" onclick="openStatusMenu(event,${e.id})">${e.status}</span></td>
+      <td><span class="obs-text" title="${e.obs}">${e.obs||'—'}</span></td>
+      <td style="font-size:11px;color:#6b7280;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${e.pix}">${e.pix||'—'}</td>
+      <td><button class="btn-danger" onclick="removeEmployee(${e.id})">✕ Remover</button></td>`;
+    body.appendChild(tr);
+  }
+  if(cltList.length){
+    const hdr=document.createElement('tr');
+    hdr.innerHTML=`<td colspan="8" style="background:#eff6ff;border-top:2px solid #3b82f6;border-bottom:1px solid #bfdbfe;padding:7px 12px;font-size:11px;font-weight:700;color:#1d4ed8;letter-spacing:.5px">👔 CLT — ${cltList.length} funcionário${cltList.length!==1?'s':''}</td>`;
+    body.appendChild(hdr);
+    cltList.forEach(addRow);
+  }
+  if(pjList.length){
+    const hdr=document.createElement('tr');
+    hdr.innerHTML=`<td colspan="8" style="background:#faf5ff;border-top:2px solid #a855f7;border-bottom:1px solid #e9d5ff;padding:7px 12px;font-size:11px;font-weight:700;color:#7e22ce;letter-spacing:.5px">🟣 PJ — ${pjList.length} funcionário${pjList.length!==1?'s':''}</td>`;
+    body.appendChild(hdr);
+    pjList.forEach(addRow);
+  }
+  if(outros.length){
+    const hdr=document.createElement('tr');
+    hdr.innerHTML=`<td colspan="8" style="background:#f9fafb;border-top:2px solid #9ca3af;border-bottom:1px solid #e5e7eb;padding:7px 12px;font-size:11px;font-weight:700;color:#374151;letter-spacing:.5px">👤 OUTROS — ${outros.length} funcionário${outros.length!==1?'s':''}</td>`;
+    body.appendChild(hdr);
+    outros.forEach(addRow);
+  }
+}
+function updateKPIs(){
+  const emps=getM().employees;
+  const el=emps.filter(e=>e.status==='ELEGÍVEL'),pr=emps.filter(e=>e.status!=='ELEGÍVEL');
+  const pedidos=parseInt(document.getElementById('numPedidos').value)||0;
+  if(pedidos>0&&el.length>0){
+    document.getElementById('bonusValue').value=(pedidos/el.length).toFixed(2);
+  }
+  const bv=parseFloat(document.getElementById('bonusValue').value)||0;
+  if(data.months[currentMonth])data.months[currentMonth].bonusValue=bv;
+  document.getElementById('kpi-elegiveis').textContent=el.length;
+  document.getElementById('kpi-perdem').textContent=pr.length;
+  document.getElementById('kpi-total').textContent=emps.length;
+  document.getElementById('kpi-valor').textContent='R$ '+(el.length*bv).toLocaleString('pt-BR',{minimumFractionDigits:2});
+  const mot={};pr.forEach(e=>{mot[e.status]=(mot[e.status]||0)+1;});
+  document.getElementById('kpi-perdem-sub').textContent=Object.entries(mot).map(([k,v])=>v+'× '+k).join(', ')||'—';
+}
+function renderLojas(){
+  const emps=getM().employees,bv=parseFloat(document.getElementById('bonusValue').value)||586.20;
+  const grid=document.getElementById('lojasGrid');grid.innerHTML='';
+  ['BROOKLIN','PERDIZES','VILA MARIANA','MATRIZ PRODUÇÃO'].forEach(l=>{
+    const le=emps.filter(e=>e.loja===l);if(!le.length)return;
+    const el=le.filter(e=>e.status==='ELEGÍVEL'),pr=le.filter(e=>e.status!=='ELEGÍVEL');
+    const d=document.createElement('div');d.className='loja-card';
+    d.innerHTML=`<div class="loja-card-title"><span class="loja-tag ${lojaClass(l)}">${l}</span></div>
+      <div class="loja-stat"><span>Total</span><b>${le.length}</b></div>
+      <div class="loja-stat"><span>✅ Elegíveis</span><b style="color:#059669">${el.length}</b></div>
+      <div class="loja-stat"><span>❌ Perdem</span><b style="color:#dc2626">${pr.length}</b></div>
+      <div class="loja-total">R$ ${(el.length*bv).toLocaleString('pt-BR',{minimumFractionDigits:2})}</div>`;
+    grid.appendChild(d);
+  });
+}
+function renderProximo(){
+  const list=getM().proximoMes||[],div=document.getElementById('proximoList');div.innerHTML='';
+  list.forEach((n,i)=>{
+    const item=document.createElement('div');item.className='proximo-item';
+    item.innerHTML=`<span>👤 ${n}</span><button onclick="removeProximo(${i})" title="Remover">✕</button>`;div.appendChild(item);
+  });
+  const add=document.createElement('div');add.className='add-proximo';
+  add.innerHTML=`<span>＋</span><input type="text" id="proximoInput" placeholder="Digite o nome e clique em Adicionar..." onkeydown="if(event.key==='Enter')addProximo()" onblur="addProximo()" style="width:220px"><button onclick="addProximo()" style="background:#1a1a2e;color:white;border:none;padding:4px 10px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:700;margin-left:4px">Adicionar</button>`;
+  div.appendChild(add);
+  document.getElementById('proximo-count').textContent=list.length+' na fila';
+}
+function addProximo(){const v=document.getElementById('proximoInput').value.trim();if(!v)return;if(!data.months[currentMonth].proximoMes)data.months[currentMonth].proximoMes=[];data.months[currentMonth].proximoMes.push(v);autoSave();renderProximo();}
+function removeProximo(i){data.months[currentMonth].proximoMes.splice(i,1);autoSave();renderProximo();}
+
+function openStatusMenu(e,id){
+  e.stopPropagation();statusTargetId=id;pendingStatus=null;
+  const menu=document.getElementById('statusMenu');
+  const emp=getM().employees.find(x=>x.id===id);
+  document.getElementById('statusObs').value=emp?emp.obs:'';
+  document.querySelectorAll('#statusMenu .status-menu-item').forEach(el=>el.style.fontWeight='');
+  const r=e.target.getBoundingClientRect();
+  menu.style.top=(r.bottom+window.scrollY+4)+'px';menu.style.left=r.left+'px';
+  menu.classList.add('open');menuOpen=true;
+}
+document.addEventListener('click',()=>{if(menuOpen){document.getElementById('statusMenu').classList.remove('open');menuOpen=false;}});
+document.getElementById('statusMenu').addEventListener('click',e=>e.stopPropagation());
+function setPending(s){pendingStatus=s;document.querySelectorAll('#statusMenu .status-menu-item').forEach(el=>el.style.fontWeight=el.textContent.includes(s)?'900':'');}
+function applyStatus(){
+  if(!pendingStatus||!statusTargetId)return;
+  const obs=document.getElementById('statusObs').value.trim();
+  const emp=getM().employees.find(e=>e.id===statusTargetId);
+  if(emp){emp.status=pendingStatus;emp.obs=obs;}
+  pendingStatus=null;document.getElementById('statusMenu').classList.remove('open');menuOpen=false;
+  autoSave();renderTable();updateKPIs();renderLojas();
+}
+
+function openAddModal(){editingId=null;document.getElementById('modal-title').textContent='➕ Adicionar Funcionário';['f-nome','f-obs','f-pix'].forEach(id=>document.getElementById(id).value='');document.getElementById('f-loja').value='BROOKLIN';document.getElementById('f-tipo').value='CLT';document.getElementById('f-status').value='ELEGÍVEL';document.getElementById('modal').classList.add('open');}
+function openEditModal(id){
+  const emp=getM().employees.find(e=>e.id===id);if(!emp)return;editingId=id;
+  document.getElementById('modal-title').textContent='✏️ Editar — '+emp.nome;
+  document.getElementById('f-nome').value=emp.nome;document.getElementById('f-loja').value=emp.loja;document.getElementById('f-tipo').value=emp.tipo;document.getElementById('f-status').value=emp.status;document.getElementById('f-obs').value=emp.obs;document.getElementById('f-pix').value=emp.pix;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+function saveEmployee(){
+  const nome=document.getElementById('f-nome').value.trim().toUpperCase();if(!nome){alert('Preencha o nome!');return;}
+  const emp={nome,loja:document.getElementById('f-loja').value,tipo:document.getElementById('f-tipo').value,status:document.getElementById('f-status').value,obs:document.getElementById('f-obs').value.trim(),pix:document.getElementById('f-pix').value.trim()};
+  const list=data.months[currentMonth].employees;
+  if(editingId!==null){const i=list.findIndex(e=>e.id===editingId);if(i>=0)list[i]={...list[i],...emp};}
+  else{emp.id=Date.now();list.push(emp);}
+  closeModal();autoSave();renderAll();
+}
+function removeEmployee(id){
+  const emp=getM().employees.find(e=>e.id===id);if(!emp)return;
+  if(!confirm('Remover '+emp.nome+' da folha de '+currentMonth+'?'))return;
+  data.months[currentMonth].employees=data.months[currentMonth].employees.filter(e=>e.id!==id);
+  autoSave();renderAll();
+}
+function autoSave(){try{localStorage.setItem('bonus_fb_v2',JSON.stringify(data));}catch(e){}}
+function saveData(){autoSave();const m=document.getElementById('savedMsg');m.style.display='inline';setTimeout(()=>m.style.display='none',2500);}
+function openImport(){document.getElementById('import-overlay-bonus').classList.add('open');}
+function closeImport(){document.getElementById('import-overlay-bonus').classList.remove('open');document.getElementById('csv-input-bonus').value='';}
+
+function loadCSVFileBonus(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{document.getElementById('csv-input-bonus').value=e.target.result;};
+  reader.readAsText(file,'UTF-8');
+}
+
+function processImportBonus(){
+  const text=document.getElementById('csv-input-bonus').value.trim();
+  if(!text){alert('Cole ou carregue um arquivo CSV primeiro.');return;}
+
+  function parseCSVAll(raw){
+    const rows=[];let row=[],cur='',inQ=false;
+    for(let i=0;i<raw.length;i++){
+      const ch=raw[i];
+      if(ch==='"'){if(inQ&&raw[i+1]==='"'){cur+='"';i++;}else{inQ=!inQ;}}
+      else if(ch===','&&!inQ){row.push(cur.trim());cur='';}
+      else if((ch==='\n'||ch==='\r')&&!inQ){if(ch==='\r'&&raw[i+1]==='\n')i++;row.push(cur.trim());cur='';rows.push(row);row=[];}
+      else{cur+=ch;}
+    }
+    row.push(cur.trim());if(row.some(c=>c))rows.push(row);return rows;
+  }
+
+  function parseMoney(s){if(!s)return 0;return parseFloat(s.replace(/R\$\s*/,'').replace(/\s/g,'').replace(/\./g,'').replace(',','.'))||0;}
+
+  const LOJA_MAP={'MATRIZ/ PRODUÇAO':'MATRIZ PRODUÇÃO','MATRIZ/ PRODUCAO':'MATRIZ PRODUÇÃO','MATRIZ/PRODUÇAO':'MATRIZ PRODUÇÃO','MATRIZ':'MATRIZ PRODUÇÃO','MATRIZ ESCRITORIO':'MATRIZ ESCRITÓRIO','ESCRITORIO':'MATRIZ ESCRITÓRIO','ESCRITÓRIO':'MATRIZ ESCRITÓRIO'};
+  function normLoja(s){const u=s.toUpperCase().trim();return LOJA_MAP[u]||u;}
+  const KNOWN=['PERDIZES','BROOKLIN','VILA MARIANA','MATRIZ','ESCRITORIO','ESCRITÓRIO'];
+  const isKnownLoja=s=>KNOWN.some(k=>s.toUpperCase().trim().startsWith(k));
+
+  const rows=parseCSVAll(text);
+  const r0=rows[0]||[];
+  const h0=(r0[0]||'').trim().toLowerCase().replace(/[^a-z]/g,'');
+  const h1=(r0[1]||'').trim().toLowerCase().replace(/[^a-z]/g,'');
+
+  const parsed=[];
+
+  if(h0==='nome'&&h1==='loja'){
+    // Bonus panel's own export: Nome,Loja,Tipo,Status,Observação,PIX
+    for(let i=1;i<rows.length;i++){
+      const c=rows[i];
+      const nome=(c[0]||'').trim();if(!nome)continue;
+      parsed.push({nome,loja:normLoja(c[1]||''),tipo:(c[2]||'CLT').toUpperCase(),status:(c[3]||'ELEGÍVEL').toUpperCase(),obs:c[4]||'',pix:c[5]||''});
+    }
+  } else if(h0==='loja'&&h1==='nome'){
+    // Folha salarial export: loja,nome,tipo,cargo,salario,inicio,pix,...
+    const headers=r0.map(h=>h.trim().toLowerCase().replace(/[^a-z]/g,''));
+    const idx=h=>headers.indexOf(h);
+    for(let i=1;i<rows.length;i++){
+      const c=rows[i];const nome=(c[idx('nome')]||'').trim();if(!nome)continue;
+      parsed.push({nome,loja:normLoja(c[idx('loja')]||''),tipo:(c[idx('tipo')]||'CLT').toUpperCase(),status:'ELEGÍVEL',obs:'',pix:c[idx('pix')]||''});
+    }
+  } else if(h0==='un'){
+    // FAT BUDDHA format (PJ)
+    for(let i=1;i<rows.length;i++){
+      const c=rows[i];const col0=(c[0]||'').trim();const nome=(c[1]||'').trim();
+      if(!nome||nome.toLowerCase()==='nome'||nome.toLowerCase().startsWith('custo total'))continue;
+      if(!isKnownLoja(col0))continue;
+      parsed.push({nome,loja:normLoja(col0),tipo:'PJ',status:'ELEGÍVEL',obs:'',pix:(c[5]||'').trim()});
+    }
+  } else {
+    // FGLR format (CLT, no header)
+    for(let i=0;i<rows.length;i++){
+      const c=rows[i];const col0=(c[0]||'').trim();const nome=(c[1]||'').trim();
+      if(!nome||nome.toLowerCase()==='nome'||nome.toLowerCase().startsWith('custo total'))continue;
+      if(!isKnownLoja(col0))continue;
+      parsed.push({nome,loja:normLoja(col0),tipo:'CLT',status:'ELEGÍVEL',obs:'',pix:(c[5]||'').trim()});
+    }
+  }
+
+  if(!parsed.length){alert('Nenhum dado válido encontrado. Verifique o formato.');return;}
+  const mode=document.getElementById('import-mode-bonus').value;
+  const m=getM();
+  if(mode==='replace'){
+    if(!confirm(`Substituir os ${m.employees.length} funcionários atuais por ${parsed.length} novos?`))return;
+    m.employees=parsed;
+  } else {
+    const existentes=new Set(m.employees.map(e=>e.nome.toUpperCase()));
+    const novos=parsed.filter(e=>!existentes.has(e.nome.toUpperCase()));
+    m.employees.push(...novos);
+    if(novos.length<parsed.length)alert(`ℹ️ ${parsed.length-novos.length} funcionário(s) já existiam e foram ignorados.`);
+  }
+  autoSave();closeImport();renderAll();
+  alert(`✅ ${parsed.length} funcionário(s) importado(s) com sucesso!`);
+}
+
+function exportCSV(){
+  const emps=getM().employees;
+  const rows=[['Nome','Loja','Tipo','Status','Observação','PIX'],...emps.map(e=>[e.nome,e.loja,e.tipo,e.status,e.obs,e.pix])];
+  const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const b=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='Bonus_'+currentMonth.replace('/','_')+'.csv';a.click();
+}
+renderAll();
+</script>
+</body>
+</html>

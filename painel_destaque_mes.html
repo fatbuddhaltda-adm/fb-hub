@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Destaque do Mês — Fat Buddha</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
+body{background:#f0f2f5;min-height:100vh}
+
+/* Header */
+.header{background:linear-gradient(135deg,#1a1a2e,#16213e);color:white;padding:16px 28px;display:flex;align-items:center;justify-content:space-between}
+.header h1{font-size:19px;font-weight:700}.header p{font-size:11px;opacity:.6;margin-top:2px}
+
+/* Year bar */
+.year-bar{background:white;border-bottom:2px solid #e5e7eb;padding:10px 28px;display:flex;align-items:center;gap:10px}
+.year-bar-label{font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px}
+.year-tab{padding:5px 18px;border-radius:20px;border:2px solid #e5e7eb;cursor:pointer;font-weight:700;font-size:13px;background:white;color:#6b7280;transition:all .2s}
+.year-tab:hover{border-color:#1a1a2e;color:#1a1a2e}
+.year-tab.active{background:#1a1a2e;color:white;border-color:#1a1a2e}
+.add-year-btn{padding:5px 12px;border-radius:20px;border:2px dashed #d1d5db;cursor:pointer;font-size:12px;color:#9ca3af;background:white}
+.add-year-btn:hover{border-color:#6b7280;color:#374151}
+
+/* Matrix table */
+.matrix-wrap{background:white;margin:20px 28px 0;border-radius:12px;box-shadow:0 1px 5px rgba(0,0,0,.07);overflow:hidden}
+.matrix-header{padding:14px 18px 12px;border-bottom:2px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between}
+.matrix-title{font-size:13px;font-weight:700;color:#1a1a2e}
+.matrix-hint{font-size:11px;color:#9ca3af}
+table.grid{width:100%;border-collapse:collapse}
+table.grid th{padding:10px 14px;text-align:left;font-size:11px;font-weight:700;background:#f8fafc;border-bottom:2px solid #e5e7eb;white-space:nowrap}
+table.grid th.loja-th{text-align:center}
+.th-brooklin{color:#0369a1}.th-perdizes{color:#9d174d}.th-vila{color:#5b21b6}.th-matriz{color:#92400e}
+table.grid td{padding:0;border-bottom:1px solid #f3f4f6;vertical-align:middle}
+table.grid tr:last-child td{border-bottom:none}
+table.grid tr:hover td{background:#fafafa}
+.mes-cell{padding:9px 14px;font-size:12px;font-weight:700;color:#374151;white-space:nowrap;min-width:90px}
+.mes-atual .mes-cell{color:#1a1a2e}
+.mes-atual-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#10b981;margin-right:6px;vertical-align:middle}
+.winner-cell{text-align:center;cursor:pointer;padding:6px 10px;min-width:130px;transition:background .15s}
+.winner-cell:hover{background:#f0f4ff}
+.winner-name{font-size:12px;font-weight:700;color:#1a1a2e;display:inline-block;padding:4px 10px;border-radius:6px;transition:background .15s}
+.winner-name.empty{color:#9ca3af;font-style:italic;font-weight:400;font-size:11px}
+.winner-name.filled{background:#f0fdf4;color:#166534}
+
+/* Inline input */
+.winner-cell input.inline-input{width:100%;padding:5px 8px;border:2px solid #1a1a2e;border-radius:6px;font-size:12px;font-weight:600;text-align:center;outline:none;background:white;color:#111}
+
+/* Loja color strips */
+.strip-brooklin .winner-name.filled{background:#e0f2fe;color:#0369a1}
+.strip-perdizes .winner-name.filled{background:#fce7f3;color:#9d174d}
+.strip-vila .winner-name.filled{background:#ede9fe;color:#5b21b6}
+.strip-matriz .winner-name.filled{background:#fef3c7;color:#92400e}
+
+/* Ranking */
+.ranking-section{margin:16px 28px 0}
+.ranking-section-title{font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.ranking-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.rank-card{background:white;border-radius:12px;box-shadow:0 1px 5px rgba(0,0,0,.07);overflow:hidden}
+.rank-card-header{padding:11px 14px 9px;border-bottom:2px solid #f3f4f6;display:flex;align-items:center;gap:8px}
+.loja-tag{font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;white-space:nowrap;display:inline-block}
+.loja-brooklin{background:#e0f2fe;color:#0369a1}.loja-perdizes{background:#fce7f3;color:#9d174d}
+.loja-vila{background:#ede9fe;color:#5b21b6}.loja-matriz{background:#fef3c7;color:#92400e}
+.rank-list{padding:8px 12px}
+.rank-row{display:flex;align-items:center;gap:9px;padding:6px 6px;border-radius:6px}
+.rank-medal{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.medal-1{background:#fef3c7;border:2px solid #fbbf24}
+.medal-2{background:#f1f5f9;border:2px solid #cbd5e1}
+.medal-3{background:#fff7ed;border:2px solid #fed7aa}
+.rank-name{font-size:12px;font-weight:600;color:#1a1a2e;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank-name.empty{color:#9ca3af;font-style:italic;font-weight:400;font-size:11px}
+.rank-wins{font-size:10px;font-weight:700;background:#dcfce7;color:#166534;padding:2px 7px;border-radius:10px;white-space:nowrap}
+
+/* Save bar */
+.save-bar{background:white;border-top:1px solid #e5e7eb;padding:10px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;bottom:0;margin-top:16px}
+.save-left{font-size:11px;color:#9ca3af}
+.save-right{display:flex;gap:8px;align-items:center}
+.btn-primary{background:#1a1a2e;color:white;border:none;padding:8px 18px;border-radius:7px;cursor:pointer;font-size:13px;font-weight:700}
+.btn-primary:hover{background:#16213e}
+.saved-msg{font-size:11px;color:#059669;font-weight:600;display:none}
+
+@media(max-width:900px){.ranking-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div><h1>🏆 Destaque do Mês</h1><p>Fat Buddha — Reconhecimento anual por loja</p></div>
+  <div style="font-size:11px;opacity:.5;text-align:right" id="headerDate"></div>
+</div>
+
+<div class="year-bar">
+  <span class="year-bar-label">Ano:</span>
+  <div id="yearBar"></div>
+  <button class="add-year-btn" onclick="addYear()">＋ Novo ano</button>
+</div>
+
+<div class="matrix-wrap">
+  <div class="matrix-header">
+    <span class="matrix-title">📋 Destaques do Ano — <span id="matrixYearLabel"></span></span>
+    <span class="matrix-hint">✏️ Clique em qualquer célula para editar</span>
+  </div>
+  <div style="overflow-x:auto">
+    <table class="grid" id="matrixTable">
+      <thead><tr>
+        <th>Mês</th>
+        <th class="loja-th th-brooklin">🔵 BROOKLIN</th>
+        <th class="loja-th th-perdizes">🩷 PERDIZES</th>
+        <th class="loja-th th-vila">🟣 VILA MARIANA</th>
+        <th class="loja-th th-matriz">🟡 MATRIZ</th>
+      </tr></thead>
+      <tbody id="matrixBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="ranking-section">
+  <div class="ranking-section-title">🏅 Ranking <span id="rankingYearLabel"></span> — Top 3 por Loja <span style="font-size:10px;font-weight:400;color:#9ca3af">(calculado automaticamente)</span></div>
+  <div class="ranking-grid" id="rankingGrid"></div>
+</div>
+
+<div class="save-bar">
+  <div class="save-left">💾 Dados salvos automaticamente no navegador</div>
+  <div class="save-right">
+    <span class="saved-msg" id="savedMsg">✅ Salvo!</span>
+    <button class="btn-primary" onclick="saveData()">💾 Salvar</button>
+  </div>
+</div>
+
+<script>
+const LOJAS = ['BROOKLIN','PERDIZES','VILA MARIANA','MATRIZ'];
+const LOJA_CLASS = {'BROOKLIN':'loja-brooklin','PERDIZES':'loja-perdizes','VILA MARIANA':'loja-vila','MATRIZ':'loja-matriz'};
+const LOJA_STRIP = {'BROOKLIN':'strip-brooklin','PERDIZES':'strip-perdizes','VILA MARIANA':'strip-vila','MATRIZ':'strip-matriz'};
+const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const MESES_ABREV = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+const thisYear = String(new Date().getFullYear());
+const thisMonth = new Date().getMonth(); // 0-indexed
+
+const DEFAULT = {
+  years: { [thisYear]: {} },
+  currentYear: thisYear
+};
+// estrutura: data.years["2026"]["BROOKLIN"]["03"] = "NOME"
+
+let data = JSON.parse(JSON.stringify(DEFAULT));
+try { const s = localStorage.getItem('destaque_fb_v3'); if(s) data = JSON.parse(s); } catch(e){}
+let currentYear = data.currentYear || thisYear;
+
+function getYear(y){ if(!data.years[y]) data.years[y]={}; return data.years[y]; }
+function getLojaYear(y,loja){ const yr=getYear(y); if(!yr[loja]) yr[loja]={}; return yr[loja]; }
+function getWinner(loja, monthIdx){
+  const key = String(monthIdx+1).padStart(2,'0');
+  return (getLojaYear(currentYear,loja)[key]||'');
+}
+function setWinner(loja, monthIdx, nome){
+  const key = String(monthIdx+1).padStart(2,'0');
+  getLojaYear(currentYear,loja)[key] = nome.trim().toUpperCase();
+  autoSave();
+}
+
+/* ---- Year bar ---- */
+function renderYearBar(){
+  const bar = document.getElementById('yearBar'); bar.innerHTML = '';
+  Object.keys(data.years).sort().forEach(y => {
+    const b = document.createElement('button');
+    b.className = 'year-tab' + (y===currentYear?' active':'');
+    b.textContent = y;
+    b.onclick = () => { currentYear=y; data.currentYear=y; renderAll(); };
+    bar.appendChild(b);
+  });
+}
+function addYear(){
+  const n = prompt('Ano (ex: 2027):');
+  if(!n||!/^\d{4}$/.test(n.trim())){ if(n) alert('Digite um ano válido (ex: 2027)'); return; }
+  const y = n.trim();
+  if(data.years[y]){ alert('Este ano já existe.'); return; }
+  data.years[y] = {};
+  currentYear = y; data.currentYear = y; autoSave(); renderAll();
+}
+
+/* ---- Matrix ---- */
+function renderMatrix(){
+  document.getElementById('matrixYearLabel').textContent = currentYear;
+  document.getElementById('rankingYearLabel').textContent = currentYear;
+  document.getElementById('headerDate').textContent = new Date().toLocaleDateString('pt-BR');
+
+  const tbody = document.getElementById('matrixBody'); tbody.innerHTML = '';
+  MESES.forEach((mes, mi) => {
+    const isCurrentMonth = (currentYear === thisYear && mi === thisMonth);
+    const tr = document.createElement('tr');
+    if(isCurrentMonth) tr.className = 'mes-atual';
+    let cells = `<td class="mes-cell">${isCurrentMonth?'<span class="mes-atual-dot"></span>':''}${mes}</td>`;
+    LOJAS.forEach(loja => {
+      const winner = getWinner(loja, mi);
+      cells += `<td class="winner-cell ${LOJA_STRIP[loja]}" onclick="startEdit(this,'${loja}',${mi})">
+        <span class="winner-name ${winner?'filled':'empty'}">${winner||'— definir'}</span>
+      </td>`;
+    });
+    tr.innerHTML = cells;
+    tbody.appendChild(tr);
+  });
+}
+
+function startEdit(cell, loja, monthIdx){
+  // Prevent double-edit
+  if(cell.querySelector('input')) return;
+  const current = getWinner(loja, monthIdx);
+  const span = cell.querySelector('.winner-name');
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'inline-input';
+  input.value = current;
+  input.placeholder = 'Nome...';
+  input.style.width = '100%';
+  span.replaceWith(input);
+  input.focus();
+  input.select();
+
+  function commit(){
+    const val = input.value.trim().toUpperCase();
+    setWinner(loja, monthIdx, val);
+    renderMatrix();
+    renderRankings();
+  }
+  input.addEventListener('keydown', e => {
+    if(e.key==='Enter'){ e.preventDefault(); commit(); }
+    if(e.key==='Escape'){ renderMatrix(); }
+  });
+  input.addEventListener('blur', commit);
+}
+
+/* ---- Ranking ---- */
+function calcTop3(loja){
+  const yr = getLojaYear(currentYear, loja);
+  const counts = {};
+  Object.values(yr).forEach(nome => {
+    if(nome && nome.trim()) counts[nome]=(counts[nome]||0)+1;
+  });
+  return Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([nome,n])=>({nome,n}));
+}
+function renderRankings(){
+  const grid = document.getElementById('rankingGrid'); grid.innerHTML='';
+  const medals=['🥇','🥈','🥉'], mClass=['medal-1','medal-2','medal-3'];
+  LOJAS.forEach(loja=>{
+    const top = calcTop3(loja);
+    let rows='';
+    for(let i=0;i<3;i++){
+      const r=top[i];
+      rows+=`<div class="rank-row">
+        <div class="rank-medal ${mClass[i]}">${medals[i]}</div>
+        <div class="rank-name ${r?'':'empty'}">${r?r.nome:'Sem dados'}</div>
+        ${r?`<span class="rank-wins">${r.n}x</span>`:''}
+      </div>`;
+    }
+    const card=document.createElement('div'); card.className='rank-card';
+    card.innerHTML=`<div class="rank-card-header"><span class="loja-tag ${LOJA_CLASS[loja]}">${loja}</span></div>
+      <div class="rank-list">${rows}</div>`;
+    grid.appendChild(card);
+  });
+}
+
+/* ---- Util ---- */
+function autoSave(){ try{ localStorage.setItem('destaque_fb_v3',JSON.stringify(data)); }catch(e){} }
+function saveData(){ autoSave(); const m=document.getElementById('savedMsg'); m.style.display='inline'; setTimeout(()=>m.style.display='none',2500); }
+function renderAll(){ renderYearBar(); renderMatrix(); renderRankings(); }
+
+renderAll();
+</script>
+</body>
+</html>

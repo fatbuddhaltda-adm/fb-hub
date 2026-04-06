@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel RH — Fat Buddha</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
+body { background: #f0f2f5; min-height: 100vh; }
+.header {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: white; padding: 18px 30px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.header-left h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.5px; }
+.header-left p { font-size: 11px; opacity: 0.6; margin-top: 3px; }
+.header-right { font-size: 11px; opacity: 0.5; text-align: right; }
+.year-bar {
+  background: white; border-bottom: 2px solid #e5e7eb;
+  padding: 12px 30px; display: flex; align-items: center; gap: 10px;
+}
+.year-bar span { font-size: 12px; font-weight: 600; color: #6b7280; margin-right: 4px; }
+.year-tab {
+  padding: 6px 20px; border-radius: 20px; border: 2px solid #e5e7eb;
+  cursor: pointer; font-weight: 700; font-size: 13px; background: white;
+  color: #6b7280; transition: all 0.2s;
+}
+.year-tab:hover { border-color: #1a1a2e; color: #1a1a2e; }
+.year-tab.active { background: #1a1a2e; color: white; border-color: #1a1a2e; }
+.hint { margin-left: auto; font-size: 11px; color: #9ca3af; }
+.hint b { color: #f59e0b; }
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; padding: 18px 30px 0; }
+.kpi-card {
+  background: white; border-radius: 12px; padding: 18px 20px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+  border-left: 4px solid #e5e7eb; transition: transform 0.2s;
+}
+.kpi-card:hover { transform: translateY(-2px); }
+.kpi-card.blue  { border-left-color: #3b82f6; }
+.kpi-card.green { border-left-color: #10b981; }
+.kpi-card.red   { border-left-color: #ef4444; }
+.kpi-card.amber { border-left-color: #f59e0b; }
+.kpi-label { font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; }
+.kpi-value { font-size: 34px; font-weight: 800; margin: 6px 0 2px; color: #111827; line-height: 1; }
+.kpi-sub { font-size: 11px; color: #9ca3af; }
+.section {
+  background: white; margin: 14px 30px; border-radius: 12px;
+  padding: 18px 20px; box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+}
+.section-title {
+  font-size: 13px; font-weight: 700; color: #1a1a2e;
+  margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+}
+.badge { background: #fef3c7; color: #d97706; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+.badge-blue { background: #dbeafe; color: #2563eb; }
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th {
+  background: #1a1a2e; color: white; padding: 8px 8px;
+  text-align: center; font-weight: 600; white-space: nowrap;
+}
+th:first-child { text-align: left; width: 145px; }
+td { padding: 5px 6px; border-bottom: 1px solid #f3f4f6; text-align: center; }
+td:first-child { text-align: left; font-weight: 600; color: #374151; font-size: 12px; padding-left: 8px; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #fafafa; }
+input.cell {
+  width: 52px; text-align: center; border: 1px solid #fde68a;
+  background: #fffbeb; padding: 4px 4px; border-radius: 4px;
+  font-size: 12px; font-weight: 700; color: #374151; transition: all 0.15s;
+}
+input.cell:focus { outline: none; border-color: #f59e0b; background: #fef9c3; box-shadow: 0 0 0 2px rgba(245,158,11,0.2); }
+.calc { font-weight: 700; font-size: 12px; }
+.to-green { color: #059669; }
+.to-yellow { color: #d97706; }
+.to-red   { color: #dc2626; }
+.to-gray  { color: #9ca3af; }
+.total-col { background: #f8fafc !important; font-weight: 700; color: #1a1a2e !important; }
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 0 30px; }
+.chart-card { background: white; border-radius: 12px; padding: 18px 20px; box-shadow: 0 1px 6px rgba(0,0,0,0.07); }
+.chart-title { font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 14px; }
+.chart-wrap { position: relative; height: 180px; }
+.chart-full { grid-column: span 2; }
+.insights-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.insight { border-radius: 8px; padding: 12px 14px; font-size: 12px; border-left: 3px solid; }
+.insight.good  { background: #ecfdf5; border-color: #10b981; color: #065f46; }
+.insight.warn  { background: #fffbeb; border-color: #f59e0b; color: #92400e; }
+.insight.alert { background: #fef2f2; border-color: #ef4444; color: #991b1b; }
+.insight b { font-size: 13px; display: block; margin-bottom: 3px; }
+.save-bar {
+  background: white; border-top: 1px solid #e5e7eb;
+  padding: 10px 30px; display: flex; align-items: center; justify-content: space-between;
+  position: sticky; bottom: 0; margin-top: 14px;
+}
+.save-left { font-size: 11px; color: #9ca3af; }
+.save-right { display: flex; align-items: center; gap: 10px; }
+.save-btn { background: #1a1a2e; color: white; border: none; padding: 7px 18px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; }
+.save-btn:hover { background: #16213e; }
+.saved-msg { font-size: 11px; color: #059669; font-weight: 600; display: none; }
+.export-btn { background: white; color: #1a1a2e; border: 1px solid #e5e7eb; padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; }
+.export-btn:hover { background: #f9fafb; }
+@media (max-width: 900px) {
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .charts-grid { grid-template-columns: 1fr; }
+  .chart-full { grid-column: span 1; }
+  .insights-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <h1>&#128202; Painel de Gestao RH</h1>
+    <p>Fat Buddha &mdash; Indicadores e KPIs de Recursos Humanos</p>
+  </div>
+  <div class="header-right">
+    Atualizado em <span id="lastUpdate">&mdash;</span><br>
+    <span id="currentYearLabel">2025</span>
+  </div>
+</div>
+
+<div class="year-bar">
+  <span>ANO:</span>
+  <button class="year-tab active" onclick="switchYear(2025)">2025</button>
+  <button class="year-tab" onclick="switchYear(2026)">2026</button>
+  <span class="hint">Campos em <b>amarelo</b> sao editaveis &mdash; edite e os graficos atualizam automaticamente</span>
+</div>
+
+<div class="kpi-row">
+  <div class="kpi-card blue">
+    <div class="kpi-label">Funcionarios Atual</div>
+    <div class="kpi-value" id="kpi-func">&mdash;</div>
+    <div class="kpi-sub">ultimo mes com dado</div>
+  </div>
+  <div class="kpi-card green">
+    <div class="kpi-label">Total Admissoes</div>
+    <div class="kpi-value" id="kpi-adm">&mdash;</div>
+    <div class="kpi-sub">no ano</div>
+  </div>
+  <div class="kpi-card red">
+    <div class="kpi-label">Total Demissoes</div>
+    <div class="kpi-value" id="kpi-dem">&mdash;</div>
+    <div class="kpi-sub">no ano</div>
+  </div>
+  <div class="kpi-card amber">
+    <div class="kpi-label">Turnover Medio</div>
+    <div class="kpi-value" id="kpi-to">&mdash;</div>
+    <div class="kpi-sub">meta: &le; 10%</div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:14px;">
+  <div class="section-title">
+    &#9998; Entrada de Dados Mensais
+    <span class="badge">Edite os campos amarelos</span>
+  </div>
+  <div class="tbl-wrap">
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>Indicador</th>
+          <th>Jan</th><th>Fev</th><th>Mar</th><th>Abr</th>
+          <th>Mai</th><th>Jun</th><th>Jul</th><th>Ago</th>
+          <th>Set</th><th>Out</th><th>Nov</th><th>Dez</th>
+          <th>TOTAL/MED</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="charts-grid">
+  <div class="chart-card">
+    <div class="chart-title">&#128200; Admissoes vs Demissoes</div>
+    <div class="chart-wrap"><canvas id="chartAdmDem"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">&#128260; Turnover Mensal (%)</div>
+    <div class="chart-wrap"><canvas id="chartTurnover"></canvas></div>
+  </div>
+  <div class="chart-card chart-full">
+    <div class="chart-title">&#128101; Evolucao do Quadro de Funcionarios</div>
+    <div class="chart-wrap"><canvas id="chartFunc"></canvas></div>
+  </div>
+</div>
+
+<div class="section" style="margin-bottom:0;">
+  <div class="section-title">&#128161; Analise Automatica <span class="badge badge-blue">gerada a partir dos dados</span></div>
+  <div class="insights-grid" id="insightsGrid"></div>
+</div>
+
+<div class="save-bar">
+  <div class="save-left">&#128190; Os dados sao salvos no navegador automaticamente</div>
+  <div class="save-right">
+    <span class="saved-msg" id="savedMsg">&#10003; Salvo!</span>
+    <button class="export-btn" onclick="exportCSV()">&#8595; Exportar CSV</button>
+    <button class="save-btn" onclick="saveData()">&#128190; Salvar</button>
+  </div>
+</div>
+
+<script>
+const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+const DEFAULT_DATA = {
+  2025: {
+    adm:  [2,5,5,12,7,5,5,1,9,10,10,9],
+    dem:  [1,6,2,3,9,3,4,2,5,6,5,5],
+    func: [31,31,34,42,40,42,43,42,46,50,55,59]
+  },
+  2026: {
+    adm:  [3,'','','','','','','','','','',''],
+    dem:  [5,'','','','','','','','','','',''],
+    func: [60,'','','','','','','','','','','']
+  }
+};
+
+let currentYear = 2025;
+let charts = {};
+let data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+
+try {
+  const saved = localStorage.getItem('rhData_fatbuddha');
+  if (saved) data = JSON.parse(saved);
+} catch(e) {}
+
+function switchYear(year) {
+  currentYear = year;
+  document.querySelectorAll('.year-tab').forEach((t,i) => {
+    t.classList.toggle('active', (i===0 && year===2025)||(i===1 && year===2026));
+  });
+  document.getElementById('currentYearLabel').textContent = year;
+  renderTable();
+  updateAll();
+}
+
+function renderTable() {
+  const d = data[currentYear];
+  const body = document.getElementById('tableBody');
+  body.innerHTML = '';
+
+  const rowDefs = [
+    { key:'adm',  label:'Admissoes',          color:'#3b82f6', editable:true },
+    { key:'dem',  label:'Demissoes',           color:'#ef4444', editable:true },
+    { key:'func', label:'Total Funcionarios',  color:'#1a1a2e', editable:true },
+    { key:'to',   label:'Turnover %',          color:'#f59e0b', editable:false },
+  ];
+
+  rowDefs.forEach(row => {
+    const tr = document.createElement('tr');
+    if (row.editable) {
+      let cells = '<td style="color:'+row.color+'">'+row.label+'</td>';
+      let total = 0, count = 0;
+      for (let m=0; m<12; m++) {
+        const v = d[row.key][m];
+        const val = (v===''||v===null||v===undefined) ? '' : v;
+        cells += '<td><input class="cell" id="inp_'+row.key+'_'+m+'" type="number" min="0" value="'+val+'" oninput="onCellChange(\''+row.key+'\','+m+',this.value)"></td>';
+        if (val!=='') { total += Number(val); count++; }
+      }
+      if (row.key==='func') {
+        let lf='';
+        for (let m=11;m>=0;m--) { if(d.func[m]!==''&&d.func[m]!==null&&d.func[m]!==undefined){lf=d.func[m];break;} }
+        cells += '<td class="total-col">'+(lf!==''?lf:'&mdash;')+'</td>';
+      } else {
+        cells += '<td class="total-col">'+(count>0?total:'&mdash;')+'</td>';
+      }
+      tr.innerHTML = cells;
+    } else {
+      let cells = '<td style="color:'+row.color+'">'+row.label+'</td>';
+      const toVals = calcTO();
+      toVals.forEach(v => {
+        if (v!==null) {
+          let cls = v<8?'to-green':(v<=15?'to-yellow':'to-red');
+          cells += '<td><span class="calc '+cls+'">'+v.toFixed(1)+'%</span></td>';
+        } else {
+          cells += '<td><span class="to-gray">&mdash;</span></td>';
+        }
+      });
+      const valid = toVals.filter(v=>v!==null);
+      if (valid.length>0) {
+        const avg = valid.reduce((a,b)=>a+b,0)/valid.length;
+        let cls = avg<8?'to-green':(avg<=15?'to-yellow':'to-red');
+        cells += '<td class="total-col"><span class="calc '+cls+'">'+avg.toFixed(1)+'%</span></td>';
+      } else {
+        cells += '<td class="total-col"><span class="to-gray">&mdash;</span></td>';
+      }
+      tr.innerHTML = cells;
+    }
+    body.appendChild(tr);
+  });
+}
+
+function calcTO() {
+  const d = data[currentYear];
+  return MONTHS.map((_,m) => {
+    const adm=d.adm[m], dem=d.dem[m], func=d.func[m];
+    if (adm!==''&&dem!==''&&func!==''&&adm!==null&&dem!==null&&func!==null&&Number(func)>0)
+      return (Number(adm)+Number(dem))/2/Number(func)*100;
+    return null;
+  });
+}
+
+function onCellChange(key, month, value) {
+  data[currentYear][key][month] = value==='' ? '' : Number(value);
+  updateAll();
+  autoSave();
+}
+
+function updateKPIs() {
+  const d = data[currentYear];
+  let lf = null;
+  for (let m=11;m>=0;m--) { if(d.func[m]!==''&&d.func[m]!==null&&d.func[m]!==undefined){lf=Number(d.func[m]);break;} }
+  document.getElementById('kpi-func').textContent = lf!==null?lf:'&mdash;';
+
+  const admArr = d.adm.filter(v=>v!==''&&v!==null);
+  document.getElementById('kpi-adm').textContent = admArr.length>0?admArr.reduce((s,v)=>s+Number(v),0):'&mdash;';
+
+  const demArr = d.dem.filter(v=>v!==''&&v!==null);
+  document.getElementById('kpi-dem').textContent = demArr.length>0?demArr.reduce((s,v)=>s+Number(v),0):'&mdash;';
+
+  const toVals = calcTO().filter(v=>v!==null);
+  const el = document.getElementById('kpi-to');
+  if (toVals.length>0) {
+    const avg = toVals.reduce((a,b)=>a+b,0)/toVals.length;
+    el.textContent = avg.toFixed(1)+'%';
+    el.style.color = avg<8?'#059669':(avg<=15?'#d97706':'#dc2626');
+  } else { el.textContent='&mdash;'; el.style.color=''; }
+}
+
+function updateCharts() {
+  const d = data[currentYear];
+  const toVals = calcTO();
+  const admVals = d.adm.map(v=>v===''||v===null?0:Number(v));
+  const demVals = d.dem.map(v=>v===''||v===null?0:Number(v));
+  const funcRaw = d.func.map(v=>v===''||v===null?null:Number(v));
+
+  if (charts.admDem) charts.admDem.destroy();
+  charts.admDem = new Chart(document.getElementById('chartAdmDem'), {
+    type:'bar',
+    data:{
+      labels:MONTHS,
+      datasets:[
+        {label:'Admissoes',data:admVals,backgroundColor:'rgba(59,130,246,0.85)',borderRadius:4},
+        {label:'Demissoes',data:demVals,backgroundColor:'rgba(239,68,68,0.85)',borderRadius:4}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:11}}}},
+      scales:{x:{ticks:{font:{size:10}}},y:{ticks:{font:{size:10}},beginAtZero:true}}}
+  });
+
+  if (charts.turnover) charts.turnover.destroy();
+  charts.turnover = new Chart(document.getElementById('chartTurnover'), {
+    type:'bar',
+    data:{
+      labels:MONTHS,
+      datasets:[
+        {label:'Turnover %',data:toVals.map(v=>v!==null?parseFloat(v.toFixed(2)):null),
+         backgroundColor:toVals.map(v=>v===null?'transparent':(v<8?'rgba(16,185,129,0.85)':(v<=15?'rgba(245,158,11,0.85)':'rgba(239,68,68,0.85)'))),borderRadius:4},
+        {label:'Meta (10%)',data:Array(12).fill(10),type:'line',borderColor:'#6366f1',borderDash:[5,5],borderWidth:2,pointRadius:0,fill:false}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:11}}}},
+      scales:{x:{ticks:{font:{size:10}}},y:{ticks:{font:{size:10},callback:v=>v+'%'},beginAtZero:true}}}
+  });
+
+  const funcLabels=[], funcData=[];
+  funcRaw.forEach((v,i)=>{if(v!==null){funcLabels.push(MONTHS[i]);funcData.push(v);}});
+  if (charts.func) charts.func.destroy();
+  charts.func = new Chart(document.getElementById('chartFunc'), {
+    type:'line',
+    data:{
+      labels:funcLabels,
+      datasets:[{label:'Total Funcionarios',data:funcData,borderColor:'#1a1a2e',
+        backgroundColor:'rgba(26,26,46,0.08)',borderWidth:2.5,pointRadius:5,
+        pointBackgroundColor:'#1a1a2e',fill:true,tension:0.3}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:11}}}},
+      scales:{x:{ticks:{font:{size:10}}},y:{ticks:{font:{size:10}},beginAtZero:false}}}
+  });
+}
+
+function updateInsights() {
+  const d = data[currentYear];
+  const toVals = calcTO();
+  const validTO = toVals.filter(v=>v!==null);
+  if (validTO.length===0) {
+    document.getElementById('insightsGrid').innerHTML='<div style="color:#9ca3af;font-size:12px;padding:8px;">Insira dados para ver a analise automatica.</div>';
+    return;
+  }
+  const insights = [];
+  const avgTo = validTO.reduce((a,b)=>a+b,0)/validTO.length;
+  const maxTo = Math.max(...validTO);
+  const maxIdx = toVals.indexOf(maxTo);
+  const minTo = Math.min(...validTO);
+  const minIdx = toVals.indexOf(minTo);
+  const totalAdm = d.adm.filter(v=>v!==''&&v!==null).reduce((s,v)=>s+Number(v),0);
+  const totalDem = d.dem.filter(v=>v!==''&&v!==null).reduce((s,v)=>s+Number(v),0);
+
+  if (avgTo<8) insights.push({type:'good',title:'Turnover sob controle: '+avgTo.toFixed(1)+'%',text:'Abaixo da meta de 10%. Excelente gestao de retencao!'});
+  else if (avgTo<=15) insights.push({type:'warn',title:'Turnover medio: '+avgTo.toFixed(1)+'%',text:'Acima da meta de 10%. Fique atento aos fatores de saida.'});
+  else insights.push({type:'alert',title:'Turnover alto: '+avgTo.toFixed(1)+'%',text:'Bem acima da meta. Necessaria acao imediata de retencao.'});
+
+  if (maxTo>10) insights.push({type:maxTo>15?'alert':'warn',title:'Pico em '+MONTHS[maxIdx]+': '+maxTo.toFixed(1)+'%',text:'Mes com maior turnover. Investigue os motivos das saidas nesse periodo.'});
+  insights.push({type:'good',title:'Melhor mes: '+MONTHS[minIdx]+' ('+minTo.toFixed(1)+'%)',text:'Menor indice de turnover - analise o que funcionou bem nesse periodo.'});
+
+  const saldo = totalAdm-totalDem;
+  if (saldo>0) insights.push({type:'good',title:'Equipe cresceu +'+saldo+' pessoas',text:totalAdm+' admissoes vs '+totalDem+' demissoes. Saldo positivo de headcount.'});
+  else if (saldo<0) insights.push({type:'alert',title:'Equipe encolheu '+saldo+' pessoas',text:totalAdm+' admissoes vs '+totalDem+' demissoes. Atencao ao headcount.'});
+  else insights.push({type:'warn',title:'Equipe estavel (saldo zero)',text:'Admissoes e demissoes empatadas: '+totalAdm+' cada.'});
+
+  const mesesAlerta = validTO.filter(v=>v>10).length;
+  if (mesesAlerta>0) insights.push({type:mesesAlerta>=4?'alert':'warn',title:mesesAlerta+' '+(mesesAlerta===1?'mes':'meses')+' acima da meta',text:mesesAlerta+' de '+validTO.length+' meses com turnover > 10%.'+(mesesAlerta>=4?' Padrao preocupante - plano de retencao necessario.':' Monitore a tendencia.')});
+  else insights.push({type:'good',title:'Todos os meses dentro da meta!',text:'Nenhum mes superou 10% de turnover. Otimo resultado!'});
+
+  document.getElementById('insightsGrid').innerHTML = insights.map(i=>
+    '<div class="insight '+i.type+'"><b>'+i.title+'</b>'+i.text+'</div>'
+  ).join('');
+}
+
+function updateAll() {
+  renderTable();
+  updateKPIs();
+  updateCharts();
+  updateInsights();
+  document.getElementById('lastUpdate').textContent = new Date().toLocaleString('pt-BR');
+}
+
+function autoSave() {
+  try { localStorage.setItem('rhData_fatbuddha', JSON.stringify(data)); } catch(e){}
+}
+
+function saveData() {
+  autoSave();
+  const msg = document.getElementById('savedMsg');
+  msg.style.display='inline';
+  setTimeout(()=>msg.style.display='none', 2500);
+}
+
+function exportCSV() {
+  const d = data[currentYear];
+  const toVals = calcTO();
+  const valid = toVals.filter(v=>v!==null);
+  const toAvg = valid.length>0?(valid.reduce((a,b)=>a+b,0)/valid.length).toFixed(2)+'%':'';
+  const rows = [
+    ['Indicador',...MONTHS,'Total/Med'],
+    ['Admissoes',...d.adm.map(v=>v===''?'':v), d.adm.filter(v=>v!==''&&v!==null).reduce((s,v)=>s+Number(v),0)],
+    ['Demissoes',...d.dem.map(v=>v===''?'':v), d.dem.filter(v=>v!==''&&v!==null).reduce((s,v)=>s+Number(v),0)],
+    ['Total Funcionarios',...d.func.map(v=>v===''?'':v),''],
+    ['Turnover %',...toVals.map(v=>v!==null?v.toFixed(2)+'%':''), toAvg],
+  ];
+  const csv = rows.map(r=>r.join(',')).join('\n');
+  const blob = new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url;
+  a.download='KPI_RH_FatBuddha_'+currentYear+'.csv';
+  a.click(); URL.revokeObjectURL(url);
+}
+
+updateAll();
+</script>
+</body>
+</html>

@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Folha Salarial | Fat Buddha</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#f4f4f6;color:#1a1a1a;font-size:13px}
+:root{--org:#E8610A;--orglt:#FFF5EE;--dark:#1a1a1a;--gray:#6b7280;--border:#e5e7eb;--green:#059669;--red:#dc2626;--blue:#2563eb;--purple:#7c3aed}
+
+/* TOP BAR */
+.topbar{background:#1a1a2e;color:white;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar h1{font-size:16px;font-weight:700;letter-spacing:.5px}
+.topbar h1 span{color:var(--org)}
+.topbar-right{display:flex;gap:10px;align-items:center}
+
+/* TABS */
+.nav{background:white;border-bottom:2px solid var(--border);display:flex;gap:0;padding:0 24px;position:sticky;top:47px;z-index:99}
+.nav-btn{padding:12px 20px;border:none;background:none;cursor:pointer;font-size:13px;font-weight:600;color:var(--gray);border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s}
+.nav-btn.active{color:var(--org);border-bottom-color:var(--org)}
+.nav-btn:hover:not(.active){color:var(--dark);background:#f9fafb}
+
+/* VIEWS */
+.view{display:none;padding:24px}
+.view.active{display:block}
+
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:24px}
+.kpi{background:white;border-radius:10px;padding:16px 18px;border:1px solid var(--border)}
+.kpi-label{font-size:11px;color:var(--gray);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+.kpi-value{font-size:22px;font-weight:700;color:var(--dark)}
+.kpi-sub{font-size:11px;color:var(--gray);margin-top:4px}
+.kpi.orange{border-left:4px solid var(--org)}
+.kpi.green{border-left:4px solid var(--green)}
+.kpi.blue{border-left:4px solid var(--blue)}
+.kpi.purple{border-left:4px solid var(--purple)}
+.kpi.red{border-left:4px solid var(--red)}
+
+/* LOJA CARDS */
+.loja-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:24px}
+.loja-card{background:white;border-radius:10px;padding:16px;border:1px solid var(--border)}
+.loja-card-title{font-size:13px;font-weight:700;color:var(--dark);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.loja-tag{padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;text-transform:uppercase}
+.lt-p{background:#dbeafe;color:#1d4ed8}
+.lt-b{background:#fce7f3;color:#9d174d}
+.lt-v{background:#d1fae5;color:#065f46}
+.lt-mp{background:#fef3c7;color:#92400e}
+.lt-me{background:#ede9fe;color:#5b21b6}
+.lt-e{background:#f3f4f6;color:#374151}
+.loja-stat{display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid #f9fafb}
+.loja-total{margin-top:10px;font-size:15px;font-weight:700;color:var(--org);text-align:right}
+.loja-anual{font-size:11px;color:var(--gray);text-align:right}
+
+/* SECTION */
+.section{background:white;border-radius:10px;border:1px solid var(--border);margin-bottom:20px}
+.section-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.section-title{font-size:13px;font-weight:700}
+.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.controls input,.controls select{padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;color:var(--dark);background:white}
+.controls input{min-width:180px}
+
+/* TABLE */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{background:#f9fafb;padding:8px 10px;text-align:left;font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.4px;border-bottom:2px solid var(--border);white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid var(--border);font-size:12px;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafafa}
+.tr-total td{background:#fff8f3;font-weight:700;border-top:2px solid var(--org)}
+.tr-group td{background:#f0f4ff;font-weight:700;font-size:11px;color:#374151;text-transform:uppercase;letter-spacing:.5px;border-top:1px solid #c7d2fe}
+.money{text-align:right}
+
+/* BADGES */
+.badge{padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700}
+.badge-clt{background:#dbeafe;color:#1d4ed8}
+.badge-pj{background:#ede9fe;color:#5b21b6}
+
+/* BUTTONS */
+.btn{padding:7px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
+.btn-primary{background:var(--org);color:white}
+.btn-primary:hover{background:#c9510a}
+.btn-outline{background:white;color:var(--org);border:1.5px solid var(--org)}
+.btn-outline:hover{background:var(--orglt)}
+.btn-sm{padding:4px 10px;font-size:11px;border-radius:6px}
+.btn-edit{background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe}
+.btn-del{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+.btn-import{background:#ecfdf5;color:#065f46;border:1.5px solid #6ee7b7}
+.btn-import:hover{background:#d1fae5}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;align-items:center;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:white;border-radius:12px;width:680px;max-width:96vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal-header{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:15px;font-weight:700}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray);line-height:1}
+.modal-body{padding:20px 22px}
+.modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-full{grid-column:1/-1}
+.form-group label{display:block;font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;margin-bottom:5px;letter-spacing:.3px}
+.form-group input,.form-group select{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;transition:border .15s}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--org)}
+.form-section{grid-column:1/-1;font-size:11px;font-weight:700;color:var(--org);text-transform:uppercase;letter-spacing:.5px;padding-top:10px;border-top:1px solid var(--border);margin-top:4px}
+.calc-preview{grid-column:1/-1;background:var(--orglt);border-radius:8px;padding:12px 14px;border:1px solid #fbd5ba}
+.calc-preview-title{font-size:11px;font-weight:700;color:var(--org);margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px}
+.calc-preview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.calc-item{font-size:11px;color:var(--dark)}
+.calc-item b{display:block;font-size:13px;color:var(--org)}
+.calc-total{grid-column:1/-1;display:flex;justify-content:space-between;border-top:1px solid #fbd5ba;margin-top:8px;padding-top:8px}
+.calc-total span{font-size:13px;font-weight:700;color:var(--dark)}
+.calc-total b{font-size:15px;font-weight:700;color:var(--org)}
+
+/* IMPORT AREA */
+.import-area{padding:20px;border:2px dashed var(--border);border-radius:8px;text-align:center;color:var(--gray);font-size:13px}
+.import-area textarea{width:100%;min-height:120px;padding:10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:monospace;resize:vertical;margin-top:12px}
+
+/* PROV TABLE */
+.prov-header{background:var(--org);color:white}
+.prov-header th{color:white;background:transparent}
+
+/* ALERT */
+.empty-state{padding:40px;text-align:center;color:var(--gray)}
+.empty-state b{display:block;font-size:15px;margin-bottom:6px;color:var(--dark)}
+
+/* TIPO TOGGLE */
+.tipo-toggle{display:flex;gap:0;border:1.5px solid var(--border);border-radius:7px;overflow:hidden;width:fit-content}
+.tipo-toggle button{padding:6px 16px;border:none;background:white;cursor:pointer;font-size:12px;font-weight:600;color:var(--gray);transition:all .15s}
+.tipo-toggle button.active{background:var(--org);color:white}
+
+/* PROV SUMMARY */
+.prov-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px}
+.prov-kpi{background:white;border-radius:8px;padding:12px 14px;border:1px solid var(--border);text-align:center}
+.prov-kpi-label{font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.4px}
+.prov-kpi-val{font-size:16px;font-weight:700;color:var(--org);margin-top:4px}
+
+@media(max-width:600px){.form-grid{grid-template-columns:1fr}.loja-grid{grid-template-columns:1fr}.kpi-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <h1>🍜 FAT BUDDHA &nbsp;<span>|</span>&nbsp; Folha Salarial</h1>
+  <div class="topbar-right">
+    <button class="btn btn-outline btn-sm" onclick="openImport()">📥 Importar CSV</button>
+    <button class="btn btn-outline btn-sm" onclick="exportCSV()">📤 Exportar CSV</button>
+    <button class="btn btn-primary btn-sm" onclick="openModal()">+ Novo Funcionário</button>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <button class="nav-btn active" onclick="showView('dashboard',this)">📊 Dashboard</button>
+  <button class="nav-btn" onclick="showView('funcionarios',this)">👥 Funcionários</button>
+  <button class="nav-btn" onclick="showView('porloja',this)">🏪 Por Loja</button>
+  <button class="nav-btn" onclick="showView('provisionamento',this)">📋 Provisionamento</button>
+</nav>
+
+<!-- ═══════════════ DASHBOARD ═══════════════ -->
+<div id="view-dashboard" class="view active">
+  <div class="kpi-grid" id="dash-kpis"></div>
+  <div class="loja-grid" id="dash-lojas"></div>
+</div>
+
+<!-- ═══════════════ FUNCIONÁRIOS ═══════════════ -->
+<div id="view-funcionarios" class="view">
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title" id="func-count">Funcionários</span>
+      <div class="controls">
+        <input type="text" id="fSearch" placeholder="🔍 Buscar nome ou cargo..." oninput="renderFuncionarios()">
+        <select id="fLoja" onchange="renderFuncionarios()">
+          <option value="">Todas as lojas</option>
+          <option>PERDIZES</option><option>BROOKLIN</option><option>VILA MARIANA</option>
+          <option>MATRIZ PRODUÇÃO</option><option>MATRIZ ESCRITÓRIO</option>
+        </select>
+        <select id="fTipo" onchange="renderFuncionarios()">
+          <option value="">CLT e PJ</option>
+          <option value="CLT">CLT</option>
+          <option value="PJ">PJ</option>
+        </select>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>#</th><th>Nome</th><th>Tipo</th><th>Cargo</th>
+          <th>PIX</th><th>Conta</th>
+          <th class="money">Salário</th><th class="money">Total Mensal</th><th class="money">Custo Anual</th>
+          <th>Início</th><th>Fim Exp</th><th></th>
+        </tr></thead>
+        <tbody id="func-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ POR LOJA ═══════════════ -->
+<div id="view-porloja" class="view">
+  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+    <button class="btn btn-primary btn-sm" onclick="setLojaTab('PERDIZES',this)" id="ltab-PERDIZES">PERDIZES</button>
+    <button class="btn btn-outline btn-sm" onclick="setLojaTab('BROOKLIN',this)" id="ltab-BROOKLIN">BROOKLIN</button>
+    <button class="btn btn-outline btn-sm" onclick="setLojaTab('VILA MARIANA',this)" id="ltab-VILA MARIANA">VILA MARIANA</button>
+    <button class="btn btn-outline btn-sm" onclick="setLojaTab('MATRIZ PRODUÇÃO',this)" id="ltab-MATRIZ PRODUÇÃO">MATRIZ PRODUÇÃO</button>
+    <button class="btn btn-outline btn-sm" onclick="setLojaTab('MATRIZ ESCRITÓRIO',this)" id="ltab-MATRIZ ESCRITÓRIO">MATRIZ ESCRITÓRIO</button>
+  </div>
+  <div id="porloja-content"></div>
+</div>
+
+<!-- ═══════════════ PROVISIONAMENTO ═══════════════ -->
+<div id="view-provisionamento" class="view">
+  <div class="prov-summary" id="prov-summary"></div>
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Provisionamento por Unidade</span>
+      <small style="color:var(--gray)">Valores mensais</small>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead class="prov-header"><tr>
+          <th>Unidade</th>
+          <th class="money">Salários</th>
+          <th class="money">FGTS (+40%)</th>
+          <th class="money">13º + FGTS</th>
+          <th class="money">Férias + 1/3</th>
+          <th class="money">Aviso Prévio</th>
+          <th class="money">Plano / Desp.</th>
+          <th class="money">Margem Seg.</th>
+          <th class="money">VT</th>
+          <th class="money">Total Mensal</th>
+          <th class="money">Custo Anual</th>
+        </tr></thead>
+        <tbody id="prov-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ MODAL FUNCIONÁRIO ═══════════════ -->
+<div class="overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">Novo Funcionário</span>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group form-full">
+          <label>Nome completo *</label>
+          <input id="f-nome" type="text" placeholder="Nome do funcionário">
+        </div>
+        <div class="form-group">
+          <label>Loja *</label>
+          <select id="f-loja">
+            <option>PERDIZES</option><option>BROOKLIN</option><option>VILA MARIANA</option>
+            <option>MATRIZ PRODUÇÃO</option><option>MATRIZ ESCRITÓRIO</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tipo *</label>
+          <select id="f-tipo" onchange="onTipoChange()">
+            <option value="CLT">CLT</option>
+            <option value="PJ">PJ</option>
+          </select>
+        </div>
+        <div class="form-group form-full">
+          <label>Cargo *</label>
+          <select id="f-cargo">
+            <option value="">Selecionar cargo...</option>
+            <optgroup label="Cozinha">
+              <option>CHEFE DE COZINHA</option>
+              <option>CHEFE DE COZINHA DIURNO</option>
+              <option>CHEFE DE COZINHA NOTURNO</option>
+              <option>LIDER DIURNO</option>
+              <option>LIDER NOTURNO</option>
+              <option>COZINHEIRO I DIURNO</option>
+              <option>COZINHEIRO I NOTURNO</option>
+              <option>COZINHEIRO II DIURNO</option>
+              <option>COZINHEIRO II NOTURNO</option>
+              <option>AUXILIAR DE COZINHA DIURNO</option>
+              <option>AUXILIAR DE COZINHA NOTURNO</option>
+            </optgroup>
+            <optgroup label="Expedição">
+              <option>GERENTE DE LOJA</option>
+              <option>SUPERVISOR/A</option>
+              <option>ATENDENTE DIURNO</option>
+              <option>ATENDENTE NOTURNO</option>
+              <option>EMPACOTADOR/A DIURNO</option>
+              <option>EMPACOTADOR/A NOTURNO</option>
+              <option>AUXILIAR GERAL</option>
+            </optgroup>
+            <optgroup label="Produção">
+              <option>CHEFE DE PRODUÇÃO</option>
+              <option>COZINHEIRO I PRODUÇÃO</option>
+              <option>COZINHEIRO II PRODUÇÃO</option>
+              <option>AUXILIAR DE PRODUÇÃO</option>
+              <option>AUXILIAR DE ESTOQUE</option>
+              <option>AUXILIAR DE LIMPEZA</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Salário (R$) *</label>
+          <input id="f-salario" type="number" step="0.01" min="0" placeholder="0,00" oninput="updateCalcPreview()">
+        </div>
+        <div class="form-group">
+          <label>Data de Início</label>
+          <input id="f-inicio" type="date">
+        </div>
+        <div class="form-group">
+          <label>Fim do Período de Experiência</label>
+          <input id="f-fimexp" type="date">
+        </div>
+        <div class="form-group">
+          <label>Chave PIX</label>
+          <input id="f-pix" type="text" placeholder="CPF, telefone ou e-mail">
+        </div>
+        <div class="form-group">
+          <label>Agenda / Conta</label>
+          <input id="f-conta" type="text" placeholder="Ex: ap. 1234 / cc. 56789">
+        </div>
+
+        <div class="form-section">Vale Transporte</div>
+        <div class="form-group">
+          <label>VT Mensal (R$)</label>
+          <input id="f-vt" type="number" step="0.01" min="0" placeholder="0,00" oninput="updateCalcPreview()">
+        </div>
+        <div class="form-group">
+          <label>Tipo de Transporte</label>
+          <select id="f-vttipo">
+            <option value="">Selecionar...</option>
+            <option>Bilhete único mensal integrado</option>
+            <option>Bilhete único mensal comum ônibus</option>
+            <option>Intermunicipal</option>
+            <option>VEM ANDANDO</option>
+            <option>Carro</option>
+            <option>ALUGUEL BIKE</option>
+            <option>Outro</option>
+          </select>
+        </div>
+
+        <div class="form-section" id="fs-clt">Encargos CLT</div>
+        <div class="form-group" id="fg-plano">
+          <label id="lbl-plano">Plano de Saúde (R$)</label>
+          <input id="f-plano" type="number" step="0.01" min="0" placeholder="0,00" oninput="updateCalcPreview()">
+        </div>
+        <div class="form-group" id="fg-margem" style="display:none">
+          <label>Margem de Segurança (R$)</label>
+          <input id="f-margem" type="number" step="0.01" value="296.47" oninput="updateCalcPreview()">
+        </div>
+
+        <!-- PREVIEW -->
+        <div class="calc-preview" id="calc-preview">
+          <div class="calc-preview-title">💰 Previsão de Custo</div>
+          <div class="calc-preview-grid" id="calc-grid"></div>
+          <div class="calc-total">
+            <span>Total Custo Mensal</span>
+            <b id="calc-total-val">R$ 0,00</b>
+          </div>
+          <div style="font-size:11px;color:var(--gray);margin-top:4px;text-align:right" id="calc-anual-val"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveEmployee()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ IMPORT MODAL ═══════════════ -->
+<div class="overlay" id="import-overlay">
+  <div class="modal" style="width:600px">
+    <div class="modal-header">
+      <span class="modal-title">📥 Importar do CSV</span>
+      <button class="modal-close" onclick="document.getElementById('import-overlay').classList.remove('open')">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="margin-bottom:12px;color:var(--gray);line-height:1.6">
+        No Google Sheets, vá em <b>Arquivo → Fazer download → CSV</b> e cole o conteúdo abaixo.<br>
+        O arquivo deve conter as colunas: <b>loja, nome, tipo, cargo, salario, inicio, pix, conta, vt, vttipo, plano, margem</b>
+      </p>
+      <div class="import-area">
+        <div>Cole o conteúdo CSV aqui ou use o botão para carregar um arquivo</div>
+        <textarea id="csv-input" placeholder="loja,nome,tipo,cargo,salario,inicio,pix,conta,vt,vttipo,plano,margem&#10;PERDIZES,João Silva,CLT,Auxiliar Cozinha,2035,2025-01-10,11999999999,,411.13,Bilhete único mensal integrado,0,296.47"></textarea>
+      </div>
+      <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+        <label class="btn btn-import" style="cursor:pointer">
+          📁 Carregar arquivo .csv
+          <input type="file" accept=".csv" style="display:none" onchange="loadCSVFile(this)">
+        </label>
+        <div style="display:flex;gap:8px">
+          <select id="import-mode" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px">
+            <option value="add">Adicionar aos existentes</option>
+            <option value="replace">Substituir todos os dados</option>
+          </select>
+          <button class="btn btn-primary" onclick="processCSV()">Importar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const LOJAS = ['PERDIZES','BROOKLIN','VILA MARIANA','MATRIZ PRODUÇÃO','MATRIZ ESCRITÓRIO'];
+const KEY = 'fb_folha_v1';
+let data = JSON.parse(localStorage.getItem(KEY) || 'null') || { employees: [], nextId: 1 };
+let editingId = null;
+let currentLojaTab = 'PERDIZES';
+
+// ── Normaliza lojas e remove duplicatas ao carregar ───────────────────────────
+(function cleanData() {
+  function normLoja(s) {
+    const u = (s||'').toUpperCase().trim()
+      .replace(/\s+/g,' ')         // espaços duplos
+      .replace(/Ç/g,'Ç')           // já normalizado
+      .normalize('NFC');
+    if (u.includes('ESCRITORIO') || u.includes('ESCRITÓRIO') || u === 'ESCRITORIO') return 'MATRIZ ESCRITÓRIO';
+    if (u.startsWith('MATRIZ') && (u.includes('ESCRIT'))) return 'MATRIZ ESCRITÓRIO';
+    if (u.startsWith('MATRIZ') && (u.includes('PROD') || u === 'MATRIZ')) return 'MATRIZ PRODUÇÃO';
+    if (u === 'PERDIZES') return 'PERDIZES';
+    if (u === 'BROOKLIN') return 'BROOKLIN';
+    if (u.startsWith('VILA MARIANA')) return 'VILA MARIANA';
+    return s; // mantém original se já correto
+  }
+  data.employees.forEach(e => { e.loja = normLoja(e.loja); });
+  // remove duplicatas pelo nome (mantém o primeiro)
+  const seen = new Set();
+  data.employees = data.employees.filter(e => {
+    const key = (e.nome||'').trim().toUpperCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  localStorage.setItem(KEY, JSON.stringify(data));
+})();
+
+function save() { localStorage.setItem(KEY, JSON.stringify(data)); }
+function r2(n) { return Math.round((n||0) * 100) / 100; }
+function fmt(n) { return 'R$ ' + r2(n).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function fmtShort(n) { return r2(n).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+
+// ─── CALCULATIONS ────────────────────────────────────────────────────────────
+function calc(emp) {
+  const s = emp.salario || 0;
+  const vt = emp.vt || 0;
+  if (emp.tipo === 'CLT') {
+    const fgts   = r2(s * 0.112);
+    const dec    = r2((s / 12) * 1.08);
+    const fer    = r2((s / 12) * (4/3) * 1.08);
+    const aviso  = r2((s / 12) * 1.08);
+    const plano  = emp.plano || 0;
+    const margem = emp.margem != null ? emp.margem : 296.47;
+    const total  = r2(s + fgts + dec + fer + aviso + plano + margem + vt);
+    const anual  = r2(total * 13);
+    return { s, fgts, dec, fer, aviso, plano, margem, vt, total, anual };
+  } else {
+    const dec   = r2(s / 12);
+    const fer   = r2((s / 12) * (4/3));
+    const desp  = emp.plano || 0;  // PJ: despesas diversas no campo plano
+    const total = r2(s + dec + fer + desp + vt);
+    const anual = r2(total * 12);
+    return { s, fgts:0, dec, fer, aviso:0, plano:desp, margem:0, vt, total, anual };
+  }
+}
+
+// ─── NAVIGATION ──────────────────────────────────────────────────────────────
+function showView(id, btn) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'dashboard') renderDashboard();
+  if (id === 'funcionarios') renderFuncionarios();
+  if (id === 'porloja') renderPorLoja();
+  if (id === 'provisionamento') renderProvisionamento();
+}
+
+// ─── LOJA HELPERS ────────────────────────────────────────────────────────────
+function lojaClass(l) {
+  return {PERDIZES:'lt-p',BROOKLIN:'lt-b','VILA MARIANA':'lt-v','MATRIZ PRODUÇÃO':'lt-mp','MATRIZ ESCRITÓRIO':'lt-me'}[l]||'lt-e';
+}
+function lojaEmoji(l) {
+  return {PERDIZES:'🔵',BROOKLIN:'🩷','VILA MARIANA':'🟢','MATRIZ PRODUÇÃO':'🟡','MATRIZ ESCRITÓRIO':'🟣'}[l]||'⚪';
+}
+
+// ─── DASHBOARD ───────────────────────────────────────────────────────────────
+function renderDashboard() {
+  const emps = data.employees;
+
+  // Tela de boas-vindas quando vazio
+  if (!emps.length) {
+    document.getElementById('dash-kpis').innerHTML = '';
+    document.getElementById('dash-lojas').innerHTML = `
+      <div style="grid-column:1/-1;background:white;border-radius:12px;border:2px dashed #e5e7eb;padding:48px 32px;text-align:center">
+        <div style="font-size:48px;margin-bottom:16px">📋</div>
+        <div style="font-size:20px;font-weight:700;color:#1a1a1a;margin-bottom:8px">Nenhum funcionário cadastrado</div>
+        <div style="color:#6b7280;margin-bottom:32px;line-height:1.6;max-width:480px;margin-left:auto;margin-right:auto">
+          Para começar, importe os dados da sua planilha do Google Sheets ou cadastre os funcionários manualmente.
+        </div>
+        <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+          <div style="background:#fff5ee;border:1.5px solid #E8610A;border-radius:10px;padding:20px 24px;max-width:260px;text-align:left">
+            <div style="font-weight:700;color:#E8610A;margin-bottom:10px;font-size:14px">📥 Opção 1 — Importar CSV</div>
+            <ol style="color:#374151;font-size:12px;line-height:1.8;padding-left:16px">
+              <li>Abra a planilha no Google Sheets</li>
+              <li>Clique em <b>Arquivo → Fazer download → CSV</b></li>
+              <li>Clique no botão <b style="background:#E8610A;color:white;padding:1px 6px;border-radius:4px">📥 Importar CSV</b> no topo desta página</li>
+              <li>Carregue o arquivo baixado</li>
+            </ol>
+          </div>
+          <div style="background:#f0fdf4;border:1.5px solid #6ee7b7;border-radius:10px;padding:20px 24px;max-width:260px;text-align:left">
+            <div style="font-weight:700;color:#065f46;margin-bottom:10px;font-size:14px">✏️ Opção 2 — Cadastro manual</div>
+            <p style="color:#374151;font-size:12px;line-height:1.8">
+              Clique em <b style="background:#E8610A;color:white;padding:1px 6px;border-radius:4px">+ Novo Funcionário</b> no topo da página para adicionar um a um.
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  const clts = emps.filter(e => e.tipo === 'CLT');
+  const pjs  = emps.filter(e => e.tipo === 'PJ');
+  const totalMensal = emps.reduce((s, e) => s + calc(e).total, 0);
+  const totalAnual  = emps.reduce((s, e) => s + calc(e).anual, 0);
+  const totalSal    = emps.reduce((s, e) => s + (e.salario||0), 0);
+
+  document.getElementById('dash-kpis').innerHTML = `
+    <div class="kpi orange"><div class="kpi-label">Total de Funcionários</div><div class="kpi-value">${emps.length}</div><div class="kpi-sub">${clts.length} CLT · ${pjs.length} PJ</div></div>
+    <div class="kpi blue"><div class="kpi-label">Total Salários</div><div class="kpi-value">${fmt(totalSal)}</div><div class="kpi-sub">Folha bruta mensal</div></div>
+    <div class="kpi green"><div class="kpi-label">Custo Total Mensal</div><div class="kpi-value">${fmt(totalMensal)}</div><div class="kpi-sub">Com todos os encargos</div></div>
+    <div class="kpi purple"><div class="kpi-label">Provisionamento Anual</div><div class="kpi-value">${fmt(totalAnual)}</div><div class="kpi-sub">Estimativa do grupo</div></div>
+    <div class="kpi red"><div class="kpi-label">Custo p/ Funcionário</div><div class="kpi-value">${emps.length ? fmt(totalMensal/emps.length) : 'R$ 0,00'}</div><div class="kpi-sub">Média mensal</div></div>
+  `;
+
+  const lGrid = document.getElementById('dash-lojas');
+  lGrid.innerHTML = '';
+  LOJAS.forEach(loja => {
+    const le = emps.filter(e => e.loja === loja);
+    if (!le.length) return;
+    const lclt = le.filter(e => e.tipo==='CLT');
+    const lpj  = le.filter(e => e.tipo==='PJ');
+    const lTotal = le.reduce((s,e) => s + calc(e).total, 0);
+    const lAnual = le.reduce((s,e) => s + calc(e).anual, 0);
+    const lSal   = le.reduce((s,e) => s + (e.salario||0), 0);
+    const d = document.createElement('div');
+    d.className = 'loja-card';
+    d.innerHTML = `
+      <div class="loja-card-title">${lojaEmoji(loja)} <span class="loja-tag ${lojaClass(loja)}">${loja}</span></div>
+      <div class="loja-stat"><span>Funcionários</span><b>${le.length}</b></div>
+      <div class="loja-stat"><span>CLT / PJ</span><b>${lclt.length} / ${lpj.length}</b></div>
+      <div class="loja-stat"><span>Salários</span><b>${fmt(lSal)}</b></div>
+      <div class="loja-total">${fmt(lTotal)}<span style="font-weight:400;font-size:11px;color:var(--gray)"> / mês</span></div>
+      <div class="loja-anual">Anual: ${fmt(lAnual)}</div>
+    `;
+    lGrid.appendChild(d);
+  });
+
+  if (!emps.length) {
+    lGrid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><b>Nenhum funcionário cadastrado</b>Clique em "+ Novo Funcionário" para começar, ou importe um CSV.</div>`;
+  }
+}
+
+// ─── FUNCIONÁRIOS ────────────────────────────────────────────────────────────
+function renderFuncionarios() {
+  const search = (document.getElementById('fSearch')?.value||'').toLowerCase();
+  const lojaF  = document.getElementById('fLoja')?.value||'';
+  const tipoF  = document.getElementById('fTipo')?.value||'';
+  let emps = data.employees.filter(e => {
+    if (lojaF && e.loja !== lojaF) return false;
+    if (tipoF && e.tipo !== tipoF) return false;
+    if (search && !e.nome.toLowerCase().includes(search) && !(e.cargo||'').toLowerCase().includes(search)) return false;
+    return true;
+  });
+  document.getElementById('func-count').textContent = `Funcionários (${emps.length})`;
+  const tbody = document.getElementById('func-tbody');
+  if (!emps.length) {
+    tbody.innerHTML = `<tr><td colspan="12" class="empty-state">Nenhum funcionário encontrado.</td></tr>`;
+    return;
+  }
+
+  // ── Area classification ───────────────────────────────────────────────────
+  function getArea(cargo) {
+    const c = (cargo||'').toUpperCase();
+    if (/SUPERVISOR|SUPERVISORA|ATENDENTE|EMPACOTADOR|AUXILIAR.*(GERAL|LINHA)|AUXILIAR GERAL|AUXILIAR DE LINHA/.test(c)) return 'expedicao';
+    if (/CHEF|LIDER|LÍDER|COZINHEIRO|AUXILIAR.*(COZINHA|PROD)|AUXILIAR COZINHA|CHEFE/.test(c)) return 'cozinha';
+    return 'outros';
+  }
+
+  // ── Hierarchy rank within area ────────────────────────────────────────────
+  function hierRank(cargo) {
+    const c = (cargo||'').toUpperCase();
+    const area = getArea(cargo);
+    if (area === 'expedicao') {
+      if (/SUPERVISOR|SUPERVISORA/.test(c)) return 0;
+      if (/ATENDENTE/.test(c))              return 1;
+      if (/EMPACOTADOR/.test(c))            return 2;
+      if (/AUXILIAR/.test(c))               return 3;
+      return 4;
+    }
+    if (area === 'cozinha') {
+      if (/CHEFE DE COZINHA/.test(c))                            return 0;  // inclui DIURNO e NOTURNO
+      if (/LIDER|LÍDER|CHEFE DE PROD|CHEFE PROD/.test(c))       return 1;
+      if (/COZINHEIRO I[^I]|COZINHEIRO I$/.test(c))             return 2;
+      if (/COZINHEIRO II/.test(c))                               return 3;
+      if (/AUXILIAR/.test(c))                                    return 4;
+      return 5;
+    }
+    // outros
+    if (/GERENTE|CEO|COO|CMO|CFO|CHEF EXEC/.test(c)) return 0;
+    if (/ANALISTA|COMPRAS|OPERACIONAL|FINANCEIRO|MARKETING|TRAFEGO|RH/.test(c)) return 1;
+    return 2;
+  }
+
+  function turnoRank(cargo) {
+    const c = (cargo||'').toUpperCase();
+    if (c.includes('DIURNO'))  return 0;
+    if (c.includes('NOTURNO')) return 1;
+    return 2;
+  }
+
+  function sortEmps(arr) {
+    return [...arr].sort((a,b) => {
+      const t = turnoRank(a.cargo) - turnoRank(b.cargo);
+      if (t !== 0) return t;
+      return hierRank(a.cargo) - hierRank(b.cargo);
+    });
+  }
+
+  // ── Row renderers ─────────────────────────────────────────────────────────
+  function empRow(e, n) {
+    const c = calc(e);
+    function fmtDate(d) { if (!d) return '—'; const p=d.split('-'); return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:d; }
+    return `<tr>
+      <td style="color:#9ca3af">${n}</td>
+      <td><b>${e.nome}</b></td>
+      <td><span class="badge badge-${e.tipo.toLowerCase()}">${e.tipo}</span></td>
+      <td>${e.cargo||'—'}</td>
+      <td style="font-size:11px;color:#6b7280;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.pix||'—'}</td>
+      <td style="font-size:11px;color:#6b7280;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.conta||'—'}</td>
+      <td class="money">${fmt(e.salario)}</td>
+      <td class="money" style="font-weight:700;color:var(--org)">${fmt(c.total)}</td>
+      <td class="money">${fmt(c.anual)}</td>
+      <td style="white-space:nowrap">${fmtDate(e.inicio)}</td>
+      <td style="white-space:nowrap;color:${e.fimExp&&e.fimExp<new Date().toISOString().slice(0,10)?'#dc2626':'#374151'}">${fmtDate(e.fimExp)}</td>
+      <td style="display:flex;gap:6px;align-items:center">
+        <button class="btn btn-sm btn-edit" onclick="openModal(${e.id})">✏️</button>
+        <button class="btn btn-sm btn-del" onclick="delEmployee(${e.id})">🗑️</button>
+      </td>
+    </tr>`;
+  }
+
+  function lojaHeader(loja, count) {
+    const colors = {
+      'PERDIZES':          '#1d4ed8',
+      'BROOKLIN':          '#059669',
+      'VILA MARIANA':      '#7c3aed',
+      'MATRIZ PRODUÇÃO':   '#b45309',
+      'MATRIZ ESCRITÓRIO': '#0369a1',
+    };
+    const bg = colors[loja] || '#374151';
+    return `<tr>
+      <td colspan="12" style="background:${bg};color:white;padding:9px 14px;font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;border-top:6px solid white">
+        ${lojaEmoji(loja)} ${loja} &nbsp;<span style="opacity:.7;font-weight:400">${count} funcionário${count!==1?'s':''}</span>
+      </td>
+    </tr>`;
+  }
+
+  const AREA_CFG = {
+    expedicao: { label: '🏪 Expedição', bg: '#eff6ff', border: '#3b82f6', color: '#1e40af' },
+    cozinha:   { label: '🍳 Cozinha',   bg: '#fff7ed', border: '#f97316', color: '#9a3412' },
+    outros:    { label: '🏢 Administrativo / Outros', bg: '#f9fafb', border: '#9ca3af', color: '#374151' },
+  };
+
+  function areaHeader(area, count) {
+    const cfg = AREA_CFG[area] || AREA_CFG.outros;
+    return `<tr>
+      <td colspan="12" style="background:${cfg.bg};border-left:4px solid ${cfg.border};padding:6px 14px;border-top:1px solid ${cfg.border}22">
+        <span style="font-size:11px;font-weight:700;color:${cfg.color};letter-spacing:.05em;text-transform:uppercase">${cfg.label}</span>
+        <span style="font-size:11px;color:${cfg.color};opacity:.6;margin-left:8px">${count}</span>
+      </td>
+    </tr>`;
+  }
+
+  // ── Build rows: loja → área → todos juntos por hierarquia + turno ──────────
+  const lojaOrder = [...LOJAS, ...([...new Set(emps.map(e=>e.loja))].filter(l=>!LOJAS.includes(l)))];
+  const AREA_ORDER = ['expedicao','cozinha','outros'];
+  const rows = [];
+  let n = 1;
+
+  lojaOrder.forEach(loja => {
+    const lojaGroup = emps.filter(e => e.loja === loja);
+    if (!lojaGroup.length) return;
+
+    if (!lojaF) rows.push(lojaHeader(loja, lojaGroup.length));
+
+    AREA_ORDER.forEach(area => {
+      const areaGroup = sortEmps(lojaGroup.filter(e => getArea(e.cargo) === area));
+      if (!areaGroup.length) return;
+
+      rows.push(areaHeader(area, areaGroup.length));
+
+      const diurnos  = areaGroup.filter(e => turnoRank(e.cargo) === 0);
+      const noturnos = areaGroup.filter(e => turnoRank(e.cargo) === 1);
+      const semTurno = areaGroup.filter(e => turnoRank(e.cargo) === 2);
+
+      // Sem turno (ex: CHEFE DE COZINHA) sempre vem primeiro
+      semTurno.forEach(e => rows.push(empRow(e, n++)));
+
+      if (diurnos.length && noturnos.length) {
+        rows.push(`<tr><td colspan="12" style="padding:3px 14px 3px 18px;background:#f0f9ff;border-top:1px solid #bae6fd"><span style="font-size:10px;font-weight:700;color:#0369a1;letter-spacing:.05em;text-transform:uppercase">☀️ Diurno</span></td></tr>`);
+        diurnos.forEach(e => rows.push(empRow(e, n++)));
+        rows.push(`<tr><td colspan="12" style="padding:3px 14px 3px 18px;background:#faf5ff;border-top:1px solid #d8b4fe"><span style="font-size:10px;font-weight:700;color:#7c3aed;letter-spacing:.05em;text-transform:uppercase">🌙 Noturno</span></td></tr>`);
+        noturnos.forEach(e => rows.push(empRow(e, n++)));
+      } else {
+        diurnos.forEach(e => rows.push(empRow(e, n++)));
+        noturnos.forEach(e => rows.push(empRow(e, n++)));
+      }
+    });
+  });
+
+  tbody.innerHTML = rows.join('');
+}
+
+// ─── POR LOJA ────────────────────────────────────────────────────────────────
+function setLojaTab(loja, btn) {
+  currentLojaTab = loja;
+  document.querySelectorAll('[id^="ltab-"]').forEach(b => { b.className = 'btn btn-outline btn-sm'; });
+  btn.className = 'btn btn-primary btn-sm';
+  renderPorLoja();
+}
+
+function renderPorLoja() {
+  const emps = data.employees.filter(e => e.loja === currentLojaTab);
+  const div = document.getElementById('porloja-content');
+  if (!emps.length) {
+    div.innerHTML = `<div class="empty-state"><b>Nenhum funcionário em ${currentLojaTab}</b></div>`;
+    return;
+  }
+  const totalMensal = emps.reduce((s,e) => s + calc(e).total, 0);
+  const totalSal    = emps.reduce((s,e) => s + (e.salario||0), 0);
+  const totalAnual  = emps.reduce((s,e) => s + calc(e).anual, 0);
+  const totalFgts   = emps.reduce((s,e) => s + calc(e).fgts, 0);
+  const totalDec    = emps.reduce((s,e) => s + calc(e).dec, 0);
+  const totalFer    = emps.reduce((s,e) => s + calc(e).fer, 0);
+  const totalAviso  = emps.reduce((s,e) => s + (calc(e).aviso||calc(e).plano||0), 0);
+  const totalVt     = emps.reduce((s,e) => s + (e.vt||0), 0);
+  const clts = emps.filter(e=>e.tipo==='CLT').length;
+  const pjs  = emps.filter(e=>e.tipo==='PJ').length;
+
+  div.innerHTML = `
+    <div class="kpi-grid" style="margin-bottom:8px">
+      <div class="kpi orange"><div class="kpi-label">Funcionários</div><div class="kpi-value">${emps.length}</div><div class="kpi-sub">${clts} CLT · ${pjs} PJ</div></div>
+      <div class="kpi blue"><div class="kpi-label">Total Salários</div><div class="kpi-value">${fmt(totalSal)}</div></div>
+      <div class="kpi green"><div class="kpi-label">Custo Total Mensal</div><div class="kpi-value">${fmt(totalMensal)}</div></div>
+      <div class="kpi purple"><div class="kpi-label">Custo Anual</div><div class="kpi-value">${fmt(totalAnual)}</div></div>
+    </div>
+    <div class="kpi-grid" style="margin-bottom:16px;grid-template-columns:repeat(5,1fr)">
+      <div class="kpi" style="border-left:4px solid #ef4444"><div class="kpi-label">FGTS</div><div class="kpi-value" style="font-size:18px">${fmt(totalFgts)}</div></div>
+      <div class="kpi" style="border-left:4px solid #f59e0b"><div class="kpi-label">13º</div><div class="kpi-value" style="font-size:18px">${fmt(totalDec)}</div></div>
+      <div class="kpi" style="border-left:4px solid #10b981"><div class="kpi-label">Férias</div><div class="kpi-value" style="font-size:18px">${fmt(totalFer)}</div></div>
+      <div class="kpi" style="border-left:4px solid #6366f1"><div class="kpi-label">Aviso / Disp.</div><div class="kpi-value" style="font-size:18px">${fmt(totalAviso)}</div></div>
+      <div class="kpi" style="border-left:4px solid #0ea5e9"><div class="kpi-label">Vale Transporte</div><div class="kpi-value" style="font-size:18px">${fmt(totalVt)}</div></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="section-title">${lojaEmoji(currentLojaTab)} ${currentLojaTab} — Detalhamento de Custos</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Nome</th><th>Tipo</th><th>Cargo</th>
+            <th class="money">Salário</th>
+            <th class="money">FGTS</th>
+            <th class="money">13º</th>
+            <th class="money">Férias</th>
+            <th class="money">Aviso/Desp.</th>
+            <th class="money">VT</th>
+            <th class="money">Total Mensal</th>
+            <th class="money">Custo Anual</th>
+          </tr></thead>
+          <tbody>
+            ${emps.map(e => {
+              const c = calc(e);
+              return `<tr>
+                <td><b>${e.nome}</b></td>
+                <td><span class="badge badge-${e.tipo.toLowerCase()}">${e.tipo}</span></td>
+                <td>${e.cargo||'—'}</td>
+                <td class="money">${fmt(e.salario)}</td>
+                <td class="money">${fmt(c.fgts)}</td>
+                <td class="money">${fmt(c.dec)}</td>
+                <td class="money">${fmt(c.fer)}</td>
+                <td class="money">${fmt(c.aviso||c.plano)}</td>
+                <td class="money">${fmt(c.vt)}</td>
+                <td class="money" style="font-weight:700;color:var(--org)">${fmt(c.total)}</td>
+                <td class="money">${fmt(c.anual)}</td>
+              </tr>`;
+            }).join('')}
+            <tr class="tr-total">
+              <td colspan="3">TOTAL ${currentLojaTab}</td>
+              <td class="money">${fmt(totalSal)}</td>
+              <td class="money">${fmt(emps.reduce((s,e)=>s+calc(e).fgts,0))}</td>
+              <td class="money">${fmt(emps.reduce((s,e)=>s+calc(e).dec,0))}</td>
+              <td class="money">${fmt(emps.reduce((s,e)=>s+calc(e).fer,0))}</td>
+              <td class="money">${fmt(emps.reduce((s,e)=>s+(calc(e).aviso||calc(e).plano),0))}</td>
+              <td class="money">${fmt(emps.reduce((s,e)=>s+calc(e).vt,0))}</td>
+              <td class="money">${fmt(totalMensal)}</td>
+              <td class="money">${fmt(totalAnual)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+// ─── PROVISIONAMENTO ─────────────────────────────────────────────────────────
+function renderProvisionamento() {
+  const emps = data.employees;
+  const totalMensal = emps.reduce((s,e) => s + calc(e).total, 0);
+  const totalAnual  = emps.reduce((s,e) => s + calc(e).anual, 0);
+  const totalSal    = emps.reduce((s,e) => s + (e.salario||0), 0);
+  const totalFgts   = emps.reduce((s,e) => s + calc(e).fgts, 0);
+  const totalVT     = emps.reduce((s,e) => s + calc(e).vt, 0);
+
+  document.getElementById('prov-summary').innerHTML = `
+    <div class="prov-kpi"><div class="prov-kpi-label">Salários Base</div><div class="prov-kpi-val">${fmt(totalSal)}</div></div>
+    <div class="prov-kpi"><div class="prov-kpi-label">FGTS Total</div><div class="prov-kpi-val">${fmt(totalFgts)}</div></div>
+    <div class="prov-kpi"><div class="prov-kpi-label">Total VT</div><div class="prov-kpi-val">${fmt(totalVT)}</div></div>
+    <div class="prov-kpi"><div class="prov-kpi-label">Custo Total Mês</div><div class="prov-kpi-val">${fmt(totalMensal)}</div></div>
+    <div class="prov-kpi"><div class="prov-kpi-label">Provisionamento Anual</div><div class="prov-kpi-val">${fmt(totalAnual)}</div></div>
+  `;
+
+  let rows = '';
+  let totSal=0,totFgts=0,totDec=0,totFer=0,totAviso=0,totPlano=0,totMarg=0,totVT=0,totTotal=0,totAnual=0;
+
+  LOJAS.forEach(loja => {
+    const le = emps.filter(e => e.loja === loja);
+    if (!le.length) return;
+    const lSal   = r2(le.reduce((s,e) => s + (e.salario||0), 0));
+    const lFgts  = r2(le.reduce((s,e) => s + calc(e).fgts, 0));
+    const lDec   = r2(le.reduce((s,e) => s + calc(e).dec, 0));
+    const lFer   = r2(le.reduce((s,e) => s + calc(e).fer, 0));
+    const lAviso = r2(le.reduce((s,e) => s + calc(e).aviso, 0));
+    const lPlano = r2(le.reduce((s,e) => s + calc(e).plano, 0));
+    const lMarg  = r2(le.reduce((s,e) => s + calc(e).margem, 0));
+    const lVT    = r2(le.reduce((s,e) => s + calc(e).vt, 0));
+    const lTotal = r2(le.reduce((s,e) => s + calc(e).total, 0));
+    const lAnual = r2(le.reduce((s,e) => s + calc(e).anual, 0));
+    totSal+=lSal;totFgts+=lFgts;totDec+=lDec;totFer+=lFer;totAviso+=lAviso;
+    totPlano+=lPlano;totMarg+=lMarg;totVT+=lVT;totTotal+=lTotal;totAnual+=lAnual;
+    rows += `<tr>
+      <td><span class="loja-tag ${lojaClass(loja)}">${loja}</span> <small style="color:var(--gray)">(${le.length} func.)</small></td>
+      <td class="money">${fmt(lSal)}</td>
+      <td class="money">${fmt(lFgts)}</td>
+      <td class="money">${fmt(lDec)}</td>
+      <td class="money">${fmt(lFer)}</td>
+      <td class="money">${fmt(lAviso)}</td>
+      <td class="money">${fmt(lPlano)}</td>
+      <td class="money">${fmt(lMarg)}</td>
+      <td class="money">${fmt(lVT)}</td>
+      <td class="money" style="font-weight:700;color:var(--org)">${fmt(lTotal)}</td>
+      <td class="money" style="font-weight:700">${fmt(lAnual)}</td>
+    </tr>`;
+  });
+
+  rows += `<tr class="tr-total">
+    <td>🏢 GRUPO TOTAL (${emps.length} func.)</td>
+    <td class="money">${fmt(totSal)}</td>
+    <td class="money">${fmt(totFgts)}</td>
+    <td class="money">${fmt(totDec)}</td>
+    <td class="money">${fmt(totFer)}</td>
+    <td class="money">${fmt(totAviso)}</td>
+    <td class="money">${fmt(totPlano)}</td>
+    <td class="money">${fmt(totMarg)}</td>
+    <td class="money">${fmt(totVT)}</td>
+    <td class="money">${fmt(r2(totTotal))}</td>
+    <td class="money">${fmt(r2(totAnual))}</td>
+  </tr>`;
+
+  document.getElementById('prov-tbody').innerHTML = rows || `<tr><td colspan="11" class="empty-state">Nenhum funcionário cadastrado.</td></tr>`;
+}
+
+// ─── MODAL EMPLOYEE ──────────────────────────────────────────────────────────
+function openModal(id = null) {
+  editingId = id;
+  const title = id ? 'Editar Funcionário' : 'Novo Funcionário';
+  document.getElementById('modal-title').textContent = title;
+  const overlay = document.getElementById('modal-overlay');
+  if (id) {
+    const e = data.employees.find(x => x.id === id);
+    if (!e) return;
+    document.getElementById('f-nome').value   = e.nome || '';
+    document.getElementById('f-loja').value   = e.loja || 'PERDIZES';
+    document.getElementById('f-tipo').value   = e.tipo || 'CLT';
+    document.getElementById('f-cargo').value  = e.cargo || '';
+    document.getElementById('f-salario').value= e.salario || '';
+    document.getElementById('f-inicio').value  = e.inicio || '';
+    document.getElementById('f-fimexp').value  = e.fimExp || '';
+    document.getElementById('f-pix').value     = e.pix || '';
+    document.getElementById('f-conta').value   = e.conta || '';
+    document.getElementById('f-vt').value     = e.vt || '';
+    document.getElementById('f-vttipo').value = e.vttipo || '';
+    document.getElementById('f-plano').value  = e.plano || '';
+    document.getElementById('f-margem').value = e.margem != null ? e.margem : 296.47;
+  } else {
+    document.getElementById('f-nome').value   = '';
+    document.getElementById('f-loja').value   = 'PERDIZES';
+    document.getElementById('f-tipo').value   = 'CLT';
+    document.getElementById('f-cargo').value  = '';
+    document.getElementById('f-salario').value= '';
+    document.getElementById('f-inicio').value  = '';
+    document.getElementById('f-fimexp').value  = '';
+    document.getElementById('f-pix').value     = '';
+    document.getElementById('f-conta').value   = '';
+    document.getElementById('f-vt').value     = '';
+    document.getElementById('f-vttipo').value = '';
+    document.getElementById('f-plano').value  = '';
+    document.getElementById('f-margem').value = '296.47';
+  }
+  onTipoChange();
+  updateCalcPreview();
+  overlay.classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  editingId = null;
+}
+
+function onTipoChange() {
+  const tipo = document.getElementById('f-tipo').value;
+  const isCLT = tipo === 'CLT';
+  document.getElementById('fg-margem').style.display = isCLT ? '' : 'none';
+  document.getElementById('lbl-plano').textContent = isCLT ? 'Plano de Saúde (R$)' : 'Despesas Diversas (R$)';
+  document.getElementById('fs-clt').textContent = isCLT ? 'Encargos CLT' : 'Despesas PJ';
+  updateCalcPreview();
+}
+
+function updateCalcPreview() {
+  const tipo = document.getElementById('f-tipo').value;
+  const s    = parseFloat(document.getElementById('f-salario').value) || 0;
+  const vt   = parseFloat(document.getElementById('f-vt').value) || 0;
+  const plano= parseFloat(document.getElementById('f-plano').value) || 0;
+  const margem = parseFloat(document.getElementById('f-margem').value) || 296.47;
+  const fakeEmp = { tipo, salario:s, vt, plano, margem };
+  const c = calc(fakeEmp);
+  const grid = document.getElementById('calc-grid');
+  if (tipo === 'CLT') {
+    grid.innerHTML = `
+      <div class="calc-item">FGTS (+40%)<b>${fmt(c.fgts)}</b></div>
+      <div class="calc-item">13º Salário<b>${fmt(c.dec)}</b></div>
+      <div class="calc-item">Férias + 1/3<b>${fmt(c.fer)}</b></div>
+      <div class="calc-item">Aviso Prévio<b>${fmt(c.aviso)}</b></div>
+      <div class="calc-item">Plano Saúde<b>${fmt(plano)}</b></div>
+      <div class="calc-item">Margem Seg.<b>${fmt(margem)}</b></div>
+      <div class="calc-item">Vale Transp.<b>${fmt(vt)}</b></div>
+    `;
+  } else {
+    grid.innerHTML = `
+      <div class="calc-item">13º (prov.)<b>${fmt(c.dec)}</b></div>
+      <div class="calc-item">Férias + 1/3<b>${fmt(c.fer)}</b></div>
+      <div class="calc-item">Despesas<b>${fmt(plano)}</b></div>
+      <div class="calc-item">Vale Transp.<b>${fmt(vt)}</b></div>
+    `;
+  }
+  document.getElementById('calc-total-val').textContent = fmt(c.total);
+  document.getElementById('calc-anual-val').textContent = `Custo anual estimado: ${fmt(c.anual)}`;
+}
+
+function saveEmployee() {
+  const nome = document.getElementById('f-nome').value.trim();
+  if (!nome) { alert('Informe o nome do funcionário.'); return; }
+  const sal = parseFloat(document.getElementById('f-salario').value);
+  if (!sal || sal <= 0) { alert('Informe um salário válido.'); return; }
+  const emp = {
+    id:      editingId || data.nextId++,
+    nome,
+    loja:   document.getElementById('f-loja').value,
+    tipo:   document.getElementById('f-tipo').value,
+    cargo:  document.getElementById('f-cargo').value.trim(),
+    salario: sal,
+    inicio:  document.getElementById('f-inicio').value,
+    fimExp:  document.getElementById('f-fimexp').value,
+    pix:     document.getElementById('f-pix').value.trim(),
+    conta:  document.getElementById('f-conta').value.trim(),
+    vt:     parseFloat(document.getElementById('f-vt').value)||0,
+    vttipo: document.getElementById('f-vttipo').value,
+    plano:  parseFloat(document.getElementById('f-plano').value)||0,
+    margem: parseFloat(document.getElementById('f-margem').value)||296.47,
+  };
+  if (editingId) {
+    const idx = data.employees.findIndex(e => e.id === editingId);
+    if (idx >= 0) data.employees[idx] = emp;
+  } else {
+    data.employees.push(emp);
+  }
+  save();
+  closeModal();
+  renderDashboard();
+  renderFuncionarios();
+}
+
+function delEmployee(id) {
+  const e = data.employees.find(x => x.id === id);
+  if (!e) return;
+  if (!confirm(`Remover ${e.nome}?`)) return;
+  data.employees = data.employees.filter(x => x.id !== id);
+  save();
+  renderFuncionarios();
+  renderDashboard();
+}
+
+// ─── CSV IMPORT/EXPORT ───────────────────────────────────────────────────────
+function openImport() { document.getElementById('import-overlay').classList.add('open'); }
+
+function loadCSVFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { document.getElementById('csv-input').value = e.target.result; };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function processCSV() {
+  const text = document.getElementById('csv-input').value.trim();
+  if (!text) { alert('Cole ou carregue um arquivo CSV primeiro.'); return; }
+
+  // ── Full multiline-aware CSV parser ───────────────────────────────────────
+  function parseCSVAll(raw) {
+    const rows = [];
+    let row = [], cur = '', inQ = false;
+    for (let i = 0; i < raw.length; i++) {
+      const ch = raw[i];
+      if (ch === '"') {
+        if (inQ && raw[i+1] === '"') { cur += '"'; i++; }
+        else { inQ = !inQ; }
+      } else if (ch === ',' && !inQ) {
+        row.push(cur.trim()); cur = '';
+      } else if ((ch === '\n' || ch === '\r') && !inQ) {
+        if (ch === '\r' && raw[i+1] === '\n') i++;
+        row.push(cur.trim()); cur = '';
+        rows.push(row); row = [];
+      } else { cur += ch; }
+    }
+    row.push(cur.trim());
+    if (row.some(c => c)) rows.push(row);
+    return rows;
+  }
+
+  // ── Parse "R$ 2.620,00" → float ───────────────────────────────────────────
+  function parseMoney(s) {
+    if (!s) return 0;
+    return parseFloat(s.replace(/R\$\s*/,'').replace(/\s/g,'').replace(/\./g,'').replace(',','.')) || 0;
+  }
+
+  // ── DD/MM/YYYY → YYYY-MM-DD ───────────────────────────────────────────────
+  function parseDate(s) {
+    if (!s) return '';
+    const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    return m ? `${m[3]}-${m[2]}-${m[1]}` : s;
+  }
+
+  // ── Loja normalisation ────────────────────────────────────────────────────
+  const LOJA_MAP = {
+    'MATRIZ/ PRODUÇAO':  'MATRIZ PRODUÇÃO',
+    'MATRIZ/ PRODUCAO':  'MATRIZ PRODUÇÃO',
+    'MATRIZ/PRODUÇAO':   'MATRIZ PRODUÇÃO',
+    'MATRIZ/PRODUCAO':   'MATRIZ PRODUÇÃO',
+    'MATRIZ PRODUCAO':   'MATRIZ PRODUÇÃO',
+    'MATRIZ':            'MATRIZ PRODUÇÃO',
+    'MATRIZ ESCRITORIO': 'MATRIZ ESCRITÓRIO',
+    'MATRIZ/ESCRITORIO': 'MATRIZ ESCRITÓRIO',
+    'ESCRITORIO':        'MATRIZ ESCRITÓRIO',
+    'ESCRITÓRIO':        'MATRIZ ESCRITÓRIO',
+  };
+  function normLoja(s) {
+    const u = s.toUpperCase().trim();
+    return LOJA_MAP[u] || u;
+  }
+
+  const KNOWN = ['PERDIZES','BROOKLIN','VILA MARIANA','MATRIZ','ESCRITORIO','ESCRITÓRIO'];
+  const isKnownLoja = s => KNOWN.some(k => s.toUpperCase().trim().startsWith(k));
+
+  const rows = parseCSVAll(text);
+  const parsed = [];
+
+  // ── Detect format from first row ──────────────────────────────────────────
+  const r0 = rows[0] || [];
+  const h0 = (r0[0]||'').trim().toLowerCase().replace(/[^a-z]/g,'');
+  const h1 = (r0[1]||'').trim().toLowerCase().replace(/[^a-z]/g,'');
+  const h2 = (r0[2]||'').trim().toLowerCase().replace(/[^a-z]/g,'');
+
+  const isOwnFormat = h0 === 'loja' && h1 === 'nome' && h2 === 'tipo';
+  const isFatBuddha = h0 === 'un';  // FAT BUDDHA header: UN,Nome,...
+  // Otherwise: FGLR format (no header, first valid rows have loja in col0)
+
+  if (isOwnFormat) {
+    // ── Panel own export format ───────────────────────────────────────────
+    const headers = r0.map(h => h.trim().toLowerCase().replace(/[^a-z]/g,''));
+    for (let i = 1; i < rows.length; i++) {
+      const cols = rows[i];
+      const row = {};
+      headers.forEach((h, j) => { row[h] = cols[j] || ''; });
+      if (!row.nome) continue;
+      parsed.push({
+        id:     data.nextId++,
+        nome:   row.nome,
+        loja:   normLoja(row.loja||''),
+        tipo:   (row.tipo||'CLT').toUpperCase(),
+        cargo:  row.cargo||'',
+        salario:parseFloat(row.salario)||0,
+        inicio: row.inicio||'',
+        pix:    row.pix||'',
+        conta:  row.conta||'',
+        vt:     parseFloat(row.vt)||0,
+        vttipo: row.vttipo||'',
+        plano:  parseFloat(row.plano)||0,
+        margem: row.margem !== '' ? parseFloat(row.margem) : 296.47,
+      });
+    }
+
+  } else if (isFatBuddha) {
+    // ── FAT BUDDHA format (PJ employees) ─────────────────────────────────
+    // Col: [0]=UN/loja [1]=Nome [2]=agência [3]=conta [4]=Data início
+    //      [5]=PIX [6]=Período Exp [7]=Cargo [8]=Salário
+    //      [9]=13º [10]=Férias [11]=Plano [12]=Total [13]=Custo12m
+    //      [14]=VT [15]=Tipo transporte
+    for (let i = 1; i < rows.length; i++) {
+      const cols = rows[i];
+      const col0 = (cols[0]||'').trim();
+      const nome  = (cols[1]||'').trim();
+      if (!nome) continue;
+      if (nome.toLowerCase() === 'nome') continue;
+      if (nome.toLowerCase().startsWith('custo total')) continue;
+      if (!isKnownLoja(col0)) continue;
+
+      const agencia   = (cols[2]||'').trim();
+      const conta     = (cols[3]||'').trim();
+      const contaFull = [agencia, conta].filter(Boolean).join(' / ');
+
+      parsed.push({
+        id:     data.nextId++,
+        nome,
+        loja:   normLoja(col0),
+        tipo:   'PJ',
+        cargo:  (cols[7]||'').trim(),
+        salario: parseMoney(cols[8]),
+        inicio:  parseDate((cols[4]||'').trim()),
+        fimExp:  parseDate((cols[6]||'').trim()),
+        pix:     (cols[5]||'').trim(),
+        conta:   contaFull,
+        vt:      parseMoney(cols[14]),
+        vttipo:  (cols[15]||'').trim(),
+        plano:   parseMoney(cols[11]),
+        margem:  0,
+      });
+    }
+
+  } else {
+    // ── FGLR format (CLT employees, no header) ────────────────────────────
+    // Col: [0]=Loja [1]=Nome [2]=agência [3]=conta [4]=Data início
+    //      [5]=PIX [6]=Período Exp [7]=Cargo [8]=Salário
+    //      [9]=FGTS [10]=13º [11]=Férias [12]=Aviso [13]=Plano
+    //      [14]=Margem [15]=Total [16]=Custo12m [17]=VT [18]=Tipo transporte
+    for (let i = 0; i < rows.length; i++) {
+      const cols = rows[i];
+      const col0 = (cols[0]||'').trim();
+      const nome  = (cols[1]||'').trim();
+      if (!nome) continue;
+      if (nome.toLowerCase() === 'nome') continue;
+      if (nome.toLowerCase().startsWith('custo total')) continue;
+      if (!isKnownLoja(col0)) continue;
+
+      const agencia   = (cols[2]||'').trim();
+      const conta     = (cols[3]||'').trim();
+      const contaFull = [agencia, conta].filter(Boolean).join(' / ');
+
+      parsed.push({
+        id:     data.nextId++,
+        nome,
+        loja:   normLoja(col0),
+        tipo:   'CLT',
+        cargo:  (cols[7]||'').trim(),
+        salario: parseMoney(cols[8]),
+        inicio:  parseDate((cols[4]||'').trim()),
+        fimExp:  parseDate((cols[6]||'').trim()),
+        pix:     (cols[5]||'').trim(),
+        conta:   contaFull,
+        vt:      parseMoney(cols[17]),
+        vttipo:  (cols[18]||'').trim(),
+        plano:   parseMoney(cols[13]),
+        margem:  parseMoney(cols[14]) || 296.47,
+      });
+    }
+  }
+
+  if (!parsed.length) { alert('Nenhum dado válido encontrado. Verifique o formato.'); return; }
+  const mode = document.getElementById('import-mode').value;
+  if (mode === 'replace') {
+    if (!confirm(`Substituir todos os ${data.employees.length} funcionários por ${parsed.length} novos?`)) return;
+    data.employees = parsed;
+  } else {
+    const existentes = new Set(data.employees.map(e => e.nome.trim().toUpperCase()));
+    const novos = parsed.filter(e => !existentes.has(e.nome.trim().toUpperCase()));
+    const duplicatas = parsed.length - novos.length;
+    data.employees.push(...novos);
+    save();
+    document.getElementById('import-overlay').classList.remove('open');
+    document.getElementById('csv-input').value = '';
+    renderDashboard();
+    renderFuncionarios();
+    const tipo = isFatBuddha ? 'PJ' : isOwnFormat ? 'painel' : 'CLT';
+    const aviso = duplicatas > 0 ? `\nℹ️ ${duplicatas} ignorado(s) por já existirem.` : '';
+    alert(`✅ ${novos.length} funcionário(s) ${tipo} importado(s) com sucesso!${aviso}`);
+    return;
+  }
+  save();
+  document.getElementById('import-overlay').classList.remove('open');
+  document.getElementById('csv-input').value = '';
+  renderDashboard();
+  renderFuncionarios();
+  const tipo = isFatBuddha ? 'PJ' : isOwnFormat ? 'painel' : 'CLT';
+  alert(`✅ ${parsed.length} funcionário(s) ${tipo} importado(s) com sucesso!`);
+}
+
+function exportCSV() {
+  if (!data.employees.length) { alert('Nenhum funcionário para exportar.'); return; }
+  const header = 'loja,nome,tipo,cargo,salario,inicio,fimExp,pix,conta,vt,vttipo,plano,margem';
+  const rows = data.employees.map(e =>
+    [e.loja,e.nome,e.tipo,e.cargo,e.salario,e.inicio,e.fimExp||'',e.pix,e.conta,e.vt,e.vttipo,e.plano,e.margem].join(',')
+  );
+  const csv = [header,...rows].join('\n');
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'folha_salarial_fat_buddha.csv';
+  a.click();
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+renderDashboard();
+</script>
+
+<div style="background:white;border-top:2px solid var(--border);padding:10px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;bottom:0;z-index:98;box-shadow:0 -2px 8px rgba(0,0,0,.06)">
+  <span style="font-size:11px;color:var(--gray)">💾 Dados salvos automaticamente no navegador</span>
+  <div style="display:flex;gap:8px;align-items:center">
+    <span id="save-msg" style="font-size:11px;color:#059669;font-weight:600;display:none">✅ Salvo!</span>
+    <button onclick="openImport()" style="background:white;border:1px solid var(--border);color:#374151;padding:7px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600">⬆️ Importar CSV</button>
+    <button onclick="exportCSV()" style="background:white;border:1px solid var(--border);color:#374151;padding:7px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600">⬇️ Exportar CSV</button>
+    <button onclick="save();const m=document.getElementById('save-msg');m.style.display='inline';setTimeout(()=>m.style.display='none',2500)" style="background:#1a1a2e;color:white;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700">💾 Salvar</button>
+  </div>
+</div>
+</body>
+</html>
