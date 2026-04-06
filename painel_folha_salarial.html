@@ -137,6 +137,9 @@ tr:hover td{background:#fafafa}
 @media(max-width:600px){.form-grid{grid-template-columns:1fr}.loja-grid{grid-template-columns:1fr}.kpi-grid{grid-template-columns:1fr 1fr}}
 </style>
 </head>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <body>
 
 <!-- TOP BAR -->
@@ -404,13 +407,17 @@ tr:hover td{background:#fafafa}
 
 <script>
 const LOJAS = ['PERDIZES','BROOKLIN','VILA MARIANA','MATRIZ PRODUÇÃO','MATRIZ ESCRITÓRIO'];
-const KEY = 'fb_folha_v1';
-let data = JSON.parse(localStorage.getItem(KEY) || 'null') || { employees: [], nextId: 1 };
+// ── Firebase ──────────────────────────────────────────
+if(!firebase.apps.length){firebase.initializeApp({apiKey:"AIzaSyCyMw54A5hb1uiOypt5mABVxo96aUNLZtw",authDomain:"fat-buddha-hub.firebaseapp.com",databaseURL:"https://fat-buddha-hub-default-rtdb.firebaseio.com",projectId:"fat-buddha-hub",storageBucket:"fat-buddha-hub.firebasestorage.app",messagingSenderId:"748093225714",appId:"1:748093225714:web:58c7e22c7b588b797eee6b"});}
+const fbDbFolha=firebase.database();
+const folhaRef=fbDbFolha.ref('folha');
+// ──────────────────────────────────────────────────────
+let data = { employees: [], nextId: 1 };
 let editingId = null;
 let currentLojaTab = 'PERDIZES';
 
 // ── Normaliza lojas e remove duplicatas ao carregar ───────────────────────────
-(function cleanData() {
+function cleanData() {
   function normLoja(s) {
     const u = (s||'').toUpperCase().trim()
       .replace(/\s+/g,' ')         // espaços duplos
@@ -433,10 +440,9 @@ let currentLojaTab = 'PERDIZES';
     seen.add(key);
     return true;
   });
-  localStorage.setItem(KEY, JSON.stringify(data));
-})();
+}
 
-function save() { localStorage.setItem(KEY, JSON.stringify(data)); }
+function save() { folhaRef.set(data).catch(e=>console.error('Firebase save:',e)); }
 function r2(n) { return Math.round((n||0) * 100) / 100; }
 function fmt(n) { return 'R$ ' + r2(n).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
 function fmtShort(n) { return r2(n).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
@@ -1239,7 +1245,11 @@ function exportCSV() {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-renderDashboard();
+folhaRef.on('value', snapshot=>{
+  const val=snapshot.val();
+  if(val && val.employees){ data=val; cleanData(); }
+  renderDashboard();
+});
 </script>
 
 <div style="background:white;border-top:2px solid var(--border);padding:10px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;bottom:0;z-index:98;box-shadow:0 -2px 8px rgba(0,0,0,.06)">

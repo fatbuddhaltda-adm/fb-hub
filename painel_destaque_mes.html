@@ -93,6 +93,9 @@ table.grid tr:hover td{background:#fafafa}
 @media(max-width:900px){.ranking-grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <body>
 
 <div class="header">
@@ -183,8 +186,12 @@ const DEFAULT = {
 };
 // estrutura: data.years["2026"]["BROOKLIN"]["03"] = "NOME"
 
+// ── Firebase ──────────────────────────────────────────
+if(!firebase.apps.length){firebase.initializeApp({apiKey:"AIzaSyCyMw54A5hb1uiOypt5mABVxo96aUNLZtw",authDomain:"fat-buddha-hub.firebaseapp.com",databaseURL:"https://fat-buddha-hub-default-rtdb.firebaseio.com",projectId:"fat-buddha-hub",storageBucket:"fat-buddha-hub.firebasestorage.app",messagingSenderId:"748093225714",appId:"1:748093225714:web:58c7e22c7b588b797eee6b"});}
+const fbDb2=firebase.database();
+const destaqueRef=fbDb2.ref('destaque');
+// ──────────────────────────────────────────────────────
 let data = JSON.parse(JSON.stringify(DEFAULT));
-try { const s = localStorage.getItem('destaque_fb_v3'); if(s) data = JSON.parse(s); } catch(e){}
 let currentYear = data.currentYear || thisYear;
 
 function getYear(y){ if(!data.years[y]) data.years[y]={}; return data.years[y]; }
@@ -301,7 +308,7 @@ function renderRankings(){
 }
 
 /* ---- Util ---- */
-function autoSave(){ try{ localStorage.setItem('destaque_fb_v3',JSON.stringify(data)); }catch(e){} }
+function autoSave(){ destaqueRef.set(data).catch(e=>console.error('Firebase save:',e)); }
 function saveData(){ autoSave(); const m=document.getElementById('savedMsg'); m.style.display='inline'; setTimeout(()=>m.style.display='none',2500); }
 function renderAll(){ renderYearBar(); renderMatrix(); renderRankings(); }
 
@@ -390,7 +397,12 @@ function processImport(){
   alert('✅ Importação concluída!\n'+importados+' registros importados.'+(ignorados?' '+ignorados+' linhas ignoradas (mês não reconhecido).':''));
 }
 
-renderAll();
+// Carrega dados do Firebase em tempo real
+destaqueRef.on('value', snapshot=>{
+  const val=snapshot.val();
+  if(val && val.years){ data=val; currentYear=data.currentYear||thisYear; }
+  renderAll();
+});
 </script>
 </body>
 </html>

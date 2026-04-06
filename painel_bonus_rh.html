@@ -89,6 +89,9 @@ tr:hover td{background:#fafafa}
 @media(max-width:900px){.kpi-row{grid-template-columns:repeat(2,1fr)}.lojas-grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <body>
 <div class="header">
   <div><h1>🎯 Painel de Gestão de Bônus</h1><p>Fat Buddha — Controle mensal de elegibilidade e motivos</p></div>
@@ -265,8 +268,13 @@ const DEFAULT = {
   },
   currentMonth:"Jan/2026"
 };
+// ── Firebase ──────────────────────────────────────────
+const FB_CONFIG={apiKey:"AIzaSyCyMw54A5hb1uiOypt5mABVxo96aUNLZtw",authDomain:"fat-buddha-hub.firebaseapp.com",databaseURL:"https://fat-buddha-hub-default-rtdb.firebaseio.com",projectId:"fat-buddha-hub",storageBucket:"fat-buddha-hub.firebasestorage.app",messagingSenderId:"748093225714",appId:"1:748093225714:web:58c7e22c7b588b797eee6b"};
+firebase.initializeApp(FB_CONFIG);
+const fbDb=firebase.database();
+const bonusRef=fbDb.ref('bonus');
+// ──────────────────────────────────────────────────────
 let data=JSON.parse(JSON.stringify(DEFAULT));
-try{const s=localStorage.getItem('bonus_fb_v2');if(s)data=JSON.parse(s);}catch(e){}
 let currentMonth=data.currentMonth||"Jan/2026";
 let editingId=null,statusTargetId=null,pendingStatus=null,menuOpen=false;
 
@@ -276,7 +284,7 @@ function getNextId(){
 }
 
 // Corrige IDs duplicados nos dados carregados
-(function fixDuplicateIds(){
+function fixDuplicateIds(){
   const seen=new Set();
   let nextFix=1;
   Object.values(data.months).forEach(m=>{
@@ -285,7 +293,7 @@ function getNextId(){
       seen.add(e.id);
     });
   });
-})();
+}
 
 function lojaClass(l){return l==='BROOKLIN'?'loja-brooklin':l==='PERDIZES'?'loja-perdizes':l==='VILA MARIANA'?'loja-vila':(l==='MATRIZ'||l==='MATRIZ PRODUÇÃO')?'loja-matriz':'loja-outro';}
 function statusClass(s){const m={'ELEGÍVEL':'s-elegivel','ATESTADO':'s-atestado','ADVERTÊNCIA':'s-advertencia','ADVERTÊNCIA/PONTO':'s-advertencia-ponto','FALTA INJUSTIFICADA':'s-falta','NOTA PRAÇA':'s-nota-praca','DEMITIDO':'s-demitido'};return m[s]||'s-elegivel';}
@@ -520,7 +528,7 @@ function removeEmployee(id){
   data.months[currentMonth].employees=data.months[currentMonth].employees.filter(e=>e.id!==id);
   autoSave();renderAll();
 }
-function autoSave(){try{localStorage.setItem('bonus_fb_v2',JSON.stringify(data));}catch(e){}}
+function autoSave(){bonusRef.set(data).catch(e=>console.error('Firebase save:',e));}
 function saveData(){autoSave();const m=document.getElementById('savedMsg');m.style.display='inline';setTimeout(()=>m.style.display='none',2500);}
 function openImport(){document.getElementById('import-overlay-bonus').classList.add('open');}
 function closeImport(){document.getElementById('import-overlay-bonus').classList.remove('open');document.getElementById('csv-input-bonus').value='';}
@@ -618,7 +626,16 @@ function exportCSV(){
   const b=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='Bonus_'+currentMonth.replace('/','_')+'.csv';a.click();
 }
-renderAll();
+// Carrega dados do Firebase em tempo real
+bonusRef.on('value', snapshot=>{
+  const val=snapshot.val();
+  if(val && val.months){
+    data=val;
+    currentMonth=data.currentMonth||"Jan/2026";
+    fixDuplicateIds();
+  }
+  renderAll();
+});
 </script>
 </body>
 </html>

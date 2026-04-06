@@ -108,6 +108,9 @@ input.cell:focus { outline: none; border-color: #f59e0b; background: #fef9c3; bo
 }
 </style>
 </head>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <body>
 <div class="header">
   <div class="header-left">
@@ -218,12 +221,12 @@ const DEFAULT_DATA = {
 
 let currentYear = 2025;
 let charts = {};
+// ── Firebase ──────────────────────────────────────────
+if(!firebase.apps.length){firebase.initializeApp({apiKey:"AIzaSyCyMw54A5hb1uiOypt5mABVxo96aUNLZtw",authDomain:"fat-buddha-hub.firebaseapp.com",databaseURL:"https://fat-buddha-hub-default-rtdb.firebaseio.com",projectId:"fat-buddha-hub",storageBucket:"fat-buddha-hub.firebasestorage.app",messagingSenderId:"748093225714",appId:"1:748093225714:web:58c7e22c7b588b797eee6b"});}
+const fbDbKpi=firebase.database();
+const kpiRef=fbDbKpi.ref('kpi');
+// ──────────────────────────────────────────────────────
 let data = JSON.parse(JSON.stringify(DEFAULT_DATA));
-
-try {
-  const saved = localStorage.getItem('rhData_fatbuddha');
-  if (saved) data = JSON.parse(saved);
-} catch(e) {}
 
 function switchYear(year) {
   currentYear = year;
@@ -430,7 +433,7 @@ function updateAll() {
 }
 
 function autoSave() {
-  try { localStorage.setItem('rhData_fatbuddha', JSON.stringify(data)); } catch(e){}
+  kpiRef.set(data).catch(e=>console.error('Firebase save:',e));
 }
 
 function saveData() {
@@ -460,7 +463,12 @@ function exportCSV() {
   a.click(); URL.revokeObjectURL(url);
 }
 
-updateAll();
+// Carrega dados do Firebase em tempo real
+kpiRef.on('value', snapshot=>{
+  const val=snapshot.val();
+  if(val){ data=val; }
+  updateAll();
+});
 </script>
 </body>
 </html>
