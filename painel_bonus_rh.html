@@ -270,6 +270,23 @@ try{const s=localStorage.getItem('bonus_fb_v2');if(s)data=JSON.parse(s);}catch(e
 let currentMonth=data.currentMonth||"Jan/2026";
 let editingId=null,statusTargetId=null,pendingStatus=null,menuOpen=false;
 
+function getNextId(){
+  const allIds=Object.values(data.months).flatMap(m=>(m.employees||[]).map(e=>e.id||0));
+  return allIds.length>0?Math.max(...allIds)+1:1;
+}
+
+// Corrige IDs duplicados nos dados carregados
+(function fixDuplicateIds(){
+  const seen=new Set();
+  let nextFix=1;
+  Object.values(data.months).forEach(m=>{
+    (m.employees||[]).forEach(e=>{
+      while(seen.has(e.id)){e.id=Date.now()+ nextFix++;}
+      seen.add(e.id);
+    });
+  });
+})();
+
 function lojaClass(l){return l==='BROOKLIN'?'loja-brooklin':l==='PERDIZES'?'loja-perdizes':l==='VILA MARIANA'?'loja-vila':(l==='MATRIZ'||l==='MATRIZ PRODUÇÃO')?'loja-matriz':'loja-outro';}
 function statusClass(s){const m={'ELEGÍVEL':'s-elegivel','ATESTADO':'s-atestado','ADVERTÊNCIA':'s-advertencia','ADVERTÊNCIA/PONTO':'s-advertencia-ponto','FALTA INJUSTIFICADA':'s-falta','NOTA PRAÇA':'s-nota-praca','DEMITIDO':'s-demitido'};return m[s]||'s-elegivel';}
 function getM(){return data.months[currentMonth]||{employees:[],proximoMes:[]};}
@@ -316,7 +333,7 @@ function copyToNextMonth(){
   if(data.months[n]&&!confirm('Mês já existe. Sobrescrever?'))return;
   const c=getM();
   const el=c.employees.filter(e=>e.status==='ELEGÍVEL').map(e=>({...e,obs:'',status:'ELEGÍVEL'}));
-  const fi=(c.proximoMes||[]).map((nm,i)=>({id:Date.now()+i,nome:nm.toUpperCase(),loja:'BROOKLIN',tipo:'CLT',status:'ELEGÍVEL',obs:'',pix:''}));
+  const fi=(c.proximoMes||[]).map((nm,i)=>({id:getNextId()+i,nome:nm.toUpperCase(),loja:'BROOKLIN',tipo:'CLT',status:'ELEGÍVEL',obs:'',pix:''}));
   data.months[n]={bonusValue:c.bonusValue,employees:[...el,...fi],proximoMes:[]};
   currentMonth=n;data.currentMonth=n;autoSave();renderAll();
   alert('✅ Copiado para '+n+'!\n'+el.length+' elegíveis + '+fi.length+' da fila adicionados.');
@@ -494,7 +511,7 @@ function saveEmployee(){
   const emp={nome,loja:document.getElementById('f-loja').value,tipo:document.getElementById('f-tipo').value,status:document.getElementById('f-status').value,obs:document.getElementById('f-obs').value.trim(),pix:document.getElementById('f-pix').value.trim()};
   const list=data.months[currentMonth].employees;
   if(editingId!==null){const i=list.findIndex(e=>e.id===editingId);if(i>=0)list[i]={...list[i],...emp};}
-  else{emp.id=Date.now();list.push(emp);}
+  else{emp.id=getNextId();list.push(emp);}
   closeModal();autoSave();renderAll();
 }
 function removeEmployee(id){

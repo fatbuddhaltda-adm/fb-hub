@@ -76,7 +76,19 @@ table.grid tr:hover td{background:#fafafa}
 .save-right{display:flex;gap:8px;align-items:center}
 .btn-primary{background:#1a1a2e;color:white;border:none;padding:8px 18px;border-radius:7px;cursor:pointer;font-size:13px;font-weight:700}
 .btn-primary:hover{background:#16213e}
+.btn-secondary{background:white;color:#374151;border:1px solid #e5e7eb;padding:7px 14px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600}
+.btn-secondary:hover{background:#f9fafb}
 .saved-msg{font-size:11px;color:#059669;font-weight:600;display:none}
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:white;border-radius:12px;padding:24px;width:480px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal h3{font-size:15px;font-weight:700;color:#1a1a2e;margin-bottom:14px}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:11px;font-weight:700;color:#374151;margin-bottom:4px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:8px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#1a1a2e}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
 
 @media(max-width:900px){.ranking-grid{grid-template-columns:repeat(2,1fr)}}
 </style>
@@ -122,7 +134,36 @@ table.grid tr:hover td{background:#fafafa}
   <div class="save-left">💾 Dados salvos automaticamente no navegador</div>
   <div class="save-right">
     <span class="saved-msg" id="savedMsg">✅ Salvo!</span>
+    <button class="btn-secondary" onclick="openImport()">⬆️ Importar CSV</button>
+    <button class="btn-secondary" onclick="exportCSV()">⬇️ Exportar CSV</button>
     <button class="btn-primary" onclick="saveData()">💾 Salvar</button>
+  </div>
+</div>
+
+<!-- Modal importar CSV -->
+<div class="modal-overlay" id="import-overlay" onclick="if(event.target===this)closeImport()">
+  <div class="modal">
+    <h3>⬆️ Importar CSV — Destaque do Mês</h3>
+    <p style="font-size:12px;color:#6b7280;margin-bottom:14px">O CSV deve ter as colunas: <b>Ano, Mes, BROOKLIN, PERDIZES, VILA MARIANA, MATRIZ</b></p>
+    <div class="form-group">
+      <label>Arquivo CSV</label>
+      <input type="file" accept=".csv" onchange="loadCSVFile(this)" style="font-size:12px;padding:6px">
+    </div>
+    <div class="form-group">
+      <label>Ou cole o conteúdo aqui</label>
+      <textarea id="csv-input" rows="7" style="font-family:monospace;font-size:11px;resize:vertical" placeholder="Ano,Mes,BROOKLIN,PERDIZES,VILA MARIANA,MATRIZ&#10;2026,Janeiro,JOAO SILVA,MARIA SOUZA,,ANA LIMA&#10;..."></textarea>
+    </div>
+    <div class="form-group">
+      <label>Modo de importação</label>
+      <select id="import-mode">
+        <option value="merge">Mesclar (manter dados existentes, sobrescrever só onde tiver valor)</option>
+        <option value="replace">Substituir tudo do ano importado</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeImport()">Cancelar</button>
+      <button class="btn-primary" onclick="processImport()">Importar</button>
+    </div>
   </div>
 </div>
 
@@ -263,6 +304,91 @@ function renderRankings(){
 function autoSave(){ try{ localStorage.setItem('destaque_fb_v3',JSON.stringify(data)); }catch(e){} }
 function saveData(){ autoSave(); const m=document.getElementById('savedMsg'); m.style.display='inline'; setTimeout(()=>m.style.display='none',2500); }
 function renderAll(){ renderYearBar(); renderMatrix(); renderRankings(); }
+
+/* ---- Export CSV ---- */
+function exportCSV(){
+  const anos = Object.keys(data.years).sort();
+  const header = 'Ano,Mes,BROOKLIN,PERDIZES,VILA MARIANA,MATRIZ';
+  const rows = [];
+  anos.forEach(ano => {
+    MESES.forEach((mes, mi) => {
+      const key = String(mi+1).padStart(2,'0');
+      const vals = LOJAS.map(l => {
+        const v = (data.years[ano]&&data.years[ano][l]&&data.years[ano][l][key])||'';
+        return v.includes(',') ? '"'+v+'"' : v;
+      });
+      if(vals.some(v=>v)) rows.push([ano, mes, ...vals].join(','));
+    });
+  });
+  if(!rows.length){ alert('Nenhum dado para exportar.'); return; }
+  const csv = header+'\n'+rows.join('\n');
+  const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url;
+  a.download = 'destaque_mes_'+currentYear+'.csv';
+  a.click(); URL.revokeObjectURL(url);
+}
+
+/* ---- Import CSV ---- */
+function openImport(){ document.getElementById('import-overlay').classList.add('open'); }
+function closeImport(){ document.getElementById('import-overlay').classList.remove('open'); document.getElementById('csv-input').value=''; }
+
+function loadCSVFile(input){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { document.getElementById('csv-input').value = e.target.result; };
+  reader.readAsText(file,'UTF-8');
+}
+
+function processImport(){
+  const raw = document.getElementById('csv-input').value.trim();
+  if(!raw){ alert('Nenhum conteúdo para importar.'); return; }
+  const mode = document.getElementById('import-mode').value;
+  const lines = raw.split('\n').map(l=>l.trim()).filter(Boolean);
+  if(!lines.length){ alert('CSV vazio.'); return; }
+
+  // detectar cabeçalho
+  const header = lines[0].split(',').map(h=>h.replace(/^"|"$/g,'').trim().toUpperCase());
+  const iAno = header.indexOf('ANO');
+  const iMes = header.indexOf('MES');
+  if(iAno<0||iMes<0){ alert('CSV inválido: faltam colunas "Ano" e "Mes".'); return; }
+
+  const iLojas = {};
+  LOJAS.forEach(l => { const idx=header.indexOf(l); if(idx>=0) iLojas[l]=idx; });
+
+  let importados=0, ignorados=0;
+
+  lines.slice(1).forEach(line => {
+    // lidar com vírgulas dentro de aspas
+    const cols = line.match(/(".*?"|[^,]+|(?<=,)(?=,)|(?<=,)$|^(?=,))/g)||line.split(',');
+    const clean = cols.map(c=>(c||'').replace(/^"|"$/g,'').trim());
+
+    const ano = clean[iAno]; if(!ano) return;
+    const mesStr = clean[iMes]; if(!mesStr) return;
+    const mi = MESES.findIndex(m=>m.toUpperCase()===mesStr.toUpperCase()||MESES_ABREV.findIndex(a=>a.toUpperCase()===mesStr.toUpperCase())===MESES.indexOf(m));
+    if(mi<0){ ignorados++; return; }
+    const key = String(mi+1).padStart(2,'0');
+
+    if(mode==='replace'){ if(!data.years[ano]) data.years[ano]={}; }
+    if(!data.years[ano]) data.years[ano]={};
+
+    LOJAS.forEach(loja => {
+      if(iLojas[loja]===undefined) return;
+      const val = clean[iLojas[loja]]||'';
+      if(mode==='replace'||val){
+        if(!data.years[ano][loja]) data.years[ano][loja]={};
+        data.years[ano][loja][key] = val.toUpperCase();
+        if(val) importados++;
+      }
+    });
+  });
+
+  autoSave();
+  currentYear = Object.keys(data.years).sort().pop();
+  data.currentYear = currentYear;
+  closeImport(); renderAll();
+  alert('✅ Importação concluída!\n'+importados+' registros importados.'+(ignorados?' '+ignorados+' linhas ignoradas (mês não reconhecido).':''));
+}
 
 renderAll();
 </script>
