@@ -134,7 +134,7 @@ tr:hover td{background:#fafafa}
     <div style="color:#9ca3af;font-size:18px;padding-bottom:6px">=</div>
     <div>
       <label>Valor do bônus (R$)</label><br>
-      <input type="number" id="bonusValue" value="586.20" step="0.01" onchange="updateKPIs();renderLojas()" style="width:110px;padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:white">
+      <input type="number" id="bonusValue" value="586.20" step="0.01" onchange="updateKPIs();renderLojas();autoSave()" style="width:110px;padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:white">
     </div>
   </div>
   <button class="btn-primary" onclick="openAddModal()">＋ Adicionar Funcionário</button>
@@ -360,7 +360,7 @@ function calcBonusByPedidos(){
     const perPessoa=el.length>0?(pedidos/el.length):0;
     document.getElementById('bonusValue').value=perPessoa.toFixed(2);
   }
-  updateKPIs();renderLojas();
+  updateKPIs();renderLojas();autoSave();
 }
 function getSelectedStatuses(){
   const opts=[...document.querySelectorAll('.ms-opt:checked')].map(c=>c.value);
