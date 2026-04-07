@@ -275,7 +275,7 @@ const fbDb=firebase.database();
 const bonusRef=fbDb.ref('bonus');
 // ──────────────────────────────────────────────────────
 let data=JSON.parse(JSON.stringify(DEFAULT));
-let currentMonth=data.currentMonth||"Jan/2026";
+let currentMonth=data.currentMonth||"MARÇO";
 let editingId=null,statusTargetId=null,pendingStatus=null,menuOpen=false;
 
 function getNextId(){
@@ -529,6 +529,7 @@ function removeEmployee(id){
   autoSave();renderAll();
 }
 function encodeMonthKeys(months){const r={};Object.keys(months).forEach(k=>{r[k.replace(/\//g,'_')]=months[k];});return r;}function decodeMonthKeys(months){const r={};Object.keys(months).forEach(k=>{r[k.replace(/_/g,'/')]=months[k];});return r;}
+function autoSave(){const toSave={...data,months:encodeMonthKeys(data.months)};bonusRef.set(toSave).catch(e=>console.error('Firebase save:',e));}
 function saveData(){autoSave();const m=document.getElementById('savedMsg');m.style.display='inline';setTimeout(()=>m.style.display='none',2500);}
 function openImport(){document.getElementById('import-overlay-bonus').classList.add('open');}
 function closeImport(){document.getElementById('import-overlay-bonus').classList.remove('open');document.getElementById('csv-input-bonus').value='';}
@@ -630,7 +631,7 @@ function exportCSV(){
 bonusRef.on('value', snapshot=>{
   const val=snapshot.val();
   if(val && val.months){
-    data=val;
+    data={...val,months:decodeMonthKeys(val.months)};
     currentMonth=data.currentMonth||"Jan/2026";
     fixDuplicateIds();
   }
