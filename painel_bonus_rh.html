@@ -263,7 +263,8 @@ const DEFAULT = {
         {id:32,nome:"PAULO COSTA",loja:"PERDIZES",tipo:"PJ",status:"ELEGÍVEL",obs:"",pix:"064.673.573-02"},
         {id:33,nome:"MARIANE TANGIONI PEREIRA",loja:"VILA MARIANA",tipo:"PJ",status:"ELEGÍVEL",obs:"",pix:"11991442446"}
       ],
-      proximoMes:["augusto reis","leandro","carla","bruno chimendes"]
+      proximoMes:["augusto reis","leandro","carla","bruno chimendes"],
+      numPedidos:0
     }
   },
   currentMonth:"Jan/2026"
@@ -334,7 +335,7 @@ function renameMonth(old){
 }
 function addNewMonth(){
   const n=prompt('Nome do mês (ex: Mar/2026):');if(!n||data.months[n])return;
-  data.months[n]={bonusValue:586.20,employees:[],proximoMes:[]};currentMonth=n;data.currentMonth=n;autoSave();renderAll();
+  data.months[n]={bonusValue:586.20,numPedidos:0,employees:[],proximoMes:[]};currentMonth=n;data.currentMonth=n;autoSave();renderAll();
 }
 function copyToNextMonth(){
   const n=prompt('Nome do próximo mês (ex: Mar/2026):','');if(!n)return;
@@ -342,13 +343,14 @@ function copyToNextMonth(){
   const c=getM();
   const el=c.employees.map(e=>({...e,obs:'',status:'ELEGÍVEL'}));
   const fi=(c.proximoMes||[]).map((nm,i)=>({id:getNextId()+i,nome:nm.toUpperCase(),loja:'BROOKLIN',tipo:'CLT',status:'ELEGÍVEL',obs:'',pix:''}));
-  data.months[n]={bonusValue:c.bonusValue,employees:[...el,...fi],proximoMes:[]};
+  data.months[n]={bonusValue:c.bonusValue,numPedidos:c.numPedidos||0,employees:[...el,...fi],proximoMes:[]};
   currentMonth=n;data.currentMonth=n;autoSave();renderAll();
   alert('✅ Copiado para '+n+'!\n'+el.length+' funcionários + '+fi.length+' da fila adicionados.');
 }
 
 function renderAll(){renderMonths();renderTable();updateKPIs();renderLojas();renderProximo();
   document.getElementById('bonusValue').value=getM().bonusValue||586.20;
+  document.getElementById('numPedidos').value=getM().numPedidos||'';
   document.getElementById('headerInfo').textContent=currentMonth+' — '+new Date().toLocaleDateString('pt-BR');
 }
 function calcBonusByPedidos(){
@@ -447,7 +449,7 @@ function updateKPIs(){
     document.getElementById('bonusValue').value=(pedidos/el.length).toFixed(2);
   }
   const bv=parseFloat(document.getElementById('bonusValue').value)||0;
-  if(data.months[currentMonth])data.months[currentMonth].bonusValue=bv;
+  if(data.months[currentMonth]){data.months[currentMonth].bonusValue=bv;data.months[currentMonth].numPedidos=pedidos;}
   document.getElementById('kpi-elegiveis').textContent=el.length;
   document.getElementById('kpi-perdem').textContent=pr.length;
   document.getElementById('kpi-total').textContent=emps.length;
