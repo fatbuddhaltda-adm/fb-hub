@@ -340,11 +340,11 @@ function copyToNextMonth(){
   const n=prompt('Nome do próximo mês (ex: Mar/2026):','');if(!n)return;
   if(data.months[n]&&!confirm('Mês já existe. Sobrescrever?'))return;
   const c=getM();
-  const el=c.employees.filter(e=>e.status==='ELEGÍVEL').map(e=>({...e,obs:'',status:'ELEGÍVEL'}));
+  const el=c.employees.map(e=>({...e,obs:'',status:'ELEGÍVEL'}));
   const fi=(c.proximoMes||[]).map((nm,i)=>({id:getNextId()+i,nome:nm.toUpperCase(),loja:'BROOKLIN',tipo:'CLT',status:'ELEGÍVEL',obs:'',pix:''}));
   data.months[n]={bonusValue:c.bonusValue,employees:[...el,...fi],proximoMes:[]};
   currentMonth=n;data.currentMonth=n;autoSave();renderAll();
-  alert('✅ Copiado para '+n+'!\n'+el.length+' elegíveis + '+fi.length+' da fila adicionados.');
+  alert('✅ Copiado para '+n+'!\n'+el.length+' funcionários + '+fi.length+' da fila adicionados.');
 }
 
 function renderAll(){renderMonths();renderTable();updateKPIs();renderLojas();renderProximo();
