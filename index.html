@@ -3,143 +3,370 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gestão ADM Hub — Fat Buddha</title>
+  <title>GestÃ£o ADM Hub â Fat Buddha</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
     :root {
-      --bg: #01000B;
-      --surface: #0e0d18;
-      --surface2: #181724;
-      --border: #2a2836;
-      --red: #ED1B34;
-      --red-light: #ff3550;
-      --red-dim: rgba(237,27,52,0.12);
-      --cream: #EDD9C7;
-      --cream-dim: rgba(237,217,199,0.08);
-      --text: #EDD9C7;
-      --text-muted: #7d7a8a;
-      --error: #ff6b6b;
+      --bg: #0d0d0d;
+      --surface: #161616;
+      --surface2: #1e1e1e;
+      --border: #2a2a2a;
+      --gold: #c9a84c;
+      --gold-light: #e8c96e;
+      --gold-dim: rgba(201,168,76,0.15);
+      --text: #f0f0f0;
+      --text-muted: #888;
+      --red: #e05252;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* âââ LOGIN âââââââââââââââââââââââââââââââââââââââââââ */
     #login-screen {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      min-height: 100vh; padding: 24px;
-      background: radial-gradient(ellipse at 50% 0%, rgba(237,27,52,0.06) 0%, transparent 60%), var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.08) 0%, transparent 60%), var(--bg);
     }
 
     .login-box {
-      background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
-      padding: 48px 40px; width: 100%; max-width: 400px; text-align: center;
-      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5);
     }
 
-    .login-logo { margin-bottom: 12px; line-height: 1; }
-    .login-logo img { width: 80px; height: 80px; object-fit: contain; }
-    .login-logo .fallback { font-size: 48px; }
-    .login-brand { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--cream); margin-bottom: 4px; }
-    .login-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 32px; }
-    .login-label { display: block; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
-    .login-input { width: 100%; padding: 14px 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 15px; font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.2s; margin-bottom: 8px; }
-    .login-input:focus { border-color: var(--red); }
-    .login-error { font-size: 13px; color: var(--error); margin-bottom: 12px; min-height: 18px; text-align: left; }
-    .login-btn { width: 100%; padding: 14px; background: var(--red); color: #fff; font-size: 15px; font-weight: 700; font-family: 'Inter', sans-serif; border: none; border-radius: 10px; cursor: pointer; transition: background 0.2s, transform 0.1s; margin-top: 4px; }
-    .login-btn:hover { background: var(--red-light); }
+    .login-logo {
+      font-size: 48px;
+      margin-bottom: 8px;
+    }
+
+    .login-brand {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 4px;
+    }
+
+    .login-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 32px;
+    }
+
+    .login-label {
+      display: block;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .login-input {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 8px;
+    }
+
+    .login-input:focus {
+      border-color: var(--gold);
+    }
+
+    .login-error {
+      font-size: 13px;
+      color: var(--red);
+      margin-bottom: 12px;
+      min-height: 18px;
+      text-align: left;
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--gold);
+      color: #000;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 4px;
+    }
+
+    .login-btn:hover { background: var(--gold-light); }
     .login-btn:active { transform: scale(0.98); }
-    .login-footer { margin-top: 24px; font-size: 12px; color: var(--text-muted); }
 
-    #hub-screen { display: none; min-height: 100vh; }
+    .login-footer {
+      margin-top: 24px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
 
-    .topbar { position: sticky; top: 0; z-index: 100; background: rgba(1,0,11,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 32px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
-    .topbar-brand { display: flex; align-items: center; gap: 12px; }
-    .topbar-logo { display: flex; align-items: center; }
-    .topbar-logo img { height: 36px; width: auto; object-fit: contain; }
-    .topbar-logo .fallback { font-size: 26px; }
-    .topbar-sub { font-size: 10px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--cream); }
-    .topbar-name { font-size: 16px; font-weight: 700; color: var(--text); line-height: 1.1; }
-    .logout-btn { background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 8px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; cursor: pointer; transition: all 0.2s; }
-    .logout-btn:hover { border-color: var(--red); color: var(--red); }
+    /* âââ HUB ââââââââââââââââââââââââââââââââââââââââââââââ */
+    #hub-screen {
+      display: none;
+      min-height: 100vh;
+    }
 
-    .main { max-width: 1200px; margin: 0 auto; padding: 48px 24px 80px; }
+    /* Topbar */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13,13,13,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
 
-    .area { margin-bottom: 16px; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; background: var(--surface); }
-    .area-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; cursor: pointer; user-select: none; transition: background 0.2s; }
-    .area-header:hover { background: var(--surface2); }
-    .area-header-left { display: flex; align-items: center; gap: 14px; }
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
-    .area-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-    .area-icon.rh { background: rgba(237,27,52,0.15); border: 1px solid rgba(237,27,52,0.35); }
-    .area-icon.financeiro { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.25); }
-    .area-icon.operacional { background: rgba(249,115,22,0.12); border: 1px solid rgba(249,115,22,0.25); }
-    .area-icon.marketing { background: rgba(236,72,153,0.12); border: 1px solid rgba(236,72,153,0.25); }
+    .topbar-logo { font-size: 26px; }
 
-    .area-title { font-size: 16px; font-weight: 700; color: var(--text); }
-    .area-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-    .area-badge { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border); color: var(--text-muted); background: var(--surface2); }
-    .area-badge.has-panels { color: var(--red); border-color: rgba(237,27,52,0.35); background: var(--red-dim); }
-    .area-chevron { font-size: 12px; color: var(--text-muted); transition: transform 0.25s; margin-left: 12px; }
-    .area.open .area-chevron { transform: rotate(180deg); }
-    .area-body { display: none; padding: 0 24px 24px; border-top: 1px solid var(--border); }
-    .area.open .area-body { display: block; }
+    .topbar-text {}
+    .topbar-sub {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .topbar-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.1;
+    }
 
-    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; padding-top: 20px; }
-    .card { background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 24px 20px; cursor: pointer; text-decoration: none; color: inherit; display: block; transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s; position: relative; overflow: hidden; }
-    .card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, var(--red-dim) 0%, transparent 60%); opacity: 0; transition: opacity 0.2s; }
-    .card:hover { border-color: rgba(237,27,52,0.45); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(237,27,52,0.12); }
+    .logout-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .logout-btn:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    /* Main content */
+    .main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .section-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--gold-dim);
+      border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .section-count {
+      font-size: 12px;
+      color: var(--text-muted);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 2px 10px;
+      border-radius: 20px;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 56px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 24px;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--gold-dim) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .card:hover {
+      border-color: rgba(201,168,76,0.5);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+    }
+
     .card:hover::before { opacity: 1; }
-    .card-emoji { font-size: 28px; margin-bottom: 12px; display: block; }
-    .card-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 5px; position: relative; }
-    .card-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; position: relative; }
-    .card-arrow { position: absolute; top: 24px; right: 20px; font-size: 16px; color: var(--red); opacity: 0; transition: opacity 0.2s, transform 0.2s; }
-    .card:hover .card-arrow { opacity: 1; transform: translateX(3px); }
 
-    .empty-state { padding: 32px 0 8px; text-align: center; color: var(--text-muted); font-size: 13px; }
-    .empty-state .empty-icon { font-size: 28px; margin-bottom: 10px; opacity: 0.4; }
-    .empty-state p { opacity: 0.6; }
+    .card-emoji {
+      font-size: 32px;
+      margin-bottom: 14px;
+      display: block;
+    }
 
-    .footer { text-align: center; font-size: 12px; color: #3a3848; padding-top: 32px; margin-top: 16px; border-top: 1px solid var(--border); }
-    .footer span { color: var(--cream); }
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+      position: relative;
+    }
 
+    .card-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      position: relative;
+    }
+
+    .card-arrow {
+      position: absolute;
+      top: 28px;
+      right: 24px;
+      font-size: 18px;
+      color: var(--gold);
+      opacity: 0;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .card:hover .card-arrow {
+      opacity: 1;
+      transform: translateX(3px);
+    }
+
+    /* Divider */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin-bottom: 40px;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #444;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer span { color: var(--gold); }
+
+    /* Responsive */
     @media (max-width: 600px) {
       .topbar { padding: 0 16px; }
-      .main { padding: 24px 12px 60px; }
+      .main { padding: 32px 16px 60px; }
       .login-box { padding: 36px 24px; }
-      .area-header { padding: 16px; }
-      .area-body { padding: 0 16px 20px; }
     }
   </style>
 </head>
 <body>
 
+<!-- âââ LOGIN âââââââââââââââââââââââââââââââââââââââââââââââ -->
 <div id="login-screen">
   <div class="login-box">
-    <div class="login-logo">
-      <img src="logo_fatbuddha.png" alt="Fat Buddha" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-      <span class="fallback" style="display:none">🍜</span>
-    </div>
+    <div class="login-logo">ð</div>
     <div class="login-brand">Fat Buddha Group</div>
-    <div class="login-title">Gestão ADM Hub</div>
+    <div class="login-title">GestÃ£o ADM Hub</div>
+
     <label class="login-label" for="senha-input">Senha de acesso</label>
-    <input type="password" id="senha-input" class="login-input" placeholder="Digite a senha" autocomplete="current-password"/>
+    <input
+      type="password"
+      id="senha-input"
+      class="login-input"
+      placeholder="Digite a senha"
+      autocomplete="current-password"
+    />
     <div class="login-error" id="login-error"></div>
-    <button class="login-btn" onclick="tentarLogin()">Entrar →</button>
-    <div class="login-footer">Acesso restrito à equipe interna</div>
+    <button class="login-btn" onclick="tentarLogin()">Entrar â</button>
+
+    <div class="login-footer">Acesso restrito Ã  equipe interna</div>
   </div>
 </div>
 
+<!-- âââ HUB ââââââââââââââââââââââââââââââââââââââââââââââââââ -->
 <div id="hub-screen">
+
   <div class="topbar">
     <div class="topbar-brand">
-      <div class="topbar-logo">
-        <img src="logo_fatbuddha.png" alt="Fat Buddha" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-        <span class="fallback" style="display:none">🍜</span>
-      </div>
+      <div class="topbar-logo">ð</div>
       <div class="topbar-text">
         <div class="topbar-sub">Fat Buddha Group</div>
-        <div class="topbar-name">Gestão ADM Hub</div>
+        <div class="topbar-name">GestÃ£o ADM Hub</div>
       </div>
     </div>
     <button class="logout-btn" onclick="sair()">Sair</button>
@@ -147,117 +374,65 @@
 
   <div class="main">
 
-    <div class="area open" id="area-rh">
-      <div class="area-header" onclick="toggleArea('area-rh')">
-        <div class="area-header-left">
-          <div class="area-icon rh">👥</div>
-          <div><div class="area-title">RH</div><div class="area-subtitle">Recursos Humanos</div></div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span class="area-badge has-panels">4 painéis</span>
-          <span class="area-chevron">▼</span>
-        </div>
-      </div>
-      <div class="area-body">
-        <div class="cards-grid">
-          <a class="card" href="painel_bonus_rh.html" target="_blank">
-            <span class="card-emoji">🎯</span>
-            <div class="card-title">Gestão de Bônus</div>
-            <div class="card-desc">Controle mensal de elegibilidade e motivos por colaborador</div>
-            <span class="card-arrow">→</span>
-          </a>
-          <a class="card" href="painel_destaque_mes.html" target="_blank">
-            <span class="card-emoji">🏆</span>
-            <div class="card-title">Destaque do Mês</div>
-            <div class="card-desc">Reconhecimento anual por loja e ranking de colaboradores</div>
-            <span class="card-arrow">→</span>
-          </a>
-          <a class="card" href="painel_folha_salarial.html" target="_blank">
-            <span class="card-emoji">💰</span>
-            <div class="card-title">Folha Salarial</div>
-            <div class="card-desc">Gestão e acompanhamento da folha de pagamento da equipe</div>
-            <span class="card-arrow">→</span>
-          </a>
-          <a class="card" href="painel_kpi_rh.html" target="_blank">
-            <span class="card-emoji">📈</span>
-            <div class="card-title">KPIs de RH</div>
-            <div class="card-desc">Indicadores chave de performance do setor de recursos humanos</div>
-            <span class="card-arrow">→</span>
-          </a>
-        </div>
-      </div>
+    <!-- PainÃ©is RH -->
+    <div class="section-header">
+      <div class="section-icon">ð</div>
+      <div class="section-title">PainÃ©is RH</div>
+      <div class="section-count">4 painÃ©is</div>
     </div>
 
-    <div class="area" id="area-financeiro">
-      <div class="area-header" onclick="toggleArea('area-financeiro')">
-        <div class="area-header-left">
-          <div class="area-icon financeiro">💵</div>
-          <div><div class="area-title">Financeiro</div><div class="area-subtitle">Controle financeiro e DRE</div></div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span class="area-badge">em breve</span>
-          <span class="area-chevron">▼</span>
-        </div>
-      </div>
-      <div class="area-body">
-        <div class="empty-state">
-          <div class="empty-icon">💵</div>
-          <p>Nenhum painel disponível ainda.<br>Os painéis financeiros serão adicionados em breve.</p>
-        </div>
-      </div>
+    <div class="cards-grid">
+
+      <a class="card" href="painel_bonus_rh.html" target="_blank">
+        <span class="card-emoji">ð¯</span>
+        <div class="card-title">GestÃ£o de BÃ´nus</div>
+        <div class="card-desc">Controle mensal de elegibilidade e motivos por colaborador</div>
+        <span class="card-arrow">â</span>
+      </a>
+
+      <a class="card" href="painel_destaque_mes.html" target="_blank">
+        <span class="card-emoji">ð</span>
+        <div class="card-title">Destaque do MÃªs</div>
+        <div class="card-desc">Reconhecimento anual por loja e ranking de colaboradores</div>
+        <span class="card-arrow">â</span>
+      </a>
+
+      <a class="card" href="painel_folha_salarial.html" target="_blank">
+        <span class="card-emoji">ð°</span>
+        <div class="card-title">Folha Salarial</div>
+        <div class="card-desc">GestÃ£o e acompanhamento da folha de pagamento da equipe</div>
+        <span class="card-arrow">â</span>
+      </a>
+
+      <a class="card" href="painel_kpi_rh.html" target="_blank">
+        <span class="card-emoji">ð</span>
+        <div class="card-title">KPIs de RH</div>
+        <div class="card-desc">Indicadores chave de performance do setor de recursos humanos</div>
+        <span class="card-arrow">â</span>
+      </a>
+
     </div>
 
-    <div class="area" id="area-operacional">
-      <div class="area-header" onclick="toggleArea('area-operacional')">
-        <div class="area-header-left">
-          <div class="area-icon operacional">⚙️</div>
-          <div><div class="area-title">Operacional</div><div class="area-subtitle">Processos e operações das lojas</div></div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span class="area-badge">em breve</span>
-          <span class="area-chevron">▼</span>
-        </div>
-      </div>
-      <div class="area-body">
-        <div class="empty-state">
-          <div class="empty-icon">⚙️</div>
-          <p>Nenhum painel disponível ainda.<br>Os painéis operacionais serão adicionados em breve.</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="area" id="area-marketing">
-      <div class="area-header" onclick="toggleArea('area-marketing')">
-        <div class="area-header-left">
-          <div class="area-icon marketing">📣</div>
-          <div><div class="area-title">Marketing</div><div class="area-subtitle">Campanhas, redes sociais e métricas</div></div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span class="area-badge">em breve</span>
-          <span class="area-chevron">▼</span>
-        </div>
-      </div>
-      <div class="area-body">
-        <div class="empty-state">
-          <div class="empty-icon">📣</div>
-          <p>Nenhum painel disponível ainda.<br>Os painéis de marketing serão adicionados em breve.</p>
-        </div>
-      </div>
-    </div>
+    <hr class="divider"/>
 
     <div class="footer">
-      <span>Gestão ADM Hub</span> · Fat Buddha Group · Acesso restrito
+      <span>GestÃ£o ADM Hub</span> Â· Fat Buddha Group Â· Acesso restrito
     </div>
+
   </div>
 </div>
 
 <script>
+  // âââ SENHA ââââââââââââââââââââââââââââââââââââââââââââââ
+  // Para trocar a senha, altere apenas o valor abaixo:
   const SENHA_CORRETA = "fatbuddha";
+
   const SESSION_KEY = "fbhub_auth";
 
   function tentarLogin() {
     const input = document.getElementById('senha-input').value.trim();
     const erro  = document.getElementById('login-error');
+
     if (input === SENHA_CORRETA) {
       sessionStorage.setItem(SESSION_KEY, "1");
       mostrarHub();
@@ -278,14 +453,12 @@
     location.reload();
   }
 
-  function toggleArea(id) {
-    document.getElementById(id).classList.toggle('open');
-  }
-
+  // Tecla Enter no campo de senha
   document.getElementById('senha-input').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') tentarLogin();
   });
 
+  // Verifica se jÃ¡ estÃ¡ logado nesta sessÃ£o
   if (sessionStorage.getItem(SESSION_KEY) === "1") mostrarHub();
 </script>
 
