@@ -29,7 +29,7 @@
       min-height: 100vh;
     }
 
-    /* âââ LOGIN âââââââââââââââââââââââââââââââââââââââââââ */
+    /* âââ LOGIN ââââââââââââââââââââââââââââââââââââââââââââ */
     #login-screen {
       display: flex;
       flex-direction: column;
@@ -51,11 +51,7 @@
       box-shadow: 0 24px 64px rgba(0,0,0,0.5);
     }
 
-    .login-logo {
-      font-size: 48px;
-      margin-bottom: 8px;
-    }
-
+    .login-logo { font-size: 48px; margin-bottom: 8px; }
     .login-brand {
       font-size: 11px;
       font-weight: 700;
@@ -64,14 +60,12 @@
       color: var(--gold);
       margin-bottom: 4px;
     }
-
     .login-title {
       font-size: 22px;
       font-weight: 700;
       color: var(--text);
       margin-bottom: 32px;
     }
-
     .login-label {
       display: block;
       text-align: left;
@@ -82,7 +76,6 @@
       text-transform: uppercase;
       margin-bottom: 8px;
     }
-
     .login-input {
       width: 100%;
       padding: 14px 16px;
@@ -96,11 +89,7 @@
       transition: border-color 0.2s;
       margin-bottom: 8px;
     }
-
-    .login-input:focus {
-      border-color: var(--gold);
-    }
-
+    .login-input:focus { border-color: var(--gold); }
     .login-error {
       font-size: 13px;
       color: var(--red);
@@ -108,7 +97,6 @@
       min-height: 18px;
       text-align: left;
     }
-
     .login-btn {
       width: 100%;
       padding: 14px;
@@ -123,10 +111,8 @@
       transition: background 0.2s, transform 0.1s;
       margin-top: 4px;
     }
-
     .login-btn:hover { background: var(--gold-light); }
     .login-btn:active { transform: scale(0.98); }
-
     .login-footer {
       margin-top: 24px;
       font-size: 12px;
@@ -134,10 +120,7 @@
     }
 
     /* âââ HUB ââââââââââââââââââââââââââââââââââââââââââââââ */
-    #hub-screen {
-      display: none;
-      min-height: 100vh;
-    }
+    #hub-screen { display: none; min-height: 100vh; }
 
     /* Topbar */
     .topbar {
@@ -153,16 +136,8 @@
       align-items: center;
       justify-content: space-between;
     }
-
-    .topbar-brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
+    .topbar-brand { display: flex; align-items: center; gap: 12px; }
     .topbar-logo { font-size: 26px; }
-
-    .topbar-text {}
     .topbar-sub {
       font-size: 10px;
       font-weight: 700;
@@ -176,7 +151,6 @@
       color: var(--text);
       line-height: 1.1;
     }
-
     .logout-btn {
       background: transparent;
       border: 1px solid var(--border);
@@ -188,10 +162,7 @@
       cursor: pointer;
       transition: all 0.2s;
     }
-    .logout-btn:hover {
-      border-color: var(--gold);
-      color: var(--gold);
-    }
+    .logout-btn:hover { border-color: var(--gold); color: var(--gold); }
 
     /* Main content */
     .main {
@@ -206,7 +177,6 @@
       gap: 12px;
       margin-bottom: 24px;
     }
-
     .section-icon {
       width: 36px;
       height: 36px;
@@ -218,13 +188,7 @@
       justify-content: center;
       font-size: 16px;
     }
-
-    .section-title {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text);
-    }
-
+    .section-title { font-size: 18px; font-weight: 700; color: var(--text); }
     .section-count {
       font-size: 12px;
       color: var(--text-muted);
@@ -254,7 +218,6 @@
       position: relative;
       overflow: hidden;
     }
-
     .card::before {
       content: '';
       position: absolute;
@@ -263,36 +226,15 @@
       opacity: 0;
       transition: opacity 0.2s;
     }
-
     .card:hover {
       border-color: rgba(201,168,76,0.5);
       transform: translateY(-3px);
       box-shadow: 0 12px 32px rgba(0,0,0,0.4);
     }
-
     .card:hover::before { opacity: 1; }
-
-    .card-emoji {
-      font-size: 32px;
-      margin-bottom: 14px;
-      display: block;
-    }
-
-    .card-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 6px;
-      position: relative;
-    }
-
-    .card-desc {
-      font-size: 13px;
-      color: var(--text-muted);
-      line-height: 1.5;
-      position: relative;
-    }
-
+    .card-emoji { font-size: 32px; margin-bottom: 14px; display: block; }
+    .card-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; position: relative; }
+    .card-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; position: relative; }
     .card-arrow {
       position: absolute;
       top: 28px;
@@ -302,18 +244,10 @@
       opacity: 0;
       transition: opacity 0.2s, transform 0.2s;
     }
-
-    .card:hover .card-arrow {
-      opacity: 1;
-      transform: translateX(3px);
-    }
+    .card:hover .card-arrow { opacity: 1; transform: translateX(3px); }
 
     /* Divider */
-    .divider {
-      border: none;
-      border-top: 1px solid var(--border);
-      margin-bottom: 40px;
-    }
+    .divider { border: none; border-top: 1px solid var(--border); margin-bottom: 40px; }
 
     /* Footer */
     .footer {
@@ -323,7 +257,6 @@
       padding-top: 24px;
       border-top: 1px solid var(--border);
     }
-
     .footer span { color: var(--gold); }
 
     /* Responsive */
@@ -336,7 +269,7 @@
 </head>
 <body>
 
-<!-- âââ LOGIN âââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- âââ LOGIN ââââââââââââââââââââââââââââââââââââââââââââââââ -->
 <div id="login-screen">
   <div class="login-box">
     <div class="login-logo">ð</div>
@@ -423,7 +356,7 @@
 </div>
 
 <script>
-  // âââ SENHA ââââââââââââââââââââââââââââââââââââââââââââââ
+  // âââ SENHA ââââââââââââââââââââââââââââââââââââââââââââââââ
   // Para trocar a senha, altere apenas o valor abaixo:
   const SENHA_CORRETA = "fatbuddha";
 
