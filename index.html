@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>GestÃ£o ADM Hub â Fat Buddha</title>
+  <title>Gestão ADM Hub — Fat Buddha</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
@@ -29,7 +29,7 @@
       min-height: 100vh;
     }
 
-    /* âââ LOGIN ââââââââââââââââââââââââââââââââââââââââââââ */
+    /* ─── LOGIN ───────────────────────────────────────────── */
     #login-screen {
       display: flex;
       flex-direction: column;
@@ -119,7 +119,7 @@
       color: var(--text-muted);
     }
 
-    /* âââ HUB ââââââââââââââââââââââââââââââââââââââââââââââ */
+    /* ─── HUB ────────────────────────────────────────────── */
     #hub-screen { display: none; min-height: 100vh; }
 
     /* Topbar */
@@ -269,12 +269,12 @@
 </head>
 <body>
 
-<!-- âââ LOGIN ââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- ─── LOGIN ──────────────────────────────────────────────── -->
 <div id="login-screen">
   <div class="login-box">
-    <div class="login-logo">ð</div>
+    <div class="login-logo">🍜</div>
     <div class="login-brand">Fat Buddha Group</div>
-    <div class="login-title">GestÃ£o ADM Hub</div>
+    <div class="login-title">Gestão ADM Hub</div>
 
     <label class="login-label" for="senha-input">Senha de acesso</label>
     <input
@@ -285,21 +285,21 @@
       autocomplete="current-password"
     />
     <div class="login-error" id="login-error"></div>
-    <button class="login-btn" onclick="tentarLogin()">Entrar â</button>
+    <button class="login-btn" onclick="tentarLogin()">Entrar →</button>
 
-    <div class="login-footer">Acesso restrito Ã  equipe interna</div>
+    <div class="login-footer">Acesso restrito à equipe interna</div>
   </div>
 </div>
 
-<!-- âââ HUB ââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- ─── HUB ────────────────────────────────────────────────── -->
 <div id="hub-screen">
 
   <div class="topbar">
     <div class="topbar-brand">
-      <div class="topbar-logo">ð</div>
+      <div class="topbar-logo">🍜</div>
       <div class="topbar-text">
         <div class="topbar-sub">Fat Buddha Group</div>
-        <div class="topbar-name">GestÃ£o ADM Hub</div>
+        <div class="topbar-name">Gestão ADM Hub</div>
       </div>
     </div>
     <button class="logout-btn" onclick="sair()">Sair</button>
@@ -307,41 +307,41 @@
 
   <div class="main">
 
-    <!-- PainÃ©is RH -->
+    <!-- Painéis RH -->
     <div class="section-header">
-      <div class="section-icon">ð</div>
-      <div class="section-title">PainÃ©is RH</div>
-      <div class="section-count">4 painÃ©is</div>
+      <div class="section-icon">📊</div>
+      <div class="section-title">Painéis RH</div>
+      <div class="section-count">4 painéis</div>
     </div>
 
     <div class="cards-grid">
 
       <a class="card" href="painel_bonus_rh.html" target="_blank">
-        <span class="card-emoji">ð¯</span>
-        <div class="card-title">GestÃ£o de BÃ´nus</div>
+        <span class="card-emoji">🎯</span>
+        <div class="card-title">Gestão de Bônus</div>
         <div class="card-desc">Controle mensal de elegibilidade e motivos por colaborador</div>
-        <span class="card-arrow">â</span>
+        <span class="card-arrow">→</span>
       </a>
 
       <a class="card" href="painel_destaque_mes.html" target="_blank">
-        <span class="card-emoji">ð</span>
-        <div class="card-title">Destaque do MÃªs</div>
+        <span class="card-emoji">🏆</span>
+        <div class="card-title">Destaque do Mês</div>
         <div class="card-desc">Reconhecimento anual por loja e ranking de colaboradores</div>
-        <span class="card-arrow">â</span>
+        <span class="card-arrow">→</span>
       </a>
 
       <a class="card" href="painel_folha_salarial.html" target="_blank">
-        <span class="card-emoji">ð°</span>
+        <span class="card-emoji">💰</span>
         <div class="card-title">Folha Salarial</div>
-        <div class="card-desc">GestÃ£o e acompanhamento da folha de pagamento da equipe</div>
-        <span class="card-arrow">â</span>
+        <div class="card-desc">Gestão e acompanhamento da folha de pagamento da equipe</div>
+        <span class="card-arrow">→</span>
       </a>
 
       <a class="card" href="painel_kpi_rh.html" target="_blank">
-        <span class="card-emoji">ð</span>
+        <span class="card-emoji">📈</span>
         <div class="card-title">KPIs de RH</div>
         <div class="card-desc">Indicadores chave de performance do setor de recursos humanos</div>
-        <span class="card-arrow">â</span>
+        <span class="card-arrow">→</span>
       </a>
 
     </div>
@@ -349,14 +349,14 @@
     <hr class="divider"/>
 
     <div class="footer">
-      <span>GestÃ£o ADM Hub</span> Â· Fat Buddha Group Â· Acesso restrito
+      <span>Gestão ADM Hub</span> · Fat Buddha Group · Acesso restrito
     </div>
 
   </div>
 </div>
 
 <script>
-  // âââ SENHA ââââââââââââââââââââââââââââââââââââââââââââââââ
+  // ─── SENHA ────────────────────────────────────────────────
   // Para trocar a senha, altere apenas o valor abaixo:
   const SENHA_CORRETA = "fatbuddha";
 
@@ -391,7 +391,7 @@
     if (e.key === 'Enter') tentarLogin();
   });
 
-  // Verifica se jÃ¡ estÃ¡ logado nesta sessÃ£o
+  // Verifica se já está logado nesta sessão
   if (sessionStorage.getItem(SESSION_KEY) === "1") mostrarHub();
 </script>
 
