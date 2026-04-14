@@ -134,7 +134,17 @@ tr:hover td{background:#fafafa}
 .prov-kpi-label{font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.4px}
 .prov-kpi-val{font-size:16px;font-weight:700;color:var(--org);margin-top:4px}
 
-@media(max-width:600px){.form-grid{grid-template-columns:1fr}.loja-grid{grid-template-columns:1fr}.kpi-grid{grid-template-columns:1fr 1fr}}
+/* INCOMPLETE FIELDS */
+.td-missing{background:#fffbeb!important;color:#92400e!important;font-style:italic}
+.td-missing-icon{color:#f59e0b;margin-right:3px}
+.incomplete-bar{background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:8px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;font-size:12px;color:#92400e}
+.incomplete-bar b{color:#b45309}
+
+/* VT TAB */
+.vt-split{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.vt-group-title{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+
+@media(max-width:600px){.form-grid{grid-template-columns:1fr}.loja-grid{grid-template-columns:1fr}.kpi-grid{grid-template-columns:1fr 1fr}.vt-split{grid-template-columns:1fr}}
 </style>
 </head>
 <!-- Firebase SDK -->
@@ -158,6 +168,7 @@ tr:hover td{background:#fafafa}
   <button class="nav-btn" onclick="showView('funcionarios',this)">👥 Funcionários</button>
   <button class="nav-btn" onclick="showView('porloja',this)">🏪 Por Loja</button>
   <button class="nav-btn" onclick="showView('provisionamento',this)">📋 Provisionamento</button>
+  <button class="nav-btn" onclick="showView('valetransporte',this)">🚌 Vale Transporte</button>
 </nav>
 
 <!-- ═══════════════ DASHBOARD ═══════════════ -->
@@ -185,6 +196,7 @@ tr:hover td{background:#fafafa}
         </select>
       </div>
     </div>
+    <div id="func-incomplete-banner"></div>
     <div class="table-wrap">
       <table>
         <thead><tr>
@@ -240,6 +252,43 @@ tr:hover td{background:#fafafa}
   </div>
 </div>
 
+<!-- ═══════════════ VALE TRANSPORTE ═══════════════ -->
+<div id="view-valetransporte" class="view">
+  <div class="prov-summary" id="vt-summary"></div>
+  <div class="vt-split" id="vt-split">
+    <div class="section" id="vt-clt-section">
+      <div class="section-header">
+        <span class="section-title"><span class="badge badge-clt">CLT</span> &nbsp;Vale Transporte — CLT</span>
+        <small id="vt-clt-meta" style="color:var(--gray)"></small>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr>
+          <th>Nome</th><th>Loja</th><th>Cargo</th><th>Tipo de Transporte</th><th class="money">VT Mensal</th><th class="money">VT Anual</th>
+        </tr></thead><tbody id="vt-clt-tbody"></tbody></table>
+      </div>
+    </div>
+    <div class="section" id="vt-pj-section">
+      <div class="section-header">
+        <span class="section-title"><span class="badge badge-pj">PJ</span> &nbsp;Vale Transporte — PJ</span>
+        <small id="vt-pj-meta" style="color:var(--gray)"></small>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr>
+          <th>Nome</th><th>Loja</th><th>Cargo</th><th>Tipo de Transporte</th><th class="money">VT Mensal</th><th class="money">VT Anual</th>
+        </tr></thead><tbody id="vt-pj-tbody"></tbody></table>
+      </div>
+    </div>
+  </div>
+  <div class="section" id="vt-tipo-section" style="margin-top:4px">
+    <div class="section-header"><span class="section-title">📊 VT por Tipo de Transporte</span></div>
+    <div class="table-wrap">
+      <table><thead><tr>
+        <th>Tipo de Transporte</th><th class="money">Qtd CLT</th><th class="money">VT CLT</th><th class="money">Qtd PJ</th><th class="money">VT PJ</th><th class="money">Total Funcionários</th><th class="money">Total VT/mês</th>
+      </tr></thead><tbody id="vt-tipo-tbody"></tbody></table>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════ MODAL FUNCIONÁRIO ═══════════════ -->
 <div class="overlay" id="modal-overlay">
   <div class="modal">
@@ -269,7 +318,7 @@ tr:hover td{background:#fafafa}
         </div>
         <div class="form-group form-full">
           <label>Cargo *</label>
-          <select id="f-cargo">
+          <select id="f-cargo" onchange="onCargoChange()">
             <option value="">Selecionar cargo...</option>
             <optgroup label="Cozinha">
               <option>CHEFE DE COZINHA</option>
@@ -300,6 +349,16 @@ tr:hover td{background:#fafafa}
               <option>AUXILIAR DE PRODUÇÃO</option>
               <option>AUXILIAR DE ESTOQUE</option>
               <option>AUXILIAR DE LIMPEZA</option>
+            </optgroup>
+            <optgroup label="Administrativo / Matriz">
+              <option>ANALISTA DE RECURSOS HUMANOS JR</option>
+              <option>ANALISTA DE ESTOQUE JR</option>
+              <option>ESTOQUISTA</option>
+              <option>ANALISTA FOODTECH</option>
+              <option>COMPRAS/ESTOQUE</option>
+              <option>MARKETING</option>
+              <option>GESTOR DE TRÁFEGO</option>
+              <option>SUPERVISOR</option>
             </optgroup>
           </select>
         </div>
@@ -481,6 +540,7 @@ function showView(id, btn) {
   if (id === 'funcionarios') renderFuncionarios();
   if (id === 'porloja') renderPorLoja();
   if (id === 'provisionamento') renderProvisionamento();
+  if (id === 'valetransporte') renderValeTransporte();
 }
 
 // ─── LOJA HELPERS ────────────────────────────────────────────────────────────
@@ -636,26 +696,45 @@ function renderFuncionarios() {
   }
 
   // ── Row renderers ─────────────────────────────────────────────────────────
+  function isMissing(v) { return !v || String(v).trim() === ''; }
   function empRow(e, n) {
     const c = calc(e);
     function fmtDate(d) { if (!d) return '—'; const p=d.split('-'); return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:d; }
+    const missCargo  = isMissing(e.cargo);
+    const missPix    = isMissing(e.pix);
+    const missConta  = isMissing(e.conta);
+    const missInicio = isMissing(e.inicio);
+    const missVtTipo = (e.vt||0) > 0 && isMissing(e.vttipo);
+    const warn = '⚠️';
     return `<tr>
       <td style="color:#9ca3af">${n}</td>
       <td><b>${e.nome}</b></td>
       <td><span class="badge badge-${e.tipo.toLowerCase()}">${e.tipo}</span></td>
-      <td>${e.cargo||'—'}</td>
-      <td style="font-size:11px;color:#6b7280;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.pix||'—'}</td>
-      <td style="font-size:11px;color:#6b7280;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.conta||'—'}</td>
+      <td${missCargo?' class="td-missing"':''}>${missCargo?`<span class="td-missing-icon">${warn}</span>Não informado`:e.cargo}</td>
+      <td style="font-size:11px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;${missPix?'background:#fffbeb;color:#92400e;font-style:italic':'color:#6b7280'}">${missPix?`<span class="td-missing-icon">${warn}</span>Não informado`:e.pix}</td>
+      <td style="font-size:11px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;${missConta?'background:#fffbeb;color:#92400e;font-style:italic':'color:#6b7280'}">${missConta?`<span class="td-missing-icon">${warn}</span>Não informado`:e.conta}</td>
       <td class="money">${fmt(e.salario)}</td>
       <td class="money" style="font-weight:700;color:var(--org)">${fmt(c.total)}</td>
       <td class="money">${fmt(c.anual)}</td>
-      <td style="white-space:nowrap">${fmtDate(e.inicio)}</td>
+      <td style="white-space:nowrap"${missInicio?' class="td-missing"':''}>${missInicio?`<span class="td-missing-icon">${warn}</span>—`:fmtDate(e.inicio)}</td>
       <td style="white-space:nowrap;color:${e.fimExp&&e.fimExp<new Date().toISOString().slice(0,10)?'#dc2626':'#374151'}">${fmtDate(e.fimExp)}</td>
       <td style="display:flex;gap:6px;align-items:center">
         <button class="btn btn-sm btn-edit" onclick="openModal(${e.id})">✏️</button>
         <button class="btn btn-sm btn-del" onclick="delEmployee(${e.id})">🗑️</button>
       </td>
     </tr>`;
+  }
+
+  // ── Incomplete count banner ───────────────────────────────────────────────
+  const incompletos = emps.filter(e =>
+    isMissing(e.cargo) || isMissing(e.pix) || isMissing(e.conta) || isMissing(e.inicio) ||
+    ((e.vt||0) > 0 && isMissing(e.vttipo))
+  );
+  const banner = document.getElementById('func-incomplete-banner');
+  if (incompletos.length) {
+    banner.innerHTML = `<div class="incomplete-bar">⚠️ <b>${incompletos.length} funcionário${incompletos.length!==1?'s':''}</b> com campos incompletos — as células destacadas em amarelo precisam ser preenchidas. Clique em ✏️ para editar.</div>`;
+  } else {
+    banner.innerHTML = '';
   }
 
   function lojaHeader(loja, count) {
@@ -932,6 +1011,24 @@ function openModal(id = null) {
 function closeModal() {
   document.getElementById('modal-overlay').classList.remove('open');
   editingId = null;
+}
+
+// ─── CARGO AUTO-LOJA ─────────────────────────────────────────────────────────
+const CARGO_LOJA_MAP = {
+  'ANALISTA DE RECURSOS HUMANOS JR': 'MATRIZ ESCRITÓRIO',
+  'ANALISTA DE ESTOQUE JR':          'MATRIZ PRODUÇÃO',
+  'ESTOQUISTA':                      'MATRIZ PRODUÇÃO',
+  'ANALISTA FOODTECH':               'MATRIZ ESCRITÓRIO',
+  'COMPRAS/ESTOQUE':                 'MATRIZ ESCRITÓRIO',
+  'MARKETING':                       'MATRIZ ESCRITÓRIO',
+  'GESTOR DE TRÁFEGO':               'MATRIZ ESCRITÓRIO',
+  'SUPERVISOR':                      'MATRIZ ESCRITÓRIO',
+};
+function onCargoChange() {
+  const cargo = (document.getElementById('f-cargo').value||'').toUpperCase().trim();
+  if (CARGO_LOJA_MAP[cargo]) {
+    document.getElementById('f-loja').value = CARGO_LOJA_MAP[cargo];
+  }
 }
 
 function onTipoChange() {
@@ -1242,6 +1339,85 @@ function exportCSV() {
   a.href = URL.createObjectURL(blob);
   a.download = 'folha_salarial_fat_buddha.csv';
   a.click();
+}
+
+// ─── VALE TRANSPORTE ─────────────────────────────────────────────────────────
+function renderValeTransporte() {
+  const emps = data.employees;
+  if (!emps.length) {
+    document.getElementById('vt-summary').innerHTML = '';
+    document.getElementById('vt-clt-tbody').innerHTML = `<tr><td colspan="6" class="empty-state">Nenhum funcionário cadastrado.</td></tr>`;
+    document.getElementById('vt-pj-tbody').innerHTML  = `<tr><td colspan="6" class="empty-state">Nenhum funcionário cadastrado.</td></tr>`;
+    document.getElementById('vt-tipo-tbody').innerHTML = `<tr><td colspan="7" class="empty-state">Nenhum dado disponível.</td></tr>`;
+    return;
+  }
+
+  const clts = emps.filter(e => e.tipo === 'CLT');
+  const pjs  = emps.filter(e => e.tipo === 'PJ');
+  const totalVT     = emps.reduce((s,e) => s + (e.vt||0), 0);
+  const totalVTclt  = clts.reduce((s,e) => s + (e.vt||0), 0);
+  const totalVTpj   = pjs.reduce((s,e) => s + (e.vt||0), 0);
+  const qtdCLTvt    = clts.filter(e=>(e.vt||0)>0).length;
+  const qtdPJvt     = pjs.filter(e=>(e.vt||0)>0).length;
+
+  document.getElementById('vt-summary').innerHTML = `
+    <div class="prov-kpi"><div class="prov-kpi-label">Total VT Empresa/mês</div><div class="prov-kpi-val">${fmt(totalVT)}</div></div>
+    <div class="prov-kpi"><div class="prov-kpi-label">VT CLT/mês</div><div class="prov-kpi-val">${fmt(totalVTclt)}</div></div>
+    <div class="prov-kpi"><div class="prov-kpi-label">VT PJ/mês</div><div class="prov-kpi-val">${fmt(totalVTpj)}</div></div>
+    <div class="prov-kpi"><div class="prov-kpi-label">Func. com VT</div><div class="prov-kpi-val">${qtdCLTvt+qtdPJvt} <small style="font-size:12px;color:var(--gray)">(${qtdCLTvt} CLT · ${qtdPJvt} PJ)</small></div></div>
+    <div class="prov-kpi"><div class="prov-kpi-label">VT Anual Total</div><div class="prov-kpi-val">${fmt(totalVT*12)}</div></div>
+  `;
+
+  function vtRows(list, tbodyId, metaId) {
+    const comVT = list.filter(e => (e.vt||0) > 0).sort((a,b) => (b.vt||0)-(a.vt||0));
+    const semVT = list.filter(e => !(e.vt||0));
+    const totalLista = comVT.reduce((s,e)=>s+(e.vt||0),0);
+    document.getElementById(metaId).textContent = `${comVT.length} com VT · ${semVT.length} sem VT · Total: ${fmt(totalLista)}/mês`;
+    if (!list.length) {
+      document.getElementById(tbodyId).innerHTML = `<tr><td colspan="6" class="empty-state">Sem funcionários nesta categoria.</td></tr>`;
+      return;
+    }
+    let rows = comVT.map(e => `<tr>
+      <td><b>${e.nome}</b></td>
+      <td><span class="loja-tag ${lojaClass(e.loja)}">${e.loja}</span></td>
+      <td style="font-size:12px">${e.cargo||'—'}</td>
+      <td style="font-size:12px">${e.vttipo||'<span style="color:#9ca3af">—</span>'}</td>
+      <td class="money" style="font-weight:700;color:var(--org)">${fmt(e.vt)}</td>
+      <td class="money">${fmt((e.vt||0)*12)}</td>
+    </tr>`).join('');
+    if (semVT.length) {
+      rows += `<tr><td colspan="6" style="padding:5px 10px;background:#f3f4f6;font-size:11px;color:#9ca3af;font-style:italic">
+        Sem VT (${semVT.length}): ${semVT.map(e=>e.nome).join(', ')}
+      </td></tr>`;
+    }
+    rows += `<tr class="tr-total"><td colspan="4">TOTAL</td><td class="money">${fmt(totalLista)}</td><td class="money">${fmt(totalLista*12)}</td></tr>`;
+    document.getElementById(tbodyId).innerHTML = rows;
+  }
+
+  vtRows(clts, 'vt-clt-tbody', 'vt-clt-meta');
+  vtRows(pjs,  'vt-pj-tbody',  'vt-pj-meta');
+
+  // ── Por tipo de transporte ────────────────────────────────────────────────
+  const tiposMap = {};
+  emps.filter(e=>(e.vt||0)>0).forEach(e => {
+    const tipo = e.vttipo || 'Não informado';
+    if (!tiposMap[tipo]) tiposMap[tipo] = {clt:0,vtClt:0,pj:0,vtPj:0};
+    if (e.tipo==='CLT') { tiposMap[tipo].clt++; tiposMap[tipo].vtClt += (e.vt||0); }
+    else                { tiposMap[tipo].pj++;  tiposMap[tipo].vtPj  += (e.vt||0); }
+  });
+  const tipoRows = Object.entries(tiposMap)
+    .sort((a,b) => (b[1].vtClt+b[1].vtPj)-(a[1].vtClt+a[1].vtPj))
+    .map(([tipo,d]) => `<tr>
+      <td>${tipo}</td>
+      <td class="money">${d.clt||'—'}</td>
+      <td class="money">${d.clt?fmt(d.vtClt):'—'}</td>
+      <td class="money">${d.pj||'—'}</td>
+      <td class="money">${d.pj?fmt(d.vtPj):'—'}</td>
+      <td class="money" style="font-weight:700">${d.clt+d.pj}</td>
+      <td class="money" style="font-weight:700;color:var(--org)">${fmt(d.vtClt+d.vtPj)}</td>
+    </tr>`).join('');
+  document.getElementById('vt-tipo-tbody').innerHTML = tipoRows ||
+    `<tr><td colspan="7" class="empty-state">Nenhum funcionário com VT cadastrado.</td></tr>`;
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
