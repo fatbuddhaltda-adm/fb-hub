@@ -279,6 +279,14 @@ tr:hover td{background:#fafafa}
       </div>
     </div>
   </div>
+  <div class="section" id="vt-loja-section" style="margin-top:4px">
+    <div class="section-header"><span class="section-title">🏪 Custo de VT por Loja</span></div>
+    <div class="table-wrap">
+      <table><thead><tr>
+        <th>Loja</th><th class="money">Func. CLT</th><th class="money">VT CLT/mês</th><th class="money">Func. PJ</th><th class="money">VT PJ/mês</th><th class="money">Total Func.</th><th class="money">Total VT/mês</th><th class="money">Total VT/ano</th>
+      </tr></thead><tbody id="vt-loja-tbody"></tbody></table>
+    </div>
+  </div>
   <div class="section" id="vt-tipo-section" style="margin-top:4px">
     <div class="section-header"><span class="section-title">📊 VT por Tipo de Transporte</span></div>
     <div class="table-wrap">
@@ -1348,6 +1356,7 @@ function renderValeTransporte() {
     document.getElementById('vt-summary').innerHTML = '';
     document.getElementById('vt-clt-tbody').innerHTML = `<tr><td colspan="6" class="empty-state">Nenhum funcionário cadastrado.</td></tr>`;
     document.getElementById('vt-pj-tbody').innerHTML  = `<tr><td colspan="6" class="empty-state">Nenhum funcionário cadastrado.</td></tr>`;
+    document.getElementById('vt-loja-tbody').innerHTML = `<tr><td colspan="8" class="empty-state">Nenhum dado disponível.</td></tr>`;
     document.getElementById('vt-tipo-tbody').innerHTML = `<tr><td colspan="7" class="empty-state">Nenhum dado disponível.</td></tr>`;
     return;
   }
@@ -1396,6 +1405,43 @@ function renderValeTransporte() {
 
   vtRows(clts, 'vt-clt-tbody', 'vt-clt-meta');
   vtRows(pjs,  'vt-pj-tbody',  'vt-pj-meta');
+
+  // ── Por loja ──────────────────────────────────────────────────────────────
+  const lojaMap = {};
+  emps.forEach(e => {
+    const loja = e.loja || 'Não informada';
+    if (!lojaMap[loja]) lojaMap[loja] = {clt:0,vtClt:0,pj:0,vtPj:0};
+    if (e.tipo === 'CLT') { lojaMap[loja].clt++; lojaMap[loja].vtClt += (e.vt||0); }
+    else                  { lojaMap[loja].pj++;  lojaMap[loja].vtPj  += (e.vt||0); }
+  });
+  let totLojaClt=0, totLojaVtClt=0, totLojaPj=0, totLojaVtPj=0;
+  const lojaRows = Object.entries(lojaMap)
+    .sort((a,b) => (b[1].vtClt+b[1].vtPj)-(a[1].vtClt+a[1].vtPj))
+    .map(([loja,d]) => {
+      const total = r2(d.vtClt + d.vtPj);
+      totLojaClt+=d.clt; totLojaVtClt+=d.vtClt; totLojaPj+=d.pj; totLojaVtPj+=d.vtPj;
+      return `<tr>
+        <td><span class="loja-tag ${lojaClass(loja)}">${loja}</span></td>
+        <td class="money">${d.clt||'—'}</td>
+        <td class="money">${d.clt?fmt(d.vtClt):'—'}</td>
+        <td class="money">${d.pj||'—'}</td>
+        <td class="money">${d.pj?fmt(d.vtPj):'—'}</td>
+        <td class="money" style="font-weight:700">${d.clt+d.pj}</td>
+        <td class="money" style="font-weight:700;color:var(--org)">${fmt(total)}</td>
+        <td class="money">${fmt(total*12)}</td>
+      </tr>`;
+    }).join('');
+  const totLojaTotal = r2(totLojaVtClt+totLojaVtPj);
+  document.getElementById('vt-loja-tbody').innerHTML = (lojaRows ||
+    `<tr><td colspan="8" class="empty-state">Nenhuma loja com VT cadastrado.</td></tr>`) +
+    `<tr class="tr-total">
+      <td>TOTAL</td>
+      <td class="money">${totLojaClt}</td><td class="money">${fmt(totLojaVtClt)}</td>
+      <td class="money">${totLojaPj}</td><td class="money">${fmt(totLojaVtPj)}</td>
+      <td class="money">${totLojaClt+totLojaPj}</td>
+      <td class="money">${fmt(totLojaTotal)}</td>
+      <td class="money">${fmt(totLojaTotal*12)}</td>
+    </tr>`;
 
   // ── Por tipo de transporte ────────────────────────────────────────────────
   const tiposMap = {};
