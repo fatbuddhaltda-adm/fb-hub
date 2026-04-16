@@ -329,7 +329,6 @@ tr:hover td{background:#fafafa}
           <select id="f-cargo" onchange="onCargoChange()">
             <option value="">Selecionar cargo...</option>
             <optgroup label="Cozinha">
-              <option>CHEFE DE COZINHA</option>
               <option>CHEFE DE COZINHA DIURNO</option>
               <option>CHEFE DE COZINHA NOTURNO</option>
               <option>LIDER DIURNO</option>
@@ -349,6 +348,7 @@ tr:hover td{background:#fafafa}
               <option>EMPACOTADOR/A DIURNO</option>
               <option>EMPACOTADOR/A NOTURNO</option>
               <option>AUXILIAR GERAL</option>
+              <option>AUXILIAR DE LIMPEZA</option>
             </optgroup>
             <optgroup label="Produção">
               <option>CHEFE DE PRODUÇÃO</option>
@@ -356,7 +356,6 @@ tr:hover td{background:#fafafa}
               <option>COZINHEIRO II PRODUÇÃO</option>
               <option>AUXILIAR DE PRODUÇÃO</option>
               <option>AUXILIAR DE ESTOQUE</option>
-              <option>AUXILIAR DE LIMPEZA</option>
             </optgroup>
             <optgroup label="Administrativo / Matriz">
               <option>ANALISTA DE RECURSOS HUMANOS JR</option>
@@ -658,7 +657,7 @@ function renderFuncionarios() {
   // ── Area classification ───────────────────────────────────────────────────
   function getArea(cargo) {
     const c = (cargo||'').toUpperCase();
-    if (/SUPERVISOR|SUPERVISORA|ATENDENTE|EMPACOTADOR|AUXILIAR.*(GERAL|LINHA)|AUXILIAR GERAL|AUXILIAR DE LINHA/.test(c)) return 'expedicao';
+    if (/SUPERVISOR|SUPERVISORA|ATENDENTE|EMPACOTADOR|AUXILIAR.*(GERAL|LINHA|LIMPEZA)|AUXILIAR GERAL|AUXILIAR DE LINHA|AUXILIAR DE LIMPEZA/.test(c)) return 'expedicao';
     if (/CHEF|LIDER|LÍDER|COZINHEIRO|AUXILIAR.*(COZINHA|PROD)|AUXILIAR COZINHA|CHEFE/.test(c)) return 'cozinha';
     return 'outros';
   }
