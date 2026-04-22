@@ -492,9 +492,25 @@ function openStatusMenu(e,id){
   const emp=getM().employees.find(x=>x.id===id);
   document.getElementById('statusObs').value=emp?emp.obs:'';
   document.querySelectorAll('#statusMenu .status-menu-item').forEach(el=>el.style.fontWeight='');
-  const r=e.target.getBoundingClientRect();
-  menu.style.top=(r.bottom+window.scrollY+4)+'px';menu.style.left=r.left+'px';
+  // Destaca o status atual no menu
+  if(emp){
+    document.querySelectorAll('#statusMenu .status-menu-item').forEach(el=>{
+      if(el.textContent.trim().endsWith(emp.status))el.style.fontWeight='900';
+    });
+  }
+  // Abre o menu ANTES de medir, para obter dimensões reais
   menu.classList.add('open');menuOpen=true;
+  const r=e.target.getBoundingClientRect();
+  const mh=menu.offsetHeight||260;
+  const mw=menu.offsetWidth||230;
+  const vh=window.innerHeight;
+  const vw=window.innerWidth;
+  // position:fixed → NÃO somar window.scrollY
+  let top=r.bottom+4;
+  if(top+mh>vh-8){top=Math.max(8,r.top-mh-4);} // flip para cima se não couber
+  let left=r.left;
+  if(left+mw>vw-8){left=Math.max(8,vw-mw-8);}  // ajusta se passar da direita
+  menu.style.top=top+'px';menu.style.left=left+'px';
 }
 document.addEventListener('click',()=>{if(menuOpen){document.getElementById('statusMenu').classList.remove('open');menuOpen=false;}});
 document.getElementById('statusMenu').addEventListener('click',e=>e.stopPropagation());
