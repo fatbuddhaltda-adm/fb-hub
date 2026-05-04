@@ -790,7 +790,16 @@ function renderAnalytics(){
       g.bars.forEach(b=>{
         const pct=maxVal>0?Math.max(2,(b.val/maxVal)*100):2;
         const bar=document.createElement('div');bar.className='bar';
-        bar.style.background=b.color;bar.style.height=pct+'%';bar.style.flex='1';bar.title=b.label+': '+b.display;
+        bar.style.background=b.color;bar.style.height=pct+'%';bar.style.flex='1';
+        bar.style.position='relative';bar.style.display='flex';bar.style.alignItems='flex-start';
+        bar.style.justifyContent='center';bar.title=b.label+': '+b.display;
+        // Label com valor dentro/acima da barra
+        if(b.val>0){
+          const lv=document.createElement('span');
+          lv.textContent=b.display;
+          lv.style.cssText='position:absolute;top:4px;left:0;right:0;text-align:center;font-size:9px;font-weight:700;color:white;text-shadow:0 1px 2px rgba(0,0,0,.4);pointer-events:none;overflow:hidden;white-space:nowrap;padding:0 2px';
+          bar.appendChild(lv);
+        }
         bars.appendChild(bar);
       });
       grp.appendChild(bars);c.appendChild(grp);
