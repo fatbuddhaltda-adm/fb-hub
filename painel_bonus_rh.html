@@ -4,12 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Painel Bônus RH — Fat Buddha</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
-body{background:#f0f2f5;min-height:100vh}h
+body{background:#f0f2f5;min-height:100vh}
 .header{background:linear-gradient(135deg,#1a1a2e,#16213e);color:white;padding:16px 28px;display:flex;align-items:center;justify-content:space-between}
 .header h1{font-size:19px;font-weight:700}.header p{font-size:11px;opacity:.6;margin-top:2px}
 .header-right{font-size:11px;opacity:.5;text-align:right}
+/* VIEW TABS */
+.view-bar{background:#1a1a2e;padding:0 28px;display:flex;gap:0;border-bottom:3px solid #0f0f1e}
+.view-tab{padding:10px 20px;cursor:pointer;font-weight:700;font-size:12px;color:rgba(255,255,255,.5);border-bottom:3px solid transparent;margin-bottom:-3px;transition:all .2s;letter-spacing:.3px}
+.view-tab:hover{color:rgba(255,255,255,.8)}
+.view-tab.active{color:white;border-bottom-color:#f59e0b}
+/* MONTH BAR */
 .month-bar{background:white;border-bottom:2px solid #e5e7eb;padding:10px 28px;display:flex;align-items:center;gap:8px;overflow-x:auto}
 .month-tab{padding:5px 16px;border-radius:20px;border:2px solid #e5e7eb;cursor:pointer;font-weight:700;font-size:12px;background:white;color:#6b7280;white-space:nowrap;transition:all .2s}
 .month-tab:hover{border-color:#1a1a2e;color:#1a1a2e}.month-tab.active{background:#1a1a2e;color:white;border-color:#1a1a2e}
@@ -86,7 +93,26 @@ tr:hover td{background:#fafafa}
 .saved-msg{font-size:11px;color:#059669;font-weight:600;display:none}
 .copy-btn{font-size:11px;background:#f0fdf4;color:#065f46;border:1px solid #bbf7d0;padding:5px 12px;border-radius:5px;cursor:pointer;font-weight:600}
 .copy-btn:hover{background:#dcfce7}
-@media(max-width:900px){.kpi-row{grid-template-columns:repeat(2,1fr)}.lojas-grid{grid-template-columns:repeat(2,1fr)}}
+/* ANALYTICS */
+#view-analytics{display:none}
+.analytics-wrap{padding:16px 28px 28px}
+.analytics-kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.analytics-kpi{background:white;border-radius:10px;padding:14px 16px;box-shadow:0 1px 5px rgba(0,0,0,.07);text-align:center}
+.analytics-kpi .val{font-size:24px;font-weight:800;color:#1a1a2e;margin:6px 0 2px}
+.analytics-kpi .lbl{font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px}
+.analytics-kpi .sub{font-size:11px;color:#6b7280}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.chart-card{background:white;border-radius:10px;padding:18px;box-shadow:0 1px 5px rgba(0,0,0,.07)}
+.chart-card h3{font-size:12px;font-weight:700;color:#1a1a2e;margin-bottom:14px;text-transform:uppercase;letter-spacing:.4px}
+.chart-card canvas{max-height:240px}
+.chart-card-wide{background:white;border-radius:10px;padding:18px;box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:16px}
+.chart-card-wide h3{font-size:12px;font-weight:700;color:#1a1a2e;margin-bottom:14px;text-transform:uppercase;letter-spacing:.4px}
+.chart-card-wide canvas{max-height:220px}
+.analytics-table-wrap{background:white;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);overflow:hidden}
+.analytics-table-wrap h3{font-size:12px;font-weight:700;color:#1a1a2e;padding:14px 16px;border-bottom:1px solid #f3f4f6;text-transform:uppercase;letter-spacing:.4px}
+.analytics-table-wrap table{font-size:12px}
+.analytics-table-wrap th{font-size:11px}
+@media(max-width:900px){.kpi-row{grid-template-columns:repeat(2,1fr)}.lojas-grid{grid-template-columns:repeat(2,1fr)}.charts-grid{grid-template-columns:1fr}.analytics-kpi-row{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <!-- Firebase SDK -->
@@ -97,96 +123,150 @@ tr:hover td{background:#fafafa}
   <div><h1>🎯 Painel de Gestão de Bônus</h1><p>Fat Buddha — Controle mensal de elegibilidade e motivos</p></div>
   <div class="header-right" id="headerInfo">—</div>
 </div>
-<div class="month-bar" id="monthBar"></div>
-<div class="kpi-row">
-  <div class="kpi-card green"><div class="kpi-label">✅ Elegíveis</div><div class="kpi-value" id="kpi-elegiveis">—</div><div class="kpi-sub">recebem bônus</div></div>
-  <div class="kpi-card red"><div class="kpi-label">❌ Perderam Bônus</div><div class="kpi-value" id="kpi-perdem">—</div><div class="kpi-sub" id="kpi-perdem-sub">—</div></div>
-  <div class="kpi-card blue"><div class="kpi-label">👥 Total Ativos</div><div class="kpi-value" id="kpi-total">—</div><div class="kpi-sub">na folha do mês</div></div>
-  <div class="kpi-card amber"><div class="kpi-label">💰 Total a Pagar</div><div class="kpi-value" id="kpi-valor">—</div><div class="kpi-sub">apenas elegíveis</div></div>
+
+<!-- VIEW TABS -->
+<div class="view-bar">
+  <div class="view-tab active" id="vtab-painel" onclick="switchView('painel')">🗓️ Painel Mensal</div>
+  <div class="view-tab" id="vtab-analytics" onclick="switchView('analytics')">📊 Análise Geral</div>
 </div>
-<div class="controls">
-  <div><label>Filtrar por loja</label><br><select id="filterLoja" onchange="renderTable()"><option value="">Todas as lojas</option><option>BROOKLIN</option><option>PERDIZES</option><option>VILA MARIANA</option><option>MATRIZ PRODUÇÃO</option></select></div>
-  <div style="position:relative">
-    <label>Filtrar por status</label><br>
-    <div id="multiStatusBtn" onclick="toggleMultiStatus(event)" style="cursor:pointer;padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:white;min-width:160px;user-select:none;display:flex;align-items:center;justify-content:space-between;gap:8px">
-      <span id="multiStatusLabel">Todos</span><span style="font-size:10px;opacity:.6">▾</span>
+
+<!-- ══ VIEW: PAINEL MENSAL ══ -->
+<div id="view-painel">
+  <div class="month-bar" id="monthBar"></div>
+  <div class="kpi-row">
+    <div class="kpi-card green"><div class="kpi-label">✅ Elegíveis</div><div class="kpi-value" id="kpi-elegiveis">—</div><div class="kpi-sub">recebem bônus</div></div>
+    <div class="kpi-card red"><div class="kpi-label">❌ Perderam Bônus</div><div class="kpi-value" id="kpi-perdem">—</div><div class="kpi-sub" id="kpi-perdem-sub">—</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">👥 Total Ativos</div><div class="kpi-value" id="kpi-total">—</div><div class="kpi-sub">na folha do mês</div></div>
+    <div class="kpi-card amber"><div class="kpi-label">💰 Total a Pagar</div><div class="kpi-value" id="kpi-valor">—</div><div class="kpi-sub">apenas elegíveis</div></div>
+  </div>
+  <div class="controls">
+    <div><label>Filtrar por loja</label><br><select id="filterLoja" onchange="renderTable()"><option value="">Todas as lojas</option><option>BROOKLIN</option><option>PERDIZES</option><option>VILA MARIANA</option><option>MATRIZ PRODUÇÃO</option></select></div>
+    <div style="position:relative">
+      <label>Filtrar por status</label><br>
+      <div id="multiStatusBtn" onclick="toggleMultiStatus(event)" style="cursor:pointer;padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:white;min-width:160px;user-select:none;display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <span id="multiStatusLabel">Todos</span><span style="font-size:10px;opacity:.6">▾</span>
+      </div>
+      <div id="multiStatusDropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:400;background:white;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.15);min-width:220px;padding:6px">
+        <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background=''">
+          <input type="checkbox" id="ms-todos" onchange="multiStatusAll(this)" checked> Todos
+        </label>
+        <hr style="margin:4px 8px;border:none;border-top:1px solid #f3f4f6">
+        <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background=''"><input type="checkbox" class="ms-opt" value="ELEGÍVEL" onchange="multiStatusChange()"> ✅ ELEGÍVEL</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background=''"><input type="checkbox" class="ms-opt" value="ATESTADO" onchange="multiStatusChange()"> 📋 ATESTADO</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background=''"><input type="checkbox" class="ms-opt" value="ADVERTÊNCIA" onchange="multiStatusChange()"> ⚠️ ADVERTÊNCIA</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background=''"><input type="checkbox" class="ms-opt" value="ADVERTÊNCIA/PONTO" onchange="multiStatusChange()"> 🕐 ADVERTÊNCIA/PONTO</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background=''"><input type="checkbox" class="ms-opt" value="FALTA INJUSTIFICADA" onchange="multiStatusChange()"> 🚫 FALTA INJUSTIFICADA</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background=''"><input type="checkbox" class="ms-opt" value="NOTA PRAÇA" onchange="multiStatusChange()"> 📉 NOTA PRAÇA</label>
+      </div>
     </div>
-    <div id="multiStatusDropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:400;background:white;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.15);min-width:220px;padding:6px">
-      <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background=''">
-        <input type="checkbox" id="ms-todos" onchange="multiStatusAll(this)" checked> Todos
-      </label>
-      <hr style="margin:4px 8px;border:none;border-top:1px solid #f3f4f6">
-      <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background=''"><input type="checkbox" class="ms-opt" value="ELEGÍVEL" onchange="multiStatusChange()"> ✅ ELEGÍVEL</label>
-      <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background=''"><input type="checkbox" class="ms-opt" value="ATESTADO" onchange="multiStatusChange()"> 📋 ATESTADO</label>
-      <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background=''"><input type="checkbox" class="ms-opt" value="ADVERTÊNCIA" onchange="multiStatusChange()"> ⚠️ ADVERTÊNCIA</label>
-      <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background=''"><input type="checkbox" class="ms-opt" value="ADVERTÊNCIA/PONTO" onchange="multiStatusChange()"> 🕐 ADVERTÊNCIA/PONTO</label>
-      <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background=''"><input type="checkbox" class="ms-opt" value="FALTA INJUSTIFICADA" onchange="multiStatusChange()"> 🚫 FALTA INJUSTIFICADA</label>
-      <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background=''"><input type="checkbox" class="ms-opt" value="NOTA PRAÇA" onchange="multiStatusChange()"> 📉 NOTA PRAÇA</label>
+    <div style="display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap">
+      <div>
+        <label>Nº de pedidos</label><br>
+        <input type="number" id="numPedidos" placeholder="ex: 12000" min="0" step="1"
+          oninput="calcBonusByPedidos()"
+          style="width:120px;padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:white">
+      </div>
+      <div style="color:#9ca3af;font-size:18px;padding-bottom:6px">=</div>
+      <div>
+        <label>Valor do bônus (R$)</label><br>
+        <input type="number" id="bonusValue" value="586.20" step="0.01"
+          onchange="saveBonusValue()"
+          style="width:110px;padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:white">
+      </div>
+    </div>
+    <button class="btn-primary" onclick="openAddModal()">＋ Adicionar Funcionário</button>
+  </div>
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">📋 Funcionários do Mês</span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="copy-btn" onclick="copyToNextMonth()">📋 Copiar para próximo mês</button>
+        <span class="badge badge-green" id="table-count">0 funcionários</span>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table><thead><tr><th>#</th><th>Nome</th><th>Loja</th><th>Tipo</th><th>Status</th><th>Observação / Motivo</th><th>PIX</th><th>Ações</th></tr></thead>
+      <tbody id="tableBody"></tbody></table>
     </div>
   </div>
-  <div style="display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap">
-    <div>
-      <label>Nº de pedidos</label><br>
-      <input type="number" id="numPedidos" placeholder="ex: 12000" min="0" step="1"
-        oninput="calcBonusByPedidos()"
-        style="width:120px;padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:white">
+  <div class="section">
+    <div class="section-header"><span class="section-title">🏪 Resumo por Loja</span></div>
+    <div class="lojas-grid" id="lojasGrid"></div>
+  </div>
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">📅 Fila — Incluir no Próximo Mês</span>
+      <span class="badge badge-blue" id="proximo-count">0 na fila</span>
     </div>
-    <div style="color:#9ca3af;font-size:18px;padding-bottom:6px">=</div>
-    <div>
-      <label>Valor do bônus (R$)</label><br>
-      <input type="number" id="bonusValue" value="586.20" step="0.01" onchange="updateKPIs();renderLojas();autoSave()" style="width:110px;padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:white">
+    <div class="proximo-list" id="proximoList"></div>
+  </div>
+</div>
+
+<!-- ══ VIEW: ANALYTICS ══ -->
+<div id="view-analytics">
+  <div class="analytics-wrap">
+    <!-- KPIs acumulados -->
+    <div class="analytics-kpi-row">
+      <div class="analytics-kpi"><div class="lbl">📅 Meses registrados</div><div class="val" id="ak-meses">—</div><div class="sub">no sistema</div></div>
+      <div class="analytics-kpi"><div class="lbl">💰 Total pago (acumulado)</div><div class="val" id="ak-total">—</div><div class="sub">todos os meses</div></div>
+      <div class="analytics-kpi"><div class="lbl">📈 Média elegíveis/mês</div><div class="val" id="ak-media-el">—</div><div class="sub">funcionários</div></div>
+      <div class="analytics-kpi"><div class="lbl">⚠️ Média perdem/mês</div><div class="val" id="ak-media-pr">—</div><div class="sub">funcionários</div></div>
+    </div>
+
+    <!-- Gráfico largo: Total pago por mês -->
+    <div class="chart-card-wide">
+      <h3>💰 Total a Pagar por Mês (R$)</h3>
+      <canvas id="chartPagamento"></canvas>
+    </div>
+
+    <!-- Dois gráficos lado a lado -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3>✅ Elegíveis vs ❌ Perdem por Mês</h3>
+        <canvas id="chartElegiveis"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>📉 Motivos de Perda de Bônus (Acumulado)</h3>
+        <canvas id="chartMotivos"></canvas>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3>📊 % Elegíveis por Mês</h3>
+        <canvas id="chartPorcentagem"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>🏪 Elegíveis por Loja (Mês Atual)</h3>
+        <canvas id="chartLojas"></canvas>
+      </div>
+    </div>
+
+    <!-- Tabela resumo mensal -->
+    <div class="analytics-table-wrap">
+      <h3>📋 Resumo Mensal Detalhado</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>Mês</th><th>Total</th><th>✅ Elegíveis</th><th>❌ Perdem</th><th>% Elegíveis</th>
+            <th>Valor Unit.</th><th>Total a Pagar</th><th>Nº Pedidos</th>
+          </tr></thead>
+          <tbody id="analyticsTableBody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
-  <button class="btn-primary" onclick="openAddModal()">＋ Adicionar Funcionário</button>
 </div>
-<div class="section">
-  <div class="section-header">
-    <span class="section-title">📋 Funcionários do Mês</span>
-    <div style="display:flex;gap:8px;align-items:center">
-      <button class="copy-btn" onclick="copyToNextMonth()">📋 Copiar para próximo mês</button>
-      <span class="badge badge-green" id="table-count">0 funcionários</span>
-    </div>
-  </div>
-  <div class="tbl-wrap">
-    <table><thead><tr><th>#</th><th>Nome</th><th>Loja</th><th>Tipo</th><th>Status</th><th>Observação / Motivo</th><th>PIX</th><th>Ações</th></tr></thead>
-    <tbody id="tableBody"></tbody></table>
-  </div>
-</div>
-<div class="section">
-  <div class="section-header"><span class="section-title">🏪 Resumo por Loja</span></div>
-  <div class="lojas-grid" id="lojasGrid"></div>
-</div>
-<div class="section">
-  <div class="section-header">
-    <span class="section-title">📅 Fila — Incluir no Próximo Mês</span>
-    <span class="badge badge-blue" id="proximo-count">0 na fila</span>
-  </div>
-  <div class="proximo-list" id="proximoList"></div>
-</div>
+
 <!-- Import overlay -->
 <div class="modal-overlay" id="import-overlay-bonus" onclick="if(event.target===this)closeImport()">
   <div class="modal" style="width:500px">
     <h3>⬆️ Importar CSV</h3>
     <p style="font-size:12px;color:#6b7280;margin-bottom:14px">Compatível com: exportação deste painel, exportação da Folha Salarial, CSV da aba FGLR ou FAT BUDDHA.</p>
-    <div class="form-group">
-      <label>Arquivo CSV</label>
-      <input type="file" accept=".csv" onchange="loadCSVFileBonus(this)" style="font-size:12px;padding:6px">
-    </div>
-    <div class="form-group">
-      <label>Cole o conteúdo aqui (opcional)</label>
-      <textarea id="csv-input-bonus" rows="6" style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:6px;font-size:11px;font-family:monospace;resize:vertical" placeholder="Ou cole o conteúdo do CSV aqui..."></textarea>
-    </div>
-    <div class="form-group">
-      <label>Modo de importação</label>
-      <select id="import-mode-bonus" style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px">
-        <option value="add">Adicionar (manter funcionários existentes)</option>
-        <option value="replace">Substituir tudo</option>
-      </select>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-secondary" onclick="closeImport()">Cancelar</button>
-      <button class="btn-primary" onclick="processImportBonus()">Importar</button>
-    </div>
+    <div class="form-group"><label>Arquivo CSV</label><input type="file" accept=".csv" onchange="loadCSVFileBonus(this)" style="font-size:12px;padding:6px"></div>
+    <div class="form-group"><label>Cole o conteúdo aqui (opcional)</label><textarea id="csv-input-bonus" rows="6" style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:6px;font-size:11px;font-family:monospace;resize:vertical" placeholder="Ou cole o conteúdo do CSV aqui..."></textarea></div>
+    <div class="form-group"><label>Modo de importação</label><select id="import-mode-bonus" style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px"><option value="add">Adicionar (manter funcionários existentes)</option><option value="replace">Substituir tudo</option></select></div>
+    <div class="modal-actions"><button class="btn-secondary" onclick="closeImport()">Cancelar</button><button class="btn-primary" onclick="processImportBonus()">Importar</button></div>
   </div>
 </div>
 
@@ -199,6 +279,7 @@ tr:hover td{background:#fafafa}
     <button class="btn-primary" onclick="saveData()">💾 Salvar</button>
   </div>
 </div>
+
 <div class="modal-overlay" id="modal">
   <div class="modal">
     <h3 id="modal-title">➕ Adicionar Funcionário</h3>
@@ -213,6 +294,7 @@ tr:hover td{background:#fafafa}
     <div class="modal-actions"><button class="btn-secondary" onclick="closeModal()">Cancelar</button><button class="btn-primary" onclick="saveEmployee()">Salvar</button></div>
   </div>
 </div>
+
 <div id="statusMenu" class="status-menu">
   <div class="status-menu-item s-elegivel" onclick="setPending('ELEGÍVEL')">✅ ELEGÍVEL</div>
   <div class="status-menu-item s-atestado" onclick="setPending('ATESTADO')">📋 ATESTADO</div>
@@ -223,11 +305,12 @@ tr:hover td{background:#fafafa}
   <div class="obs-input-wrap"><input type="text" id="statusObs" placeholder="Observação / motivo (opcional)"></div>
   <button class="apply-btn" onclick="applyStatus()">✔ Aplicar</button>
 </div>
+
 <script>
-const DEFAULT = {
+const DEFAULT={
   months:{
     "Jan/2026":{
-      bonusValue:586.20,
+      bonusValue:586.20,numPedidos:0,
       employees:[
         {id:1,nome:"BARBARA NASCIMENTO",loja:"BROOKLIN",tipo:"CLT",status:"ELEGÍVEL",obs:"",pix:"itau"},
         {id:2,nome:"BARBARA XAVIER",loja:"BROOKLIN",tipo:"CLT",status:"ELEGÍVEL",obs:"",pix:"itau"},
@@ -263,43 +346,45 @@ const DEFAULT = {
         {id:32,nome:"PAULO COSTA",loja:"PERDIZES",tipo:"PJ",status:"ELEGÍVEL",obs:"",pix:"064.673.573-02"},
         {id:33,nome:"MARIANE TANGIONI PEREIRA",loja:"VILA MARIANA",tipo:"PJ",status:"ELEGÍVEL",obs:"",pix:"11991442446"}
       ],
-      proximoMes:["augusto reis","leandro","carla","bruno chimendes"],
-      numPedidos:0
+      proximoMes:["augusto reis","leandro","carla","bruno chimendes"]
     }
   },
   currentMonth:"Jan/2026"
 };
+
 // ── Firebase ──────────────────────────────────────────
 const FB_CONFIG={apiKey:"AIzaSyCyMw54A5hb1uiOypt5mABVxo96aUNLZtw",authDomain:"fat-buddha-hub.firebaseapp.com",databaseURL:"https://fat-buddha-hub-default-rtdb.firebaseio.com",projectId:"fat-buddha-hub",storageBucket:"fat-buddha-hub.firebasestorage.app",messagingSenderId:"748093225714",appId:"1:748093225714:web:58c7e22c7b588b797eee6b"};
 firebase.initializeApp(FB_CONFIG);
 const fbDb=firebase.database();
 const bonusRef=fbDb.ref('bonus');
-// ──────────────────────────────────────────────────────
+
 let data=JSON.parse(JSON.stringify(DEFAULT));
-let currentMonth=data.currentMonth||"MARÇO";
+let currentMonth=data.currentMonth||"Jan/2026";
 let editingId=null,statusTargetId=null,pendingStatus=null,menuOpen=false;
+let chartPagamento=null,chartElegiveis=null,chartMotivos=null,chartPorcentagem=null,chartLojas=null;
 
 function getNextId(){
   const allIds=Object.values(data.months).flatMap(m=>(m.employees||[]).map(e=>e.id||0));
   return allIds.length>0?Math.max(...allIds)+1:1;
 }
-
-// Corrige IDs duplicados nos dados carregados
 function fixDuplicateIds(){
-  const seen=new Set();
-  let nextFix=1;
-  Object.values(data.months).forEach(m=>{
-    (m.employees||[]).forEach(e=>{
-      while(seen.has(e.id)){e.id=Date.now()+ nextFix++;}
-      seen.add(e.id);
-    });
-  });
+  const seen=new Set();let nextFix=1;
+  Object.values(data.months).forEach(m=>{(m.employees||[]).forEach(e=>{while(seen.has(e.id)){e.id=Date.now()+nextFix++;}seen.add(e.id);});});
 }
-
 function lojaClass(l){return l==='BROOKLIN'?'loja-brooklin':l==='PERDIZES'?'loja-perdizes':l==='VILA MARIANA'?'loja-vila':(l==='MATRIZ'||l==='MATRIZ PRODUÇÃO')?'loja-matriz':'loja-outro';}
 function statusClass(s){const m={'ELEGÍVEL':'s-elegivel','ATESTADO':'s-atestado','ADVERTÊNCIA':'s-advertencia','ADVERTÊNCIA/PONTO':'s-advertencia-ponto','FALTA INJUSTIFICADA':'s-falta','NOTA PRAÇA':'s-nota-praca','DEMITIDO':'s-demitido'};return m[s]||'s-elegivel';}
-function getM(){return data.months[currentMonth]||{employees:[],proximoMes:[]};}
+function getM(){return data.months[currentMonth]||{employees:[],proximoMes:[],bonusValue:586.20,numPedidos:0};}
 
+// ── VIEW SWITCH ──
+function switchView(v){
+  document.getElementById('view-painel').style.display=v==='painel'?'block':'none';
+  document.getElementById('view-analytics').style.display=v==='analytics'?'block':'none';
+  document.getElementById('vtab-painel').classList.toggle('active',v==='painel');
+  document.getElementById('vtab-analytics').classList.toggle('active',v==='analytics');
+  if(v==='analytics')renderAnalytics();
+}
+
+// ── MONTH BAR ──
 function renderMonths(){
   const bar=document.getElementById('monthBar');bar.innerHTML='';
   Object.keys(data.months).forEach(m=>{
@@ -326,16 +411,15 @@ function renameMonth(old){
   if(!novo||novo===old)return;
   if(data.months[novo]){alert('Já existe um mês com esse nome!');return;}
   const meses={};
-  Object.keys(data.months).forEach(k=>{
-    meses[k===old?novo:k]=data.months[k];
-  });
+  Object.keys(data.months).forEach(k=>{meses[k===old?novo:k]=data.months[k];});
   data.months=meses;
   if(currentMonth===old){currentMonth=novo;data.currentMonth=novo;}
   autoSave();renderAll();
 }
 function addNewMonth(){
   const n=prompt('Nome do mês (ex: Mar/2026):');if(!n||data.months[n])return;
-  data.months[n]={bonusValue:586.20,numPedidos:0,employees:[],proximoMes:[]};currentMonth=n;data.currentMonth=n;autoSave();renderAll();
+  data.months[n]={bonusValue:586.20,numPedidos:0,employees:[],proximoMes:[]};
+  currentMonth=n;data.currentMonth=n;autoSave();renderAll();
 }
 function copyToNextMonth(){
   const n=prompt('Nome do próximo mês (ex: Mar/2026):','');if(!n)return;
@@ -343,72 +427,83 @@ function copyToNextMonth(){
   const c=getM();
   const el=c.employees.map(e=>({...e,obs:'',status:'ELEGÍVEL'}));
   const fi=(c.proximoMes||[]).map((nm,i)=>({id:getNextId()+i,nome:nm.toUpperCase(),loja:'BROOKLIN',tipo:'CLT',status:'ELEGÍVEL',obs:'',pix:''}));
-  data.months[n]={bonusValue:c.bonusValue,numPedidos:c.numPedidos||0,employees:[...el,...fi],proximoMes:[]};
+  data.months[n]={bonusValue:c.bonusValue,numPedidos:0,employees:[...el,...fi],proximoMes:[]};
   currentMonth=n;data.currentMonth=n;autoSave();renderAll();
   alert('✅ Copiado para '+n+'!\n'+el.length+' funcionários + '+fi.length+' da fila adicionados.');
 }
 
-function renderAll(){renderMonths();renderTable();updateKPIs();renderLojas();renderProximo();
-  document.getElementById('bonusValue').value=getM().bonusValue||586.20;
-  document.getElementById('numPedidos').value=getM().numPedidos||'';
+// ── RENDER ALL ──
+// !! FIX: carrega valores do mês ANTES de chamar updateKPIs, evitando sobreposição entre meses
+function renderAll(){
+  renderMonths();
+  // Carrega valores corretos do mês atual no DOM primeiro
+  const m=getM();
+  document.getElementById('bonusValue').value=m.bonusValue!=null?m.bonusValue:586.20;
+  document.getElementById('numPedidos').value=m.numPedidos||'';
+  renderTable();
+  updateKPIs();
+  renderLojas();
+  renderProximo();
   document.getElementById('headerInfo').textContent=currentMonth+' — '+new Date().toLocaleDateString('pt-BR');
 }
+
+// !! FIX: updateKPIs NÃO recalcula bonusValue a partir de numPedidos.
+// Só calcBonusByPedidos() faz isso, quando o usuário altera o campo explicitamente.
+function updateKPIs(){
+  const emps=getM().employees;
+  const el=emps.filter(e=>e.status==='ELEGÍVEL'),pr=emps.filter(e=>e.status!=='ELEGÍVEL');
+  const bv=parseFloat(document.getElementById('bonusValue').value)||0;
+  const pedidos=parseInt(document.getElementById('numPedidos').value)||0;
+  // Salva no mês atual sem recalcular bonusValue
+  if(data.months[currentMonth]){
+    data.months[currentMonth].bonusValue=bv;
+    data.months[currentMonth].numPedidos=pedidos;
+  }
+  document.getElementById('kpi-elegiveis').textContent=el.length;
+  document.getElementById('kpi-perdem').textContent=pr.length;
+  document.getElementById('kpi-total').textContent=emps.length;
+  document.getElementById('kpi-valor').textContent='R$ '+(el.length*bv).toLocaleString('pt-BR',{minimumFractionDigits:2});
+  const mot={};pr.forEach(e=>{mot[e.status]=(mot[e.status]||0)+1;});
+  document.getElementById('kpi-perdem-sub').textContent=Object.entries(mot).map(([k,v])=>v+'× '+k).join(', ')||'—';
+}
+
+// Só calcula bonusValue quando usuário altera numPedidos explicitamente
 function calcBonusByPedidos(){
   const pedidos=parseInt(document.getElementById('numPedidos').value)||0;
-  if(pedidos>0){
-    const el=getM().employees.filter(e=>e.status==='ELEGÍVEL');
-    const perPessoa=el.length>0?(pedidos/el.length):0;
+  const el=getM().employees.filter(e=>e.status==='ELEGÍVEL');
+  if(pedidos>0&&el.length>0){
+    const perPessoa=(pedidos/el.length);
     document.getElementById('bonusValue').value=perPessoa.toFixed(2);
+  }
+  if(data.months[currentMonth]){
+    data.months[currentMonth].numPedidos=pedidos;
+    data.months[currentMonth].bonusValue=parseFloat(document.getElementById('bonusValue').value)||0;
   }
   updateKPIs();renderLojas();autoSave();
 }
-function getSelectedStatuses(){
-  const opts=[...document.querySelectorAll('.ms-opt:checked')].map(c=>c.value);
-  return opts;
+
+// Salva bonusValue quando editado diretamente
+function saveBonusValue(){
+  const bv=parseFloat(document.getElementById('bonusValue').value)||0;
+  if(data.months[currentMonth])data.months[currentMonth].bonusValue=bv;
+  updateKPIs();renderLojas();autoSave();
 }
-function toggleMultiStatus(e){
-  e.stopPropagation();
-  const d=document.getElementById('multiStatusDropdown');
-  d.style.display=d.style.display==='none'?'block':'none';
-}
-function multiStatusAll(cb){
-  document.querySelectorAll('.ms-opt').forEach(c=>c.checked=false);
-  renderTable();
-  updateMultiStatusLabel();
-}
-function multiStatusChange(){
-  const any=[...document.querySelectorAll('.ms-opt:checked')].length>0;
-  document.getElementById('ms-todos').checked=!any;
-  renderTable();
-  updateMultiStatusLabel();
-}
-function updateMultiStatusLabel(){
-  const sel=[...document.querySelectorAll('.ms-opt:checked')].map(c=>c.value);
-  const lbl=document.getElementById('multiStatusLabel');
-  if(!sel.length){lbl.textContent='Todos';}
-  else if(sel.length===1){lbl.textContent=sel[0];}
-  else{lbl.textContent=sel.length+' selecionados';}
-}
-document.addEventListener('click',function(e){
-  const d=document.getElementById('multiStatusDropdown');
-  if(d&&!document.getElementById('multiStatusBtn').contains(e.target)&&!d.contains(e.target)){d.style.display='none';}
-});
+
+function getSelectedStatuses(){return[...document.querySelectorAll('.ms-opt:checked')].map(c=>c.value);}
+function toggleMultiStatus(e){e.stopPropagation();const d=document.getElementById('multiStatusDropdown');d.style.display=d.style.display==='none'?'block':'none';}
+function multiStatusAll(cb){document.querySelectorAll('.ms-opt').forEach(c=>c.checked=false);renderTable();updateMultiStatusLabel();}
+function multiStatusChange(){const any=[...document.querySelectorAll('.ms-opt:checked')].length>0;document.getElementById('ms-todos').checked=!any;renderTable();updateMultiStatusLabel();}
+function updateMultiStatusLabel(){const sel=[...document.querySelectorAll('.ms-opt:checked')].map(c=>c.value);const lbl=document.getElementById('multiStatusLabel');if(!sel.length){lbl.textContent='Todos';}else if(sel.length===1){lbl.textContent=sel[0];}else{lbl.textContent=sel.length+' selecionados';}}
+document.addEventListener('click',function(e){const d=document.getElementById('multiStatusDropdown');if(d&&!document.getElementById('multiStatusBtn').contains(e.target)&&!d.contains(e.target)){d.style.display='none';}});
 function getFiltered(){
-  const lj=document.getElementById('filterLoja').value;
-  const sel=getSelectedStatuses();
-  return getM().employees.filter(e=>{
-    if(lj&&e.loja!==lj)return false;
-    if(sel.length&&!sel.includes(e.status))return false;
-    return true;
-  });
+  const lj=document.getElementById('filterLoja').value;const sel=getSelectedStatuses();
+  return getM().employees.filter(e=>{if(lj&&e.loja!==lj)return false;if(sel.length&&!sel.includes(e.status))return false;return true;});
 }
 function renderTable(){
   const emps=getFiltered(),body=document.getElementById('tableBody');body.innerHTML='';
   if(!emps.length){body.innerHTML='<tr><td colspan="8" style="text-align:center;color:#9ca3af;padding:24px">Nenhum funcionário encontrado.</td></tr>';document.getElementById('table-count').textContent='0 funcionários';return;}
   document.getElementById('table-count').textContent=emps.length+' funcionário'+(emps.length!==1?'s':'');
-  const cltList=emps.filter(e=>e.tipo==='CLT');
-  const pjList=emps.filter(e=>e.tipo==='PJ');
-  const outros=emps.filter(e=>e.tipo!=='CLT'&&e.tipo!=='PJ');
+  const cltList=emps.filter(e=>e.tipo==='CLT'),pjList=emps.filter(e=>e.tipo==='PJ'),outros=emps.filter(e=>e.tipo!=='CLT'&&e.tipo!=='PJ');
   let counter=1;
   function addRow(e){
     const tr=document.createElement('tr');
@@ -422,43 +517,12 @@ function renderTable(){
       <td><button class="btn-danger" onclick="removeEmployee(${e.id})">✕ Remover</button></td>`;
     body.appendChild(tr);
   }
-  if(cltList.length){
-    const hdr=document.createElement('tr');
-    hdr.innerHTML=`<td colspan="8" style="background:#eff6ff;border-top:2px solid #3b82f6;border-bottom:1px solid #bfdbfe;padding:7px 12px;font-size:11px;font-weight:700;color:#1d4ed8;letter-spacing:.5px">👔 CLT — ${cltList.length} funcionário${cltList.length!==1?'s':''}</td>`;
-    body.appendChild(hdr);
-    cltList.forEach(addRow);
-  }
-  if(pjList.length){
-    const hdr=document.createElement('tr');
-    hdr.innerHTML=`<td colspan="8" style="background:#faf5ff;border-top:2px solid #a855f7;border-bottom:1px solid #e9d5ff;padding:7px 12px;font-size:11px;font-weight:700;color:#7e22ce;letter-spacing:.5px">🟣 PJ — ${pjList.length} funcionário${pjList.length!==1?'s':''}</td>`;
-    body.appendChild(hdr);
-    pjList.forEach(addRow);
-  }
-  if(outros.length){
-    const hdr=document.createElement('tr');
-    hdr.innerHTML=`<td colspan="8" style="background:#f9fafb;border-top:2px solid #9ca3af;border-bottom:1px solid #e5e7eb;padding:7px 12px;font-size:11px;font-weight:700;color:#374151;letter-spacing:.5px">👤 OUTROS — ${outros.length} funcionário${outros.length!==1?'s':''}</td>`;
-    body.appendChild(hdr);
-    outros.forEach(addRow);
-  }
-}
-function updateKPIs(){
-  const emps=getM().employees;
-  const el=emps.filter(e=>e.status==='ELEGÍVEL'),pr=emps.filter(e=>e.status!=='ELEGÍVEL');
-  const pedidos=parseInt(document.getElementById('numPedidos').value)||0;
-  if(pedidos>0&&el.length>0){
-    document.getElementById('bonusValue').value=(pedidos/el.length).toFixed(2);
-  }
-  const bv=parseFloat(document.getElementById('bonusValue').value)||0;
-  if(data.months[currentMonth]){data.months[currentMonth].bonusValue=bv;data.months[currentMonth].numPedidos=pedidos;}
-  document.getElementById('kpi-elegiveis').textContent=el.length;
-  document.getElementById('kpi-perdem').textContent=pr.length;
-  document.getElementById('kpi-total').textContent=emps.length;
-  document.getElementById('kpi-valor').textContent='R$ '+(el.length*bv).toLocaleString('pt-BR',{minimumFractionDigits:2});
-  const mot={};pr.forEach(e=>{mot[e.status]=(mot[e.status]||0)+1;});
-  document.getElementById('kpi-perdem-sub').textContent=Object.entries(mot).map(([k,v])=>v+'× '+k).join(', ')||'—';
+  if(cltList.length){const hdr=document.createElement('tr');hdr.innerHTML=`<td colspan="8" style="background:#eff6ff;border-top:2px solid #3b82f6;border-bottom:1px solid #bfdbfe;padding:7px 12px;font-size:11px;font-weight:700;color:#1d4ed8;letter-spacing:.5px">👔 CLT — ${cltList.length} funcionário${cltList.length!==1?'s':''}</td>`;body.appendChild(hdr);cltList.forEach(addRow);}
+  if(pjList.length){const hdr=document.createElement('tr');hdr.innerHTML=`<td colspan="8" style="background:#faf5ff;border-top:2px solid #a855f7;border-bottom:1px solid #e9d5ff;padding:7px 12px;font-size:11px;font-weight:700;color:#7e22ce;letter-spacing:.5px">🟣 PJ — ${pjList.length} funcionário${pjList.length!==1?'s':''}</td>`;body.appendChild(hdr);pjList.forEach(addRow);}
+  if(outros.length){const hdr=document.createElement('tr');hdr.innerHTML=`<td colspan="8" style="background:#f9fafb;border-top:2px solid #9ca3af;border-bottom:1px solid #e5e7eb;padding:7px 12px;font-size:11px;font-weight:700;color:#374151;letter-spacing:.5px">👤 OUTROS — ${outros.length}</td>`;body.appendChild(hdr);outros.forEach(addRow);}
 }
 function renderLojas(){
-  const emps=getM().employees,bv=parseFloat(document.getElementById('bonusValue').value)||586.20;
+  const emps=getM().employees,bv=parseFloat(document.getElementById('bonusValue').value)||0;
   const grid=document.getElementById('lojasGrid');grid.innerHTML='';
   ['BROOKLIN','PERDIZES','VILA MARIANA','MATRIZ PRODUÇÃO'].forEach(l=>{
     const le=emps.filter(e=>e.loja===l);if(!le.length)return;
@@ -474,10 +538,7 @@ function renderLojas(){
 }
 function renderProximo(){
   const list=getM().proximoMes||[],div=document.getElementById('proximoList');div.innerHTML='';
-  list.forEach((n,i)=>{
-    const item=document.createElement('div');item.className='proximo-item';
-    item.innerHTML=`<span>👤 ${n}</span><button onclick="removeProximo(${i})" title="Remover">✕</button>`;div.appendChild(item);
-  });
+  list.forEach((n,i)=>{const item=document.createElement('div');item.className='proximo-item';item.innerHTML=`<span>👤 ${n}</span><button onclick="removeProximo(${i})" title="Remover">✕</button>`;div.appendChild(item);});
   const add=document.createElement('div');add.className='add-proximo';
   add.innerHTML=`<span>＋</span><input type="text" id="proximoInput" placeholder="Digite o nome e clique em Adicionar..." onkeydown="if(event.key==='Enter')addProximo()" onblur="addProximo()" style="width:220px"><button onclick="addProximo()" style="background:#1a1a2e;color:white;border:none;padding:4px 10px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:700;margin-left:4px">Adicionar</button>`;
   div.appendChild(add);
@@ -486,30 +547,19 @@ function renderProximo(){
 function addProximo(){const v=document.getElementById('proximoInput').value.trim();if(!v)return;if(!data.months[currentMonth].proximoMes)data.months[currentMonth].proximoMes=[];data.months[currentMonth].proximoMes.push(v);autoSave();renderProximo();}
 function removeProximo(i){data.months[currentMonth].proximoMes.splice(i,1);autoSave();renderProximo();}
 
+// ── STATUS MENU ──
 function openStatusMenu(e,id){
   e.stopPropagation();statusTargetId=id;pendingStatus=null;
   const menu=document.getElementById('statusMenu');
   const emp=getM().employees.find(x=>x.id===id);
   document.getElementById('statusObs').value=emp?emp.obs:'';
   document.querySelectorAll('#statusMenu .status-menu-item').forEach(el=>el.style.fontWeight='');
-  // Destaca o status atual no menu
-  if(emp){
-    document.querySelectorAll('#statusMenu .status-menu-item').forEach(el=>{
-      if(el.textContent.trim().endsWith(emp.status))el.style.fontWeight='900';
-    });
-  }
-  // Abre o menu ANTES de medir, para obter dimensões reais
+  if(emp){document.querySelectorAll('#statusMenu .status-menu-item').forEach(el=>{if(el.textContent.trim().endsWith(emp.status))el.style.fontWeight='900';});}
   menu.classList.add('open');menuOpen=true;
   const r=e.target.getBoundingClientRect();
-  const mh=menu.offsetHeight||260;
-  const mw=menu.offsetWidth||230;
-  const vh=window.innerHeight;
-  const vw=window.innerWidth;
-  // position:fixed → NÃO somar window.scrollY
-  let top=r.bottom+4;
-  if(top+mh>vh-8){top=Math.max(8,r.top-mh-4);} // flip para cima se não couber
-  let left=r.left;
-  if(left+mw>vw-8){left=Math.max(8,vw-mw-8);}  // ajusta se passar da direita
+  const mh=menu.offsetHeight||260,mw=menu.offsetWidth||230,vh=window.innerHeight,vw=window.innerWidth;
+  let top=r.bottom+4;if(top+mh>vh-8){top=Math.max(8,r.top-mh-4);}
+  let left=r.left;if(left+mw>vw-8){left=Math.max(8,vw-mw-8);}
   menu.style.top=top+'px';menu.style.left=left+'px';
 }
 document.addEventListener('click',()=>{if(menuOpen){document.getElementById('statusMenu').classList.remove('open');menuOpen=false;}});
@@ -524,6 +574,7 @@ function applyStatus(){
   autoSave();renderTable();updateKPIs();renderLojas();
 }
 
+// ── MODAL ──
 function openAddModal(){editingId=null;document.getElementById('modal-title').textContent='➕ Adicionar Funcionário';['f-nome','f-obs','f-pix'].forEach(id=>document.getElementById(id).value='');document.getElementById('f-loja').value='BROOKLIN';document.getElementById('f-tipo').value='CLT';document.getElementById('f-status').value='ELEGÍVEL';document.getElementById('modal').classList.add('open');}
 function openEditModal(id){
   const emp=getM().employees.find(e=>e.id===id);if(!emp)return;editingId=id;
@@ -546,109 +597,151 @@ function removeEmployee(id){
   data.months[currentMonth].employees=data.months[currentMonth].employees.filter(e=>e.id!==id);
   autoSave();renderAll();
 }
-function encodeMonthKeys(months){const r={};Object.keys(months).forEach(k=>{r[k.replace(/\//g,'_')]=months[k];});return r;}function decodeMonthKeys(months){const r={};Object.keys(months).forEach(k=>{r[k.replace(/_/g,'/')]=months[k];});return r;}
+
+// ── FIREBASE ──
+function encodeMonthKeys(months){const r={};Object.keys(months).forEach(k=>{r[k.replace(/\//g,'_')]=months[k];});return r;}
+function decodeMonthKeys(months){const r={};Object.keys(months).forEach(k=>{r[k.replace(/_/g,'/')]=months[k];});return r;}
 function autoSave(){const toSave={...data,months:encodeMonthKeys(data.months)};bonusRef.set(toSave).catch(e=>console.error('Firebase save:',e));}
 function saveData(){autoSave();const m=document.getElementById('savedMsg');m.style.display='inline';setTimeout(()=>m.style.display='none',2500);}
+
+// ── IMPORT/EXPORT ──
 function openImport(){document.getElementById('import-overlay-bonus').classList.add('open');}
 function closeImport(){document.getElementById('import-overlay-bonus').classList.remove('open');document.getElementById('csv-input-bonus').value='';}
-
-function loadCSVFileBonus(input){
-  const file=input.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{document.getElementById('csv-input-bonus').value=e.target.result;};
-  reader.readAsText(file,'UTF-8');
-}
-
+function loadCSVFileBonus(input){const file=input.files[0];if(!file)return;const reader=new FileReader();reader.onload=e=>{document.getElementById('csv-input-bonus').value=e.target.result;};reader.readAsText(file,'UTF-8');}
 function processImportBonus(){
-  const text=document.getElementById('csv-input-bonus').value.trim();
-  if(!text){alert('Cole ou carregue um arquivo CSV primeiro.');return;}
-
-  function parseCSVAll(raw){
-    const rows=[];let row=[],cur='',inQ=false;
-    for(let i=0;i<raw.length;i++){
-      const ch=raw[i];
-      if(ch==='"'){if(inQ&&raw[i+1]==='"'){cur+='"';i++;}else{inQ=!inQ;}}
-      else if(ch===','&&!inQ){row.push(cur.trim());cur='';}
-      else if((ch==='\n'||ch==='\r')&&!inQ){if(ch==='\r'&&raw[i+1]==='\n')i++;row.push(cur.trim());cur='';rows.push(row);row=[];}
-      else{cur+=ch;}
-    }
-    row.push(cur.trim());if(row.some(c=>c))rows.push(row);return rows;
-  }
-
-  function parseMoney(s){if(!s)return 0;return parseFloat(s.replace(/R\$\s*/,'').replace(/\s/g,'').replace(/\./g,'').replace(',','.'))||0;}
-
+  const text=document.getElementById('csv-input-bonus').value.trim();if(!text){alert('Cole ou carregue um arquivo CSV primeiro.');return;}
+  function parseCSVAll(raw){const rows=[];let row=[],cur='',inQ=false;for(let i=0;i<raw.length;i++){const ch=raw[i];if(ch==='"'){if(inQ&&raw[i+1]==='"'){cur+='"';i++;}else{inQ=!inQ;}}else if(ch===','&&!inQ){row.push(cur.trim());cur='';}else if((ch==='\n'||ch==='\r')&&!inQ){if(ch==='\r'&&raw[i+1]==='\n')i++;row.push(cur.trim());cur='';rows.push(row);row=[];}else{cur+=ch;}}row.push(cur.trim());if(row.some(c=>c))rows.push(row);return rows;}
   const LOJA_MAP={'MATRIZ/ PRODUÇAO':'MATRIZ PRODUÇÃO','MATRIZ/ PRODUCAO':'MATRIZ PRODUÇÃO','MATRIZ/PRODUÇAO':'MATRIZ PRODUÇÃO','MATRIZ':'MATRIZ PRODUÇÃO','MATRIZ ESCRITORIO':'MATRIZ ESCRITÓRIO','ESCRITORIO':'MATRIZ ESCRITÓRIO','ESCRITÓRIO':'MATRIZ ESCRITÓRIO'};
   function normLoja(s){const u=s.toUpperCase().trim();return LOJA_MAP[u]||u;}
   const KNOWN=['PERDIZES','BROOKLIN','VILA MARIANA','MATRIZ','ESCRITORIO','ESCRITÓRIO'];
   const isKnownLoja=s=>KNOWN.some(k=>s.toUpperCase().trim().startsWith(k));
-
-  const rows=parseCSVAll(text);
-  const r0=rows[0]||[];
-  const h0=(r0[0]||'').trim().toLowerCase().replace(/[^a-z]/g,'');
-  const h1=(r0[1]||'').trim().toLowerCase().replace(/[^a-z]/g,'');
-
+  const rows=parseCSVAll(text);const r0=rows[0]||[];
+  const h0=(r0[0]||'').trim().toLowerCase().replace(/[^a-z]/g,'');const h1=(r0[1]||'').trim().toLowerCase().replace(/[^a-z]/g,'');
   const parsed=[];
-
-  if(h0==='nome'&&h1==='loja'){
-    // Bonus panel's own export: Nome,Loja,Tipo,Status,Observação,PIX
-    for(let i=1;i<rows.length;i++){
-      const c=rows[i];
-      const nome=(c[0]||'').trim();if(!nome)continue;
-      parsed.push({nome,loja:normLoja(c[1]||''),tipo:(c[2]||'CLT').toUpperCase(),status:(c[3]||'ELEGÍVEL').toUpperCase(),obs:c[4]||'',pix:c[5]||''});
-    }
-  } else if(h0==='loja'&&h1==='nome'){
-    // Folha salarial export: loja,nome,tipo,cargo,salario,inicio,pix,...
-    const headers=r0.map(h=>h.trim().toLowerCase().replace(/[^a-z]/g,''));
-    const idx=h=>headers.indexOf(h);
-    for(let i=1;i<rows.length;i++){
-      const c=rows[i];const nome=(c[idx('nome')]||'').trim();if(!nome)continue;
-      parsed.push({nome,loja:normLoja(c[idx('loja')]||''),tipo:(c[idx('tipo')]||'CLT').toUpperCase(),status:'ELEGÍVEL',obs:'',pix:c[idx('pix')]||''});
-    }
-  } else if(h0==='un'){
-    // FAT BUDDHA format (PJ)
-    for(let i=1;i<rows.length;i++){
-      const c=rows[i];const col0=(c[0]||'').trim();const nome=(c[1]||'').trim();
-      if(!nome||nome.toLowerCase()==='nome'||nome.toLowerCase().startsWith('custo total'))continue;
-      if(!isKnownLoja(col0))continue;
-      parsed.push({nome,loja:normLoja(col0),tipo:'PJ',status:'ELEGÍVEL',obs:'',pix:(c[5]||'').trim()});
-    }
-  } else {
-    // FGLR format (CLT, no header)
-    for(let i=0;i<rows.length;i++){
-      const c=rows[i];const col0=(c[0]||'').trim();const nome=(c[1]||'').trim();
-      if(!nome||nome.toLowerCase()==='nome'||nome.toLowerCase().startsWith('custo total'))continue;
-      if(!isKnownLoja(col0))continue;
-      parsed.push({nome,loja:normLoja(col0),tipo:'CLT',status:'ELEGÍVEL',obs:'',pix:(c[5]||'').trim()});
-    }
-  }
-
+  if(h0==='nome'&&h1==='loja'){for(let i=1;i<rows.length;i++){const c=rows[i];const nome=(c[0]||'').trim();if(!nome)continue;parsed.push({nome,loja:normLoja(c[1]||''),tipo:(c[2]||'CLT').toUpperCase(),status:(c[3]||'ELEGÍVEL').toUpperCase(),obs:c[4]||'',pix:c[5]||''});}}
+  else if(h0==='loja'&&h1==='nome'){const headers=r0.map(h=>h.trim().toLowerCase().replace(/[^a-z]/g,''));const idx=h=>headers.indexOf(h);for(let i=1;i<rows.length;i++){const c=rows[i];const nome=(c[idx('nome')]||'').trim();if(!nome)continue;parsed.push({nome,loja:normLoja(c[idx('loja')]||''),tipo:(c[idx('tipo')]||'CLT').toUpperCase(),status:'ELEGÍVEL',obs:'',pix:c[idx('pix')]||''}); }}
+  else if(h0==='un'){for(let i=1;i<rows.length;i++){const c=rows[i];const col0=(c[0]||'').trim();const nome=(c[1]||'').trim();if(!nome||nome.toLowerCase()==='nome'||nome.toLowerCase().startsWith('custo total'))continue;if(!isKnownLoja(col0))continue;parsed.push({nome,loja:normLoja(col0),tipo:'PJ',status:'ELEGÍVEL',obs:'',pix:(c[5]||'').trim()});}}
+  else{for(let i=0;i<rows.length;i++){const c=rows[i];const col0=(c[0]||'').trim();const nome=(c[1]||'').trim();if(!nome||nome.toLowerCase()==='nome'||nome.toLowerCase().startsWith('custo total'))continue;if(!isKnownLoja(col0))continue;parsed.push({nome,loja:normLoja(col0),tipo:'CLT',status:'ELEGÍVEL',obs:'',pix:(c[5]||'').trim()});}}
   if(!parsed.length){alert('Nenhum dado válido encontrado. Verifique o formato.');return;}
-  const mode=document.getElementById('import-mode-bonus').value;
-  const m=getM();
-  if(mode==='replace'){
-    if(!confirm(`Substituir os ${m.employees.length} funcionários atuais por ${parsed.length} novos?`))return;
-    m.employees=parsed;
-  } else {
-    const existentes=new Set(m.employees.map(e=>e.nome.toUpperCase()));
-    const novos=parsed.filter(e=>!existentes.has(e.nome.toUpperCase()));
-    m.employees.push(...novos);
-    if(novos.length<parsed.length)alert(`ℹ️ ${parsed.length-novos.length} funcionário(s) já existiam e foram ignorados.`);
-  }
-  autoSave();closeImport();renderAll();
-  alert(`✅ ${parsed.length} funcionário(s) importado(s) com sucesso!`);
+  const mode=document.getElementById('import-mode-bonus').value;const m=getM();
+  if(mode==='replace'){if(!confirm(`Substituir os ${m.employees.length} funcionários atuais por ${parsed.length} novos?`))return;m.employees=parsed;}
+  else{const existentes=new Set(m.employees.map(e=>e.nome.toUpperCase()));const novos=parsed.filter(e=>!existentes.has(e.nome.toUpperCase()));m.employees.push(...novos);if(novos.length<parsed.length)alert(`ℹ️ ${parsed.length-novos.length} funcionário(s) já existiam e foram ignorados.`);}
+  autoSave();closeImport();renderAll();alert(`✅ ${parsed.length} funcionário(s) importado(s) com sucesso!`);
 }
-
 function exportCSV(){
   const emps=getM().employees;
   const rows=[['Nome','Loja','Tipo','Status','Observação','PIX'],...emps.map(e=>[e.nome,e.loja,e.tipo,e.status,e.obs,e.pix])];
   const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
-  const b=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const b=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='Bonus_'+currentMonth.replace('/','_')+'.csv';a.click();
 }
-// Carrega dados do Firebase em tempo real
+
+// ── ANALYTICS ──
+function getMonthStats(){
+  return Object.entries(data.months).map(([nome,m])=>{
+    const emps=m.employees||[];
+    const el=emps.filter(e=>e.status==='ELEGÍVEL');
+    const pr=emps.filter(e=>e.status!=='ELEGÍVEL');
+    const bv=m.bonusValue||0;
+    const total=el.length*bv;
+    const mot={};pr.forEach(e=>{mot[e.status]=(mot[e.status]||0)+1;});
+    return{nome,total:emps.length,elegiveis:el.length,perdem:pr.length,bv,pagamento:total,pedidos:m.numPedidos||0,motivos:mot,pct:emps.length>0?Math.round(el.length/emps.length*100):0};
+  });
+}
+
+function renderAnalytics(){
+  const stats=getMonthStats();
+  const labels=stats.map(s=>s.nome);
+
+  // KPIs
+  const totalPago=stats.reduce((a,s)=>a+s.pagamento,0);
+  const mediaEl=stats.length>0?(stats.reduce((a,s)=>a+s.elegiveis,0)/stats.length).toFixed(1):0;
+  const mediaPr=stats.length>0?(stats.reduce((a,s)=>a+s.perdem,0)/stats.length).toFixed(1):0;
+  document.getElementById('ak-meses').textContent=stats.length;
+  document.getElementById('ak-total').textContent='R$ '+totalPago.toLocaleString('pt-BR',{minimumFractionDigits:2});
+  document.getElementById('ak-media-el').textContent=mediaEl;
+  document.getElementById('ak-media-pr').textContent=mediaPr;
+
+  const COLORS=['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#84cc16','#f97316','#e11d48','#14b8a6','#a855f7','#eab308'];
+
+  // Chart: Total a Pagar por mês
+  if(chartPagamento)chartPagamento.destroy();
+  chartPagamento=new Chart(document.getElementById('chartPagamento'),{
+    type:'bar',
+    data:{labels,datasets:[{label:'Total a Pagar (R$)',data:stats.map(s=>s.pagamento),backgroundColor:'rgba(245,158,11,0.8)',borderColor:'#f59e0b',borderWidth:2,borderRadius:6}]},
+    options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'R$ '+c.raw.toLocaleString('pt-BR',{minimumFractionDigits:2})}}},scales:{y:{ticks:{callback:v=>'R$ '+v.toLocaleString('pt-BR')},grid:{color:'#f3f4f6'}},x:{grid:{display:false}}}}
+  });
+
+  // Chart: Elegíveis vs Perdem
+  if(chartElegiveis)chartElegiveis.destroy();
+  chartElegiveis=new Chart(document.getElementById('chartElegiveis'),{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'✅ Elegíveis',data:stats.map(s=>s.elegiveis),backgroundColor:'rgba(16,185,129,0.8)',borderColor:'#10b981',borderWidth:2,borderRadius:4},
+      {label:'❌ Perdem',data:stats.map(s=>s.perdem),backgroundColor:'rgba(239,68,68,0.8)',borderColor:'#ef4444',borderWidth:2,borderRadius:4}
+    ]},
+    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},scales:{x:{stacked:false,grid:{display:false}},y:{grid:{color:'#f3f4f6'}}}}
+  });
+
+  // Chart: Motivos acumulados (Doughnut)
+  const motivosAcc={};
+  stats.forEach(s=>Object.entries(s.motivos).forEach(([k,v])=>{motivosAcc[k]=(motivosAcc[k]||0)+v;}));
+  const mKeys=Object.keys(motivosAcc),mVals=mKeys.map(k=>motivosAcc[k]);
+  if(chartMotivos)chartMotivos.destroy();
+  chartMotivos=new Chart(document.getElementById('chartMotivos'),{
+    type:'doughnut',
+    data:{labels:mKeys,datasets:[{data:mVals,backgroundColor:COLORS.slice(0,mKeys.length),borderWidth:2,borderColor:'white'}]},
+    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:10},padding:8}},tooltip:{callbacks:{label:c=>c.label+': '+c.raw+' ocorrência'+(c.raw!==1?'s':'')}}}}
+  });
+
+  // Chart: % Elegíveis por mês (linha)
+  if(chartPorcentagem)chartPorcentagem.destroy();
+  chartPorcentagem=new Chart(document.getElementById('chartPorcentagem'),{
+    type:'line',
+    data:{labels,datasets:[{label:'% Elegíveis',data:stats.map(s=>s.pct),borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.1)',borderWidth:2.5,pointBackgroundColor:'#3b82f6',pointRadius:5,tension:.3,fill:true}]},
+    options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw+'% elegíveis'}}},scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%'},grid:{color:'#f3f4f6'}},x:{grid:{display:false}}}}
+  });
+
+  // Chart: Elegíveis por loja no mês atual (bar horizontal)
+  const lojas=['BROOKLIN','PERDIZES','VILA MARIANA','MATRIZ PRODUÇÃO'];
+  const curEmps=getM().employees;
+  const lojaEl=lojas.map(l=>curEmps.filter(e=>e.loja===l&&e.status==='ELEGÍVEL').length);
+  const lojaTot=lojas.map(l=>curEmps.filter(e=>e.loja===l).length);
+  if(chartLojas)chartLojas.destroy();
+  chartLojas=new Chart(document.getElementById('chartLojas'),{
+    type:'bar',
+    data:{labels:lojas,datasets:[
+      {label:'Total',data:lojaTot,backgroundColor:'rgba(203,213,225,0.6)',borderColor:'#cbd5e1',borderWidth:1,borderRadius:4},
+      {label:'✅ Elegíveis',data:lojaEl,backgroundColor:'rgba(16,185,129,0.8)',borderColor:'#10b981',borderWidth:2,borderRadius:4}
+    ]},
+    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},scales:{x:{grid:{display:false}},y:{grid:{color:'#f3f4f6'}}}}
+  });
+
+  // Tabela resumo
+  const tbody=document.getElementById('analyticsTableBody');tbody.innerHTML='';
+  stats.forEach((s,i)=>{
+    const isActive=s.nome===currentMonth;
+    const tr=document.createElement('tr');
+    if(isActive)tr.style.background='#eff6ff';
+    tr.innerHTML=`
+      <td style="font-weight:700;color:#1a1a2e">${s.nome}${isActive?' <span style="font-size:9px;background:#3b82f6;color:white;padding:1px 5px;border-radius:4px">atual</span>':''}</td>
+      <td style="text-align:center">${s.total}</td>
+      <td style="text-align:center;color:#059669;font-weight:700">${s.elegiveis}</td>
+      <td style="text-align:center;color:#dc2626;font-weight:700">${s.perdem}</td>
+      <td style="text-align:center">
+        <span style="display:inline-block;background:${s.pct>=80?'#dcfce7':s.pct>=60?'#fef3c7':'#fef2f2'};color:${s.pct>=80?'#166534':s.pct>=60?'#92400e':'#991b1b'};padding:2px 8px;border-radius:10px;font-weight:700;font-size:11px">${s.pct}%</span>
+      </td>
+      <td style="text-align:right">R$ ${s.bv.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+      <td style="text-align:right;font-weight:700;color:#f59e0b">R$ ${s.pagamento.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+      <td style="text-align:center;color:#6b7280">${s.pedidos||'—'}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ── FIREBASE LISTENER ──
 bonusRef.on('value', snapshot=>{
   const val=snapshot.val();
-  if(val && val.months){
+  if(val&&val.months){
     data={...val,months:decodeMonthKeys(val.months)};
     currentMonth=data.currentMonth||"Jan/2026";
     fixDuplicateIds();
