@@ -400,9 +400,26 @@ function lojaClass(l){return l==='BROOKLIN'?'loja-brooklin':l==='PERDIZES'?'loja
 function statusClass(s){const m={'ELEGÍVEL':'s-elegivel','ATESTADO':'s-atestado','ADVERTÊNCIA':'s-advertencia','ADVERTÊNCIA/PONTO':'s-advertencia-ponto','FALTA INJUSTIFICADA':'s-falta','NOTA PRAÇA':'s-nota-praca','DEMITIDO':'s-demitido'};return m[s]||'s-elegivel';}
 function getM(){return data.months[currentMonth]||{employees:[],proximoMes:[]};}
 
+
+// Ordena meses cronologicamente (Jan/2026, Fev/2026, Mar/2026...)
+const MONTH_ORDER={'jan':1,'fev':2,'mar':3,'abr':4,'mai':5,'jun':6,'jul':7,'ago':8,'set':9,'out':10,'nov':11,'dez':12,
+  'janeiro':1,'fevereiro':2,'março':3,'marco':3,'abril':4,'maio':5,'junho':6,'julho':7,'agosto':8,'setembro':9,'outubro':10,'novembro':11,'dezembro':12};
+function parseMonthKey(k){
+  const parts=k.replace('/',' ').split(/[\s\/\-_]+/);
+  let mon=0,yr=0;
+  parts.forEach(p=>{
+    const n=parseInt(p);
+    if(!isNaN(n)&&n>100){yr=n;}
+    else if(!isNaN(n)&&n>=1&&n<=12){mon=n;}
+    else{const m=MONTH_ORDER[p.toLowerCase().trim()];if(m)mon=m;}
+  });
+  return yr*100+mon;
+}
+function sortedMonthKeys(){return Object.keys(data.months).sort((a,b)=>parseMonthKey(a)-parseMonthKey(b));}
+
 function renderMonths(){
   const bar=document.getElementById('monthBar');bar.innerHTML='';
-  Object.keys(data.months).forEach(m=>{
+  sortedMonthKeys().forEach(m=>{
     const wrap=document.createElement('span');wrap.className='month-tab-wrap';
     const b=document.createElement('button');b.className='month-tab'+(m===currentMonth?' active':'');b.textContent=m;
     b.onclick=()=>{currentMonth=m;data.currentMonth=m;renderAll();};
@@ -760,7 +777,7 @@ function switchView(v){
 
 // ── ANALYTICS ──
 function renderAnalytics(){
-  const stats=Object.entries(data.months).map(([nome,m])=>{
+  const stats=sortedMonthKeys().map(nome=>{const m=data.months[nome];
     const emps=m.employees||[];
     const el=emps.filter(e=>e.status==='ELEGÍVEL');
     const pr=emps.filter(e=>e.status!=='ELEGÍVEL');
