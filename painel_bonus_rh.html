@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Painel Bônus RH — Fat Buddha</title>
-<!-- deploy: 2026-05-04 14:25:02 -->
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
 body{background:#f0f2f5;min-height:100vh}h
@@ -88,6 +87,39 @@ tr:hover td{background:#fafafa}
 .copy-btn{font-size:11px;background:#f0fdf4;color:#065f46;border:1px solid #bbf7d0;padding:5px 12px;border-radius:5px;cursor:pointer;font-weight:600}
 .copy-btn:hover{background:#dcfce7}
 @media(max-width:900px){.kpi-row{grid-template-columns:repeat(2,1fr)}.lojas-grid{grid-template-columns:repeat(2,1fr)}}
+/* ── ANALYTICS ── */
+.view-bar{background:#1a1a2e;padding:0 28px;display:flex;border-bottom:3px solid #0f0f1e}
+.view-tab{padding:10px 20px;cursor:pointer;font-weight:700;font-size:12px;color:rgba(255,255,255,.45);border-bottom:3px solid transparent;margin-bottom:-3px;transition:all .2s;white-space:nowrap}
+.view-tab:hover{color:rgba(255,255,255,.8)}.view-tab.active{color:white;border-bottom-color:#f59e0b}
+#view-analytics{display:none;padding:16px 28px 32px}
+.an-kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.an-kpi{background:white;border-radius:10px;padding:14px 16px;box-shadow:0 1px 5px rgba(0,0,0,.07);text-align:center}
+.an-kpi .av{font-size:22px;font-weight:800;color:#1a1a2e;margin:5px 0 2px}
+.an-kpi .al{font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px}
+.an-kpi .as{font-size:11px;color:#6b7280}
+.an-charts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.an-card{background:white;border-radius:10px;padding:16px 18px;box-shadow:0 1px 5px rgba(0,0,0,.07)}
+.an-card h3{font-size:11px;font-weight:700;color:#1a1a2e;text-transform:uppercase;letter-spacing:.4px;margin-bottom:14px}
+.an-card-wide{background:white;border-radius:10px;padding:16px 18px;box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:14px}
+.an-card-wide h3{font-size:11px;font-weight:700;color:#1a1a2e;text-transform:uppercase;letter-spacing:.4px;margin-bottom:14px}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:160px;border-bottom:2px solid #e5e7eb;padding-bottom:0;margin-bottom:6px}
+.bar-group{display:flex;flex-direction:column;align-items:center;flex:1;gap:2px;height:100%}
+.bar-group-bars{display:flex;align-items:flex-end;gap:2px;height:100%;width:100%}
+.bar{flex:1;border-radius:3px 3px 0 0;min-height:3px;transition:opacity .2s;position:relative}
+.bar:hover{opacity:.8}
+.bar-label{font-size:9px;color:#6b7280;text-align:center;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60px}
+.bar-val{font-size:8px;color:#374151;font-weight:700;text-align:center;margin-bottom:2px}
+.line-chart{position:relative;height:140px;margin-bottom:6px}
+.line-chart svg{width:100%;height:100%}
+.motivo-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.motivo-bar-bg{flex:1;background:#f3f4f6;border-radius:4px;height:10px;overflow:hidden}
+.motivo-bar-fill{height:100%;border-radius:4px;transition:width .4s}
+.motivo-label{font-size:11px;color:#374151;font-weight:600;min-width:150px}
+.motivo-count{font-size:11px;color:#6b7280;min-width:20px;text-align:right}
+.an-tbl-wrap{background:white;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);overflow:hidden}
+.an-tbl-wrap h3{font-size:11px;font-weight:700;color:#1a1a2e;padding:14px 16px;border-bottom:1px solid #f3f4f6;text-transform:uppercase;letter-spacing:.4px;margin:0}
+@media(max-width:900px){.an-charts{grid-template-columns:1fr}.an-kpi-row{grid-template-columns:repeat(2,1fr)}}
+
 </style>
 </head>
 <!-- Firebase SDK -->
@@ -98,6 +130,11 @@ tr:hover td{background:#fafafa}
   <div><h1>🎯 Painel de Gestão de Bônus</h1><p>Fat Buddha — Controle mensal de elegibilidade e motivos</p></div>
   <div class="header-right" id="headerInfo">—</div>
 </div>
+<div class="view-bar">
+  <div class="view-tab active" id="vtab-painel" onclick="switchView('painel')">🗓️ Painel Mensal</div>
+  <div class="view-tab" id="vtab-analytics" onclick="switchView('analytics')">📊 Análise Geral</div>
+</div>
+<div id="view-painel">
 <div class="month-bar" id="monthBar"></div>
 <div class="kpi-row">
   <div class="kpi-card green"><div class="kpi-label">✅ Elegíveis</div><div class="kpi-value" id="kpi-elegiveis">—</div><div class="kpi-sub">recebem bônus</div></div>
@@ -164,6 +201,68 @@ tr:hover td{background:#fafafa}
   </div>
   <div class="proximo-list" id="proximoList"></div>
 </div>
+</div><!-- /view-painel -->
+
+<!-- ── ANALYTICS ── -->
+<div id="view-analytics">
+  <div class="an-kpi-row">
+    <div class="an-kpi"><div class="al">📅 Meses registrados</div><div class="av" id="ak-meses">—</div><div class="as">no sistema</div></div>
+    <div class="an-kpi"><div class="al">💰 Total pago acumulado</div><div class="av" id="ak-total">—</div><div class="as">todos os meses</div></div>
+    <div class="an-kpi"><div class="al">📈 Média elegíveis/mês</div><div class="av" id="ak-el">—</div><div class="as">funcionários</div></div>
+    <div class="an-kpi"><div class="al">⚠️ Média perdem/mês</div><div class="av" id="ak-pr">—</div><div class="as">funcionários</div></div>
+  </div>
+  <div class="an-card-wide">
+    <h3>💰 Total a Pagar por Mês (R$)</h3>
+    <div class="bar-chart" id="an-bar-pag"></div>
+    <div id="an-bar-pag-labels" style="display:flex;gap:6px"></div>
+  </div>
+  <div class="an-charts">
+    <div class="an-card">
+      <h3>✅ Elegíveis vs ❌ Perdem por Mês</h3>
+      <div class="bar-chart" id="an-bar-el"></div>
+      <div id="an-bar-el-labels" style="display:flex;gap:6px"></div>
+      <div style="display:flex;gap:12px;margin-top:8px;font-size:10px;color:#6b7280">
+        <span><span style="display:inline-block;width:10px;height:10px;background:#10b981;border-radius:2px;margin-right:3px"></span>Elegíveis</span>
+        <span><span style="display:inline-block;width:10px;height:10px;background:#ef4444;border-radius:2px;margin-right:3px"></span>Perdem</span>
+      </div>
+    </div>
+    <div class="an-card">
+      <h3>📉 Motivos de Perda (Acumulado)</h3>
+      <div id="an-motivos"></div>
+    </div>
+  </div>
+  <div class="an-charts">
+    <div class="an-card">
+      <h3>📊 % Elegíveis por Mês</h3>
+      <div class="line-chart"><svg id="an-line-pct" viewBox="0 0 300 140" preserveAspectRatio="none"></svg></div>
+      <div id="an-line-labels" style="display:flex;gap:0;margin-top:4px"></div>
+    </div>
+    <div class="an-card">
+      <h3>🏪 Elegíveis por Loja — Mês Atual</h3>
+      <div class="bar-chart" id="an-bar-lojas"></div>
+      <div id="an-bar-lojas-labels" style="display:flex;gap:6px"></div>
+    </div>
+  </div>
+  <div class="an-tbl-wrap">
+    <h3>📋 Resumo Mensal</h3>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr>
+          <th style="background:#f8fafc;padding:9px 10px;text-align:left;font-weight:700;font-size:11px;border-bottom:2px solid #e5e7eb">Mês</th>
+          <th style="background:#f8fafc;padding:9px 10px;text-align:center;font-weight:700;font-size:11px;border-bottom:2px solid #e5e7eb">Total</th>
+          <th style="background:#f8fafc;padding:9px 10px;text-align:center;font-weight:700;font-size:11px;border-bottom:2px solid #e5e7eb">✅ Elegíveis</th>
+          <th style="background:#f8fafc;padding:9px 10px;text-align:center;font-weight:700;font-size:11px;border-bottom:2px solid #e5e7eb">❌ Perdem</th>
+          <th style="background:#f8fafc;padding:9px 10px;text-align:center;font-weight:700;font-size:11px;border-bottom:2px solid #e5e7eb">% Elegíveis</th>
+          <th style="background:#f8fafc;padding:9px 10px;text-align:right;font-weight:700;font-size:11px;border-bottom:2px solid #e5e7eb">Valor Unit.</th>
+          <th style="background:#f8fafc;padding:9px 10px;text-align:right;font-weight:700;font-size:11px;border-bottom:2px solid #e5e7eb">Total a Pagar</th>
+          <th style="background:#f8fafc;padding:9px 10px;text-align:center;font-weight:700;font-size:11px;border-bottom:2px solid #e5e7eb">Nº Pedidos</th>
+        </tr></thead>
+        <tbody id="an-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <!-- Import overlay -->
 <div class="modal-overlay" id="import-overlay-bonus" onclick="if(event.target===this)closeImport()">
   <div class="modal" style="width:500px">
@@ -349,10 +448,15 @@ function copyToNextMonth(){
   alert('✅ Copiado para '+n+'!\n'+el.length+' funcionários + '+fi.length+' da fila adicionados.');
 }
 
-function renderAll(){renderMonths();renderTable();updateKPIs();renderLojas();renderProximo();
-  document.getElementById('bonusValue').value=getM().bonusValue||586.20;
-  document.getElementById('numPedidos').value=getM().numPedidos||'';
+function renderAll(){
+  renderMonths();
+  // FIX: carrega valores do mês ANTES de updateKPIs para não sobrescrever entre meses
+  const _m=getM();
+  document.getElementById('bonusValue').value=_m.bonusValue!=null?_m.bonusValue:586.20;
+  document.getElementById('numPedidos').value=_m.numPedidos||'';
+  renderTable();updateKPIs();renderLojas();renderProximo();
   document.getElementById('headerInfo').textContent=currentMonth+' — '+new Date().toLocaleDateString('pt-BR');
+  if(document.getElementById('vtab-analytics')&&document.getElementById('vtab-analytics').classList.contains('active'))renderAnalytics();
 }
 function calcBonusByPedidos(){
   const pedidos=parseInt(document.getElementById('numPedidos').value)||0;
@@ -446,9 +550,7 @@ function updateKPIs(){
   const emps=getM().employees;
   const el=emps.filter(e=>e.status==='ELEGÍVEL'),pr=emps.filter(e=>e.status!=='ELEGÍVEL');
   const pedidos=parseInt(document.getElementById('numPedidos').value)||0;
-  if(pedidos>0&&el.length>0){
-    document.getElementById('bonusValue').value=(pedidos/el.length).toFixed(2);
-  }
+  // NÃO recalcula bonusValue aqui — só calcBonusByPedidos() faz isso
   const bv=parseFloat(document.getElementById('bonusValue').value)||0;
   if(data.months[currentMonth]){data.months[currentMonth].bonusValue=bv;data.months[currentMonth].numPedidos=pedidos;}
   document.getElementById('kpi-elegiveis').textContent=el.length;
@@ -646,6 +748,170 @@ function exportCSV(){
   const b=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='Bonus_'+currentMonth.replace('/','_')+'.csv';a.click();
 }
+
+// ── VIEW SWITCH ──
+function switchView(v){
+  document.getElementById('view-painel').style.display=v==='painel'?'block':'none';
+  document.getElementById('view-analytics').style.display=v==='analytics'?'block':'none';
+  document.getElementById('vtab-painel').classList.toggle('active',v==='painel');
+  document.getElementById('vtab-analytics').classList.toggle('active',v==='analytics');
+  if(v==='analytics')renderAnalytics();
+}
+
+// ── ANALYTICS ──
+function renderAnalytics(){
+  const stats=Object.entries(data.months).map(([nome,m])=>{
+    const emps=m.employees||[];
+    const el=emps.filter(e=>e.status==='ELEGÍVEL');
+    const pr=emps.filter(e=>e.status!=='ELEGÍVEL');
+    const bv=m.bonusValue||0;
+    const mot={};pr.forEach(e=>{mot[e.status]=(mot[e.status]||0)+1;});
+    return{nome,total:emps.length,el:el.length,pr:pr.length,bv,pag:el.length*bv,ped:m.numPedidos||0,mot,pct:emps.length>0?Math.round(el.length/emps.length*100):0};
+  });
+  if(!stats.length)return;
+
+  // KPIs
+  const totalPag=stats.reduce((a,s)=>a+s.pag,0);
+  const mediaEl=(stats.reduce((a,s)=>a+s.el,0)/stats.length).toFixed(1);
+  const mediaPr=(stats.reduce((a,s)=>a+s.pr,0)/stats.length).toFixed(1);
+  document.getElementById('ak-meses').textContent=stats.length;
+  document.getElementById('ak-total').textContent='R$ '+totalPag.toLocaleString('pt-BR',{minimumFractionDigits:2});
+  document.getElementById('ak-el').textContent=mediaEl;
+  document.getElementById('ak-pr').textContent=mediaPr;
+
+  function makeBarChart(containerId, labelsId, groups, maxVal){
+    const c=document.getElementById(containerId);
+    const l=document.getElementById(labelsId);
+    if(!c||!l)return;
+    c.innerHTML='';l.innerHTML='';
+    groups.forEach(g=>{
+      const grp=document.createElement('div');grp.className='bar-group';grp.style.flex='1';
+      const bars=document.createElement('div');bars.className='bar-group-bars';
+      g.bars.forEach(b=>{
+        const pct=maxVal>0?Math.max(2,(b.val/maxVal)*100):2;
+        const bar=document.createElement('div');bar.className='bar';
+        bar.style.background=b.color;bar.style.height=pct+'%';bar.style.flex='1';bar.title=b.label+': '+b.display;
+        bars.appendChild(bar);
+      });
+      grp.appendChild(bars);c.appendChild(grp);
+      const lbl=document.createElement('div');lbl.style.flex='1';lbl.style.textAlign='center';
+      lbl.style.fontSize='9px';lbl.style.color='#6b7280';lbl.style.marginTop='4px';
+      lbl.style.overflow='hidden';lbl.style.textOverflow='ellipsis';lbl.style.whiteSpace='nowrap';
+      lbl.textContent=g.label;l.appendChild(lbl);
+    });
+  }
+
+  // Barra: Total a Pagar
+  const maxPag=Math.max(...stats.map(s=>s.pag),1);
+  makeBarChart('an-bar-pag','an-bar-pag-labels',stats.map(s=>({
+    label:s.nome,
+    bars:[{val:s.pag,color:'#f59e0b',label:'Total',display:'R$ '+s.pag.toLocaleString('pt-BR',{minimumFractionDigits:2})}]
+  })),maxPag);
+
+  // Barra: Elegíveis vs Perdem
+  const maxEl=Math.max(...stats.map(s=>s.total),1);
+  makeBarChart('an-bar-el','an-bar-el-labels',stats.map(s=>({
+    label:s.nome,
+    bars:[
+      {val:s.el,color:'#10b981',label:'Elegíveis',display:s.el},
+      {val:s.pr,color:'#ef4444',label:'Perdem',display:s.pr}
+    ]
+  })),maxEl);
+
+  // Motivos acumulados
+  const motivosAcc={};
+  stats.forEach(s=>Object.entries(s.mot).forEach(([k,v])=>{motivosAcc[k]=(motivosAcc[k]||0)+v;}));
+  const motivoColors={'ATESTADO':'#f59e0b','ADVERTÊNCIA':'#ef4444','ADVERTÊNCIA/PONTO':'#ef4444','FALTA INJUSTIFICADA':'#dc2626','NOTA PRAÇA':'#8b5cf6'};
+  const totalMotivos=Object.values(motivosAcc).reduce((a,b)=>a+b,0)||1;
+  const motivDiv=document.getElementById('an-motivos');
+  if(motivDiv){
+    motivDiv.innerHTML='';
+    Object.entries(motivosAcc).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{
+      const pct=Math.round(v/totalMotivos*100);
+      const row=document.createElement('div');row.className='motivo-row';
+      row.innerHTML=`<div class="motivo-label">${k}</div>
+        <div class="motivo-bar-bg"><div class="motivo-bar-fill" style="width:${pct}%;background:${motivoColors[k]||'#6b7280'}"></div></div>
+        <div class="motivo-count">${v}</div>`;
+      motivDiv.appendChild(row);
+    });
+    if(!Object.keys(motivosAcc).length)motivDiv.innerHTML='<div style="color:#9ca3af;font-size:12px;padding:12px 0">Sem perdas registradas</div>';
+  }
+
+  // Linha: % Elegíveis
+  const svgEl=document.getElementById('an-line-pct');
+  const labEl=document.getElementById('an-line-labels');
+  if(svgEl&&labEl&&stats.length>0){
+    svgEl.innerHTML='';labEl.innerHTML='';
+    const W=300,H=140,pad=10;
+    const pts=stats.map((s,i)=>{
+      const x=stats.length===1?W/2:pad+(i/(stats.length-1))*(W-2*pad);
+      const y=H-pad-(s.pct/100)*(H-2*pad);
+      return{x,y,pct:s.pct};
+    });
+    // área
+    const area=document.createElementNS('http://www.w3.org/2000/svg','path');
+    let d=`M ${pts[0].x} ${H} L ${pts[0].x} ${pts[0].y}`;
+    pts.forEach((p,i)=>{if(i>0)d+=` L ${p.x} ${p.y}`;});
+    d+=` L ${pts[pts.length-1].x} ${H} Z`;
+    area.setAttribute('d',d);area.setAttribute('fill','rgba(59,130,246,0.12)');svgEl.appendChild(area);
+    // linha
+    const line=document.createElementNS('http://www.w3.org/2000/svg','polyline');
+    line.setAttribute('points',pts.map(p=>p.x+','+p.y).join(' '));
+    line.setAttribute('fill','none');line.setAttribute('stroke','#3b82f6');line.setAttribute('stroke-width','2');
+    svgEl.appendChild(line);
+    // pontos
+    pts.forEach(p=>{
+      const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('cx',p.x);c.setAttribute('cy',p.y);c.setAttribute('r','4');
+      c.setAttribute('fill','#3b82f6');c.setAttribute('stroke','white');c.setAttribute('stroke-width','2');
+      svgEl.appendChild(c);
+      const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('x',p.x);t.setAttribute('y',p.y-8);t.setAttribute('text-anchor','middle');
+      t.setAttribute('font-size','9');t.setAttribute('fill','#374151');t.setAttribute('font-weight','700');
+      t.textContent=p.pct+'%';svgEl.appendChild(t);
+    });
+    // labels
+    stats.forEach(s=>{
+      const lbl=document.createElement('div');
+      lbl.style.cssText='flex:1;font-size:9px;color:#6b7280;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+      lbl.textContent=s.nome;labEl.appendChild(lbl);
+    });
+  }
+
+  // Barra: Lojas no mês atual
+  const curEmps=getM().employees;
+  const lojas=['BROOKLIN','PERDIZES','VILA MARIANA','MATRIZ PRODUÇÃO'];
+  const lojaData=lojas.map(l=>({
+    label:l.replace(' PRODUÇÃO',''),
+    bars:[
+      {val:curEmps.filter(e=>e.loja===l).length,color:'#cbd5e1',label:'Total',display:curEmps.filter(e=>e.loja===l).length},
+      {val:curEmps.filter(e=>e.loja===l&&e.status==='ELEGÍVEL').length,color:'#10b981',label:'Elegíveis',display:curEmps.filter(e=>e.loja===l&&e.status==='ELEGÍVEL').length}
+    ]
+  }));
+  const maxLoja=Math.max(...lojaData.map(l=>l.bars[0].val),1);
+  makeBarChart('an-bar-lojas','an-bar-lojas-labels',lojaData,maxLoja);
+
+  // Tabela
+  const tbody=document.getElementById('an-tbody');
+  if(tbody){
+    tbody.innerHTML='';
+    stats.forEach(s=>{
+      const isAtual=s.nome===currentMonth;
+      const tr=document.createElement('tr');
+      if(isAtual)tr.style.background='#eff6ff';
+      tr.innerHTML=`<td style="padding:7px 10px;border-bottom:1px solid #f3f4f6;font-weight:700;color:#1a1a2e">${s.nome}${isAtual?' <span style="font-size:9px;background:#3b82f6;color:white;padding:1px 5px;border-radius:4px">atual</span>':''}</td>
+        <td style="padding:7px 10px;border-bottom:1px solid #f3f4f6;text-align:center">${s.total}</td>
+        <td style="padding:7px 10px;border-bottom:1px solid #f3f4f6;text-align:center;color:#059669;font-weight:700">${s.el}</td>
+        <td style="padding:7px 10px;border-bottom:1px solid #f3f4f6;text-align:center;color:#dc2626;font-weight:700">${s.pr}</td>
+        <td style="padding:7px 10px;border-bottom:1px solid #f3f4f6;text-align:center"><span style="background:${s.pct>=80?'#dcfce7':s.pct>=60?'#fef3c7':'#fef2f2'};color:${s.pct>=80?'#166534':s.pct>=60?'#92400e':'#991b1b'};padding:2px 8px;border-radius:10px;font-weight:700;font-size:11px">${s.pct}%</span></td>
+        <td style="padding:7px 10px;border-bottom:1px solid #f3f4f6;text-align:right">R$ ${s.bv.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+        <td style="padding:7px 10px;border-bottom:1px solid #f3f4f6;text-align:right;font-weight:700;color:#f59e0b">R$ ${s.pag.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+        <td style="padding:7px 10px;border-bottom:1px solid #f3f4f6;text-align:center;color:#6b7280">${s.ped||'—'}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+}
+
 // Carrega dados do Firebase em tempo real
 bonusRef.on('value', snapshot=>{
   const val=snapshot.val();
