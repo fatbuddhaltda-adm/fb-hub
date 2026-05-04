@@ -346,6 +346,84 @@ function renderAnual(){
   const cont=document.getElementById('anualContent');cont.innerHTML='';
   const months=sortedMK();
   if(!months.length){cont.innerHTML='<div style="padding:40px;text-align:center;color:#9ca3af">Nenhum mês ainda.</div>';return;}
+
+  // ── KPIs anuais ──
+  const kpiRow=document.createElement('div');
+  kpiRow.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px';
+  let totEl=0,totNel=0,totInc=0,totMed=0,cntMed=0;
+  months.forEach(m=>{Object.keys(LOJAS).forEach(l=>{LOJAS[l].pracas.forEach(p=>{const pd=(data.months[m]&&data.months[m].lojas&&data.months[m].lojas[l]&&data.months[m].lojas[l][p])||{visitas:[{data:'',nota:''},{data:'',nota:''},{data:'',nota:''},{data:'',nota:''}]};const st=getStatus(pd.visitas);const med=calcMedia(pd.visitas);if(st==='elegivel')totEl++;else if(st==='nao-elegivel')totNel++;else totInc++;if(med!==null){totMed+=med;cntMed++;}});});});
+  const mediaGeral=cntMed>0?(totMed/cntMed).toFixed(1):'—';
+  kpiRow.innerHTML=`
+    <div style="background:white;border-radius:10px;padding:14px 16px;box-shadow:0 1px 5px rgba(0,0,0,.07);border-left:4px solid #10b981"><div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase">✅ Total Elegíveis</div><div style="font-size:24px;font-weight:800;color:#111827;margin:4px 0">${totEl}</div><div style="font-size:11px;color:#9ca3af">no período</div></div>
+    <div style="background:white;border-radius:10px;padding:14px 16px;box-shadow:0 1px 5px rgba(0,0,0,.07);border-left:4px solid #ef4444"><div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase">❌ Total Não Elegíveis</div><div style="font-size:24px;font-weight:800;color:#111827;margin:4px 0">${totNel}</div><div style="font-size:11px;color:#9ca3af">no período</div></div>
+    <div style="background:white;border-radius:10px;padding:14px 16px;box-shadow:0 1px 5px rgba(0,0,0,.07);border-left:4px solid #3b82f6"><div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase">📊 Média Geral</div><div style="font-size:24px;font-weight:800;color:#111827;margin:4px 0">${mediaGeral}</div><div style="font-size:11px;color:#9ca3af">todas as praças e meses</div></div>
+    <div style="background:white;border-radius:10px;padding:14px 16px;box-shadow:0 1px 5px rgba(0,0,0,.07);border-left:4px solid #8b5cf6"><div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase">📅 Meses analisados</div><div style="font-size:24px;font-weight:800;color:#111827;margin:4px 0">${months.filter(m=>Object.keys(data.months[m]?.lojas||{}).length>0).length}</div><div style="font-size:11px;color:#9ca3af">com dados preenchidos</div></div>`;
+  cont.appendChild(kpiRow);
+
+  // ── Gráfico: Evolução média por loja ──
+  const chartCard1=document.createElement('div');
+  chartCard1.style.cssText='background:white;border-radius:12px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:18px;margin-bottom:14px';
+  chartCard1.innerHTML='<div style="font-size:11px;font-weight:700;color:#1a1a2e;text-transform:uppercase;letter-spacing:.4px;margin-bottom:14px">📈 Evolução da Média por Loja</div>';
+  const LOJA_COLORS={'PERDIZES':'#9d174d','BROOKLIN':'#0369a1','VILA MARIANA':'#5b21b6','MATRIZ':'#92400e'};
+  const svgW=800,svgH=200,padL=50,padR=20,padT=20,padB=36;
+  const innerW=svgW-padL-padR,innerH=svgH-padT-padB;
+  const minVal=6,maxVal=10;
+  const svgEl=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svgEl.setAttribute('viewBox',`0 0 ${svgW} ${svgH}`);svgEl.style.width='100%';svgEl.style.height='auto';
+  // Grade
+  [6,7,8,9,10].forEach(v=>{const y=padT+innerH-((v-minVal)/(maxVal-minVal))*innerH;const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1',padL);line.setAttribute('x2',padL+innerW);line.setAttribute('y1',y);line.setAttribute('y2',y);line.setAttribute('stroke',v===8?'#ef4444':'#f3f4f6');line.setAttribute('stroke-width',v===8?'1.5':'1');line.setAttribute('stroke-dasharray',v===8?'4,3':'0');svgEl.appendChild(line);const t=document.createElementNS('http://www.w3.org/2000/svg','text');t.setAttribute('x',padL-6);t.setAttribute('y',y+4);t.setAttribute('text-anchor','end');t.setAttribute('font-size','9');t.setAttribute('fill','#9ca3af');t.textContent=v;svgEl.appendChild(t);});
+  // Linha meta 8
+  const metaLabel=document.createElementNS('http://www.w3.org/2000/svg','text');const metaY=padT+innerH-((8-minVal)/(maxVal-minVal))*innerH;metaLabel.setAttribute('x',padL+innerW+4);metaLabel.setAttribute('y',metaY+4);metaLabel.setAttribute('font-size','9');metaLabel.setAttribute('fill','#ef4444');metaLabel.setAttribute('font-weight','700');metaLabel.textContent='META';svgEl.appendChild(metaLabel);
+  // Linhas por loja
+  Object.keys(LOJAS).forEach(loja=>{
+    const color=LOJA_COLORS[loja]||'#6b7280';
+    const pts=months.map((m,i)=>{
+      const pracas=LOJAS[loja].pracas;const mData=data.months[m]||{lojas:{}};
+      const meds=pracas.map(p=>{const pd=(mData.lojas&&mData.lojas[loja]&&mData.lojas[loja][p])||{visitas:[{data:'',nota:''},{data:'',nota:''},{data:'',nota:''},{data:'',nota:''}]};return calcMedia(pd.visitas);}).filter(v=>v!==null);
+      const avg=meds.length>0?meds.reduce((a,b)=>a+b,0)/meds.length:null;
+      const x=months.length===1?padL+innerW/2:padL+(i/(months.length-1))*innerW;
+      const y=avg!==null?padT+innerH-((Math.min(Math.max(avg,minVal),maxVal)-minVal)/(maxVal-minVal))*innerH:null;
+      return{x,y,avg};
+    });
+    const validPts=pts.filter(p=>p.y!==null);
+    if(validPts.length>=2){const pl=document.createElementNS('http://www.w3.org/2000/svg','polyline');pl.setAttribute('points',validPts.map(p=>`${p.x},${p.y}`).join(' '));pl.setAttribute('fill','none');pl.setAttribute('stroke',color);pl.setAttribute('stroke-width','2');pl.setAttribute('stroke-linejoin','round');svgEl.appendChild(pl);}
+    validPts.forEach(p=>{const c=document.createElementNS('http://www.w3.org/2000/svg','circle');c.setAttribute('cx',p.x);c.setAttribute('cy',p.y);c.setAttribute('r','4');c.setAttribute('fill',color);c.setAttribute('stroke','white');c.setAttribute('stroke-width','2');const tt=document.createElementNS('http://www.w3.org/2000/svg','title');tt.textContent=loja+': '+p.avg.toFixed(2);c.appendChild(tt);svgEl.appendChild(c);});
+  });
+  // Labels meses eixo X
+  months.forEach((m,i)=>{const x=months.length===1?padL+innerW/2:padL+(i/(months.length-1))*innerW;const t=document.createElementNS('http://www.w3.org/2000/svg','text');t.setAttribute('x',x);t.setAttribute('y',svgH-8);t.setAttribute('text-anchor','middle');t.setAttribute('font-size','9');t.setAttribute('fill','#6b7280');t.textContent=m;svgEl.appendChild(t);});
+  chartCard1.appendChild(svgEl);
+  // Legenda
+  const leg=document.createElement('div');leg.style.cssText='display:flex;gap:16px;flex-wrap:wrap;margin-top:10px';
+  Object.keys(LOJAS).forEach(l=>{leg.innerHTML+=`<span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#374151"><span style="display:inline-block;width:20px;height:3px;background:${LOJA_COLORS[l]||'#6b7280'};border-radius:2px"></span>${l}</span>`;});
+  chartCard1.appendChild(leg);cont.appendChild(chartCard1);
+
+  // ── Gráfico: % Elegíveis por loja por mês (barras) ──
+  const chartCard2=document.createElement('div');
+  chartCard2.style.cssText='background:white;border-radius:12px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:18px;margin-bottom:14px';
+  chartCard2.innerHTML='<div style="font-size:11px;font-weight:700;color:#1a1a2e;text-transform:uppercase;letter-spacing:.4px;margin-bottom:14px">✅ % de Praças Elegíveis por Loja e Mês</div>';
+  const barWrap=document.createElement('div');barWrap.style.cssText='overflow-x:auto';
+  const barChart=document.createElement('div');barChart.style.cssText='display:flex;align-items:flex-end;gap:16px;height:160px;border-bottom:2px solid #e5e7eb;padding-bottom:0;min-width:'+Math.max(400,months.length*Object.keys(LOJAS).length*28)+'px';
+  months.forEach(m=>{
+    const grpWrap=document.createElement('div');grpWrap.style.cssText='display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;min-width:'+(Object.keys(LOJAS).length*28)+'px';
+    const bars=document.createElement('div');bars.style.cssText='display:flex;align-items:flex-end;gap:3px;height:140px;width:100%';
+    Object.keys(LOJAS).forEach(loja=>{
+      const pracas=LOJAS[loja].pracas;const mData=data.months[m]||{lojas:{}};
+      const elCount=pracas.filter(p=>{const pd=(mData.lojas&&mData.lojas[loja]&&mData.lojas[loja][p])||{visitas:[{data:'',nota:''},{data:'',nota:''},{data:'',nota:''},{data:'',nota:''}]};return getStatus(pd.visitas)==='elegivel';}).length;
+      const pct=pracas.length>0?Math.round(elCount/pracas.length*100):0;
+      const bar=document.createElement('div');
+      bar.style.cssText=`flex:1;background:${LOJA_COLORS[loja]};height:${Math.max(4,pct*1.4)}px;border-radius:3px 3px 0 0;position:relative;opacity:0.85;cursor:default`;
+      bar.title=loja+': '+pct+'% elegíveis ('+elCount+'/'+pracas.length+')';
+      if(pct>0){const lv=document.createElement('span');lv.textContent=pct+'%';lv.style.cssText='position:absolute;top:-18px;left:0;right:0;text-align:center;font-size:9px;font-weight:700;color:#374151';bar.appendChild(lv);}
+      bars.appendChild(bar);
+    });
+    grpWrap.appendChild(bars);
+    const ml=document.createElement('div');ml.style.cssText='font-size:9px;color:#6b7280;text-align:center;margin-top:4px;white-space:nowrap';ml.textContent=m;
+    grpWrap.appendChild(ml);barChart.appendChild(grpWrap);
+  });
+  barWrap.appendChild(barChart);
+  const barLeg=document.createElement('div');barLeg.style.cssText='display:flex;gap:14px;flex-wrap:wrap;margin-top:10px';
+  Object.keys(LOJAS).forEach(l=>{barLeg.innerHTML+=`<span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#374151"><span style="display:inline-block;width:12px;height:12px;background:${LOJA_COLORS[l]||'#6b7280'};border-radius:3px"></span>${l}</span>`;});
+  chartCard2.appendChild(barWrap);chartCard2.appendChild(barLeg);cont.appendChild(chartCard2);
   Object.keys(LOJAS).forEach(loja=>{
     const conf=LOJAS[loja];
     const block=document.createElement('div');block.className='anual-block';
@@ -386,7 +464,13 @@ function saveData(){autoSave();const m=document.getElementById('savedMsg');m.sty
 nutriRef.on('value',snapshot=>{
   const val=snapshot.val();
   if(val&&val.months){data.months=decM(val.months);data.currentMonth=val.currentMonth||'';}
-  if(!Object.keys(data.months).length){const hoje=new Date();const meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];const nm=meses[hoje.getMonth()]+'/'+hoje.getFullYear();data.months[nm]={lojas:{}};data.currentMonth=nm;}
+  // Garante meses históricos + mês atual (sem sobrescrever dados existentes)
+  const historico=['Jan/2026','Fev/2026','Mar/2026','Abr/2026'];
+  const hoje=new Date();
+  const mesesNomes=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const mesAtual=mesesNomes[hoje.getMonth()]+'/'+hoje.getFullYear();
+  [...historico, mesAtual].forEach(m=>{if(!data.months[m])data.months[m]={lojas:{}};});
+  if(!data.currentMonth)data.currentMonth=mesAtual;
   currentMonth=data.currentMonth||sortedMK()[0];
   renderAll();
 });
