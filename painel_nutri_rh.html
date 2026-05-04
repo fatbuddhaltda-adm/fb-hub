@@ -84,6 +84,10 @@ body{background:#f0f2f5;min-height:100vh}
 .loja-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px}
 .tag-brooklin{background:#e0f2fe;color:#0369a1}.tag-perdizes{background:#fce7f3;color:#9d174d}.tag-vila{background:#ede9fe;color:#5b21b6}.tag-matriz{background:#fef3c7;color:#92400e}
 @media(max-width:900px){.kpi-row{grid-template-columns:repeat(2,1fr)}}
+.tr-treino td{background:#eff6ff!important}
+.treino-badge{background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:3px 10px;border-radius:8px;white-space:nowrap;display:inline-block}
+.treino-toggle{display:flex;align-items:center;gap:5px;font-size:10px;color:#6b7280;cursor:pointer;user-select:none;margin-top:4px}
+.treino-toggle input{cursor:pointer;accent-color:#3b82f6}
 </style>
 </head>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -191,13 +195,15 @@ function getPD(loja,praca){
   return m.lojas[loja][praca];
 }
 function calcMedia(visitas){
-  const ns=visitas.map(v=>v.nota!==''&&v.nota!==null&&v.nota!==undefined?parseFloat(v.nota):NaN).filter(n=>!isNaN(n));
+  const ns=visitas.filter(v=>!v.treinamento).map(v=>v.nota!==''&&v.nota!==null&&v.nota!==undefined?parseFloat(v.nota):NaN).filter(n=>!isNaN(n));
   if(!ns.length)return null;
   return ns.reduce((a,b)=>a+b,0)/ns.length;
 }
 function getStatus(visitas){
-  const ns=visitas.map(v=>v.nota!==''&&v.nota!==null&&v.nota!==undefined?parseFloat(v.nota):NaN).filter(n=>!isNaN(n));
-  if(ns.length<4)return'incompleto';
+  const normais=visitas.filter(v=>!v.treinamento);
+  const ns=normais.map(v=>v.nota!==''&&v.nota!==null&&v.nota!==undefined?parseFloat(v.nota):NaN).filter(n=>!isNaN(n));
+  if(!normais.length)return'incompleto';
+  if(ns.length<normais.length)return'incompleto';
   const m=ns.reduce((a,b)=>a+b,0)/ns.length;
   return m>=NOTA_MIN?'elegivel':'nao-elegivel';
 }
@@ -282,22 +288,23 @@ function renderLojas(){
       const tr=document.createElement('tr');
       // Data
       const tdData=document.createElement('td');tdData.className='td-data';
-      // Pega a data da primeira praça (todas as praças compartilham a mesma data de visita)
       const firstPD=getPD(loja,conf.pracas[0]);
       const dataVal=firstPD.visitas[vi]?firstPD.visitas[vi].data||'':'';
-      tdData.innerHTML=`<input class="input-data" type="date" value="${dataVal}"
-        onchange="updateData('${loja}',${vi},this.value)">`;
+      const isTreino=!!(firstPD.visitas[vi]&&firstPD.visitas[vi].treinamento);
+      if(isTreino)tr.classList.add('tr-treino');
+      tdData.innerHTML='<input class="input-data" type="date" value="'+dataVal+'" onchange="updateData(\''+loja+'\','+vi+',this.value)"><label class="treino-toggle"><input type="checkbox" '+(isTreino?'checked':'')+' onchange="updateTreinamento(\''+loja+'\','+vi+',this.checked)"> 📚 Dia de treinamento</label>';
       tr.appendChild(tdData);
-      // Notas por praça
-      conf.pracas.forEach(praca=>{
+      conf.pracas.forEach(function(praca){
         const pd=getPD(loja,praca);
         const notaVal=pd.visitas[vi]?pd.visitas[vi].nota:'';
         const notaNum=parseFloat(notaVal);
-        const notaCls=notaVal!==''&&!isNaN(notaNum)?(notaNum>=NOTA_MIN?'ok':'low'):'';
         const td=document.createElement('td');
-        td.innerHTML=`<input class="input-nota ${notaCls}" type="number" min="0" max="10" step="0.1"
-          placeholder="—" value="${notaVal!==''&&notaVal!==undefined&&notaVal!==null?notaVal:''}"
-          onchange="updateNota('${loja}','${praca}',${vi},this.value)">`;
+        if(isTreino){
+          td.innerHTML='<span class="treino-badge">📚 TREINAMENTO</span>';
+        } else {
+          const notaCls=notaVal!==''&&!isNaN(notaNum)?(notaNum>=NOTA_MIN?'ok':'low'):'';
+          td.innerHTML='<input class="input-nota '+notaCls+'" type="number" min="0" max="10" step="0.1" placeholder="—" value="'+(notaVal!==''&&notaVal!==undefined&&notaVal!==null?notaVal:'')+'" onchange="updateNota(\''+loja+'\',\''+praca+'\','+vi+',this.value)">';
+        }
         tr.appendChild(td);
       });
       tbody.appendChild(tr);
@@ -332,6 +339,15 @@ function updateData(loja,vi,val){
   });
   data.months[currentMonth]=m;
   autoSave();
+}
+function updateTreinamento(loja,vi,checked){
+  const m=getM();if(!m.lojas)m.lojas={};if(!m.lojas[loja])m.lojas[loja]={};
+  LOJAS[loja].pracas.forEach(function(praca){
+    if(!m.lojas[loja][praca])m.lojas[loja][praca]={visitas:[{data:'',nota:'',treinamento:false},{data:'',nota:'',treinamento:false},{data:'',nota:'',treinamento:false},{data:'',nota:'',treinamento:false}]};
+    m.lojas[loja][praca].visitas[vi].treinamento=checked;
+    if(checked)m.lojas[loja][praca].visitas[vi].nota='';
+  });
+  data.months[currentMonth]=m;autoSave();renderKPIs();renderLojas();
 }
 function updateNota(loja,praca,vi,val){
   const m=getM();if(!m.lojas)m.lojas={};if(!m.lojas[loja])m.lojas[loja]={};
