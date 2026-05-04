@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Nutricionista — Fat Buddha</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
+body{background:#f0f2f5;min-height:100vh}
+.header{background:linear-gradient(135deg,#1a1a2e,#16213e);color:white;padding:16px 28px;display:flex;align-items:center;justify-content:space-between}
+.header h1{font-size:19px;font-weight:700}.header p{font-size:11px;opacity:.6;margin-top:2px}
+.header-right{font-size:11px;opacity:.5;text-align:right}
+.view-bar{background:#1a1a2e;padding:0 28px;display:flex;border-bottom:3px solid #0f0f1e}
+.view-tab{padding:10px 20px;cursor:pointer;font-weight:700;font-size:12px;color:rgba(255,255,255,.45);border-bottom:3px solid transparent;margin-bottom:-3px;transition:all .2s;white-space:nowrap}
+.view-tab:hover{color:rgba(255,255,255,.8)}.view-tab.active{color:white;border-bottom-color:#f59e0b}
+.month-bar{background:white;border-bottom:2px solid #e5e7eb;padding:10px 28px;display:flex;align-items:center;gap:8px;overflow-x:auto}
+.month-tab{padding:5px 16px;border-radius:20px;border:2px solid #e5e7eb;cursor:pointer;font-weight:700;font-size:12px;background:white;color:#6b7280;white-space:nowrap;transition:all .2s}
+.month-tab:hover{border-color:#1a1a2e;color:#1a1a2e}.month-tab.active{background:#1a1a2e;color:white;border-color:#1a1a2e}
+.month-tab-wrap{display:inline-flex;align-items:center}
+.month-del{background:none;border:2px solid transparent;cursor:pointer;font-size:10px;color:#9ca3af;padding:2px 5px;border-radius:0 20px 20px 0;line-height:1;height:29px;margin-left:-6px}
+.month-del:hover{background:#fee2e2;color:#dc2626;border-color:#fecaca}
+.month-tab-wrap .month-tab{border-radius:20px 6px 6px 20px}
+.add-month-btn{padding:5px 12px;border-radius:20px;border:2px dashed #d1d5db;cursor:pointer;font-size:12px;color:#9ca3af;background:white;margin-left:4px}
+.add-month-btn:hover{border-color:#6b7280;color:#374151}
+/* KPIs */
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:16px 28px 0}
+.kpi-card{background:white;border-radius:10px;padding:14px 16px;box-shadow:0 1px 5px rgba(0,0,0,.07);border-left:4px solid #e5e7eb}
+.kpi-card.green{border-left-color:#10b981}.kpi-card.red{border-left-color:#ef4444}.kpi-card.amber{border-left-color:#f59e0b}.kpi-card.blue{border-left-color:#3b82f6}.kpi-card.purple{border-left-color:#8b5cf6}
+.kpi-label{font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px}
+.kpi-value{font-size:26px;font-weight:800;color:#111827;margin:4px 0 2px;line-height:1}
+.kpi-sub{font-size:11px;color:#9ca3af}
+/* LOJAS */
+.content{padding:16px 28px 80px}
+.loja-block{background:white;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.08);margin-bottom:18px;overflow:hidden}
+.loja-header{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:2px solid #f3f4f6}
+.loja-title{font-size:14px;font-weight:800;color:white;padding:4px 14px;border-radius:8px}
+.title-brooklin{background:#0369a1}.title-perdizes{background:#9d174d}.title-vila{background:#5b21b6}.title-matriz{background:#92400e}
+.loja-summary{margin-left:auto;display:flex;gap:8px;align-items:center}
+.sum-pill{font-size:10px;font-weight:700;padding:3px 10px;border-radius:12px}
+.pill-ok{background:#dcfce7;color:#166534}.pill-bad{background:#fef2f2;color:#991b1b}.pill-inc{background:#fef3c7;color:#92400e}
+/* TABELA DE NOTAS */
+.notas-wrap{overflow-x:auto;padding:0}
+.notas-table{width:100%;border-collapse:collapse;font-size:12px}
+.notas-table th{background:#f8fafc;padding:9px 10px;text-align:center;font-weight:700;font-size:11px;color:#374151;border-bottom:2px solid #e5e7eb;white-space:nowrap}
+.notas-table th.th-data{text-align:left;padding-left:16px;min-width:130px;color:#1a1a2e}
+.notas-table th.th-praca{min-width:120px}
+.notas-table td{padding:6px 8px;border-bottom:1px solid #f3f4f6;text-align:center;vertical-align:middle}
+.notas-table td.td-data{padding-left:16px;text-align:left}
+.notas-table tr:last-child td{border-bottom:none}
+.notas-table tr.media-row td{border-top:2px solid #e5e7eb;font-weight:800;font-size:13px;padding:10px 8px}
+.notas-table tr.media-row td.td-data{color:#374151;font-size:12px;font-weight:700}
+.notas-table tr:not(.media-row):hover td{background:#fafafa}
+/* INPUTS */
+.input-data{width:120px;padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:11px;color:#374151;background:white}
+.input-data:focus{outline:none;border-color:#1a1a2e}
+.input-nota{width:72px;padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:white;text-align:center}
+.input-nota:focus{outline:none;border-color:#1a1a2e}
+.input-nota.ok{border-color:#10b981;background:#f0fdf4;color:#166534;font-weight:700}
+.input-nota.low{border-color:#ef4444;background:#fef2f2;color:#991b1b;font-weight:700}
+/* MEDIA CELLS */
+.media-cell{padding:5px 12px;border-radius:8px;font-weight:800;font-size:13px;display:inline-block;min-width:52px}
+.media-elegivel{background:#10b981;color:white}
+.media-nao-elegivel{background:#ef4444;color:white}
+.media-incompleto{background:#e5e7eb;color:#6b7280}
+/* ANUAL */
+#view-anual{display:none;padding:16px 28px 80px}
+.anual-block{background:white;border-radius:12px;box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:16px;overflow:hidden}
+.anual-block-header{padding:12px 16px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;gap:8px}
+.anual-table{width:100%;border-collapse:collapse;font-size:11px}
+.anual-table th{background:#f8fafc;padding:8px 10px;text-align:center;font-weight:700;color:#374151;border-bottom:2px solid #e5e7eb;white-space:nowrap}
+.anual-table th:first-child{text-align:left;padding-left:16px;min-width:160px}
+.anual-table td{padding:7px 10px;border-bottom:1px solid #f3f4f6;text-align:center}
+.anual-table td:first-child{text-align:left;padding-left:16px;font-weight:600;color:#374151}
+.anual-table tr:last-child td{border-bottom:none}
+.nota-badge{font-weight:700;border-radius:6px;padding:3px 10px;display:inline-block;min-width:44px;font-size:11px}
+.badge-ok{background:#dcfce7;color:#166534}.badge-low{background:#fef2f2;color:#991b1b}.badge-vazio{background:#f3f4f6;color:#9ca3af}
+/* SAVE */
+.save-bar{background:white;border-top:1px solid #e5e7eb;padding:10px 28px;display:flex;align-items:center;justify-content:space-between;position:fixed;bottom:0;left:0;right:0;z-index:100}
+.save-left{font-size:11px;color:#9ca3af}
+.save-right{display:flex;gap:8px;align-items:center}
+.saved-msg{font-size:11px;color:#059669;font-weight:600;display:none}
+.btn-primary{background:#1a1a2e;color:white;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700}
+.btn-primary:hover{background:#16213e}
+.loja-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px}
+.tag-brooklin{background:#e0f2fe;color:#0369a1}.tag-perdizes{background:#fce7f3;color:#9d174d}.tag-vila{background:#ede9fe;color:#5b21b6}.tag-matriz{background:#fef3c7;color:#92400e}
+@media(max-width:900px){.kpi-row{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<body>
+<div class="header">
+  <div><h1>🥗 Painel de Notas — Nutricionista</h1><p>Fat Buddha — Controle mensal de elegibilidade por praça</p></div>
+  <div class="header-right" id="headerInfo">—</div>
+</div>
+<div class="view-bar">
+  <div class="view-tab active" id="vtab-mensal" onclick="switchView('mensal')">📋 Painel Mensal</div>
+  <div class="view-tab" id="vtab-anual" onclick="switchView('anual')">📊 Acompanhamento Anual</div>
+</div>
+<div id="view-mensal">
+  <div class="month-bar" id="monthBar"></div>
+  <div class="kpi-row">
+    <div class="kpi-card green"><div class="kpi-label">✅ Elegíveis</div><div class="kpi-value" id="kpi-el">—</div><div class="kpi-sub">praças com média ≥ 8</div></div>
+    <div class="kpi-card red"><div class="kpi-label">❌ Não Elegíveis</div><div class="kpi-value" id="kpi-nel">—</div><div class="kpi-sub">praças abaixo da média</div></div>
+    <div class="kpi-card amber"><div class="kpi-label">⏳ Incompletas</div><div class="kpi-value" id="kpi-inc">—</div><div class="kpi-sub">aguardando visitas</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">📊 Média Geral</div><div class="kpi-value" id="kpi-med">—</div><div class="kpi-sub">todas as praças</div></div>
+    <div class="kpi-card purple"><div class="kpi-label">🏪 Total Praças</div><div class="kpi-value" id="kpi-tot">—</div><div class="kpi-sub">todas as lojas</div></div>
+  </div>
+  <div class="content" id="lojasContent"></div>
+</div>
+<div id="view-anual">
+  <div id="anualContent"></div>
+</div>
+<div class="save-bar">
+  <div class="save-left">💾 Dados salvos automaticamente no Firebase</div>
+  <div class="save-right">
+    <span class="saved-msg" id="savedMsg">✅ Salvo!</span>
+    <button class="btn-primary" onclick="saveData()">💾 Salvar</button>
+  </div>
+</div>
+
+<script>
+const LOJAS={
+  'PERDIZES':{cls:'perdizes',tag:'tag-perdizes',titleCls:'title-perdizes',
+    pracas:['Praça do Fogão','Praça da Fritadeira','Expedição','Área Comum','Limpeza/Ambiente']},
+  'BROOKLIN':{cls:'brooklin',tag:'tag-brooklin',titleCls:'title-brooklin',
+    pracas:['Praça do Fogão','Praça da Fritadeira','Área das Geladeiras e Freezers','Expedição','Estoque Seco','Limpeza/Ambiente']},
+  'VILA MARIANA':{cls:'vila',tag:'tag-vila',titleCls:'title-vila',
+    pracas:['Praça do Fogão','Praça da Fritadeira','Cozinha de Apoio','Expedição','Estoque Seco']},
+  'MATRIZ':{cls:'matriz',tag:'tag-matriz',titleCls:'title-matriz',
+    pracas:['Açougue','Produção','Sala Embalagem','Estoque Seco Geral','Câmara de Congelados']}
+};
+const NOTA_MIN=8;
+const FB_CONFIG={apiKey:"AIzaSyCyMw54A5hb1uiOypt5mABVxo96aUNLZtw",authDomain:"fat-buddha-hub.firebaseapp.com",databaseURL:"https://fat-buddha-hub-default-rtdb.firebaseio.com",projectId:"fat-buddha-hub",storageBucket:"fat-buddha-hub.firebasestorage.app",messagingSenderId:"748093225714",appId:"1:748093225714:web:58c7e22c7b588b797eee6b"};
+firebase.initializeApp(FB_CONFIG);
+const fbDb=firebase.database();
+const nutriRef=fbDb.ref('nutri');
+let data={months:{},currentMonth:''};
+let currentMonth='';
+
+// ── ORDENAÇÃO ──
+const MO={'jan':1,'fev':2,'mar':3,'abr':4,'mai':5,'jun':6,'jul':7,'ago':8,'set':9,'out':10,'nov':11,'dez':12,'janeiro':1,'fevereiro':2,'março':3,'marco':3,'abril':4,'maio':5,'junho':6,'julho':7,'agosto':8,'setembro':9,'outubro':10,'novembro':11,'dezembro':12};
+function parseMK(k){const p=k.replace('/',' ').split(/[\s\/\-_]+/);let mo=0,yr=0;p.forEach(x=>{const n=parseInt(x);if(!isNaN(n)&&n>100)yr=n;else if(!isNaN(n)&&n>=1&&n<=12)mo=n;else{const m=MO[x.toLowerCase().trim()];if(m)mo=m;}});return yr*100+mo;}
+function sortedMK(){return Object.keys(data.months).sort((a,b)=>parseMK(a)-parseMK(b));}
+
+// ── ENCODE FIREBASE ──
+function eK(s){return s.replace(/[\/\.#\[\]]/g,'_');}
+function safeId(s){return s.replace(/[^a-zA-Z0-9]/g,'_');}
+function encM(months){
+  const r={};
+  Object.keys(months).forEach(mk=>{
+    const lojas={};
+    Object.keys(months[mk].lojas||{}).forEach(l=>{
+      const pracas={};
+      Object.keys(months[mk].lojas[l]||{}).forEach(p=>{pracas[eK(p)]=months[mk].lojas[l][p];});
+      lojas[eK(l)]=pracas;
+    });
+    r[eK(mk)]={lojas};
+  });
+  return r;
+}
+function decM(months){
+  // rebuild from encoded keys using LOJAS structure
+  const r={};
+  Object.keys(months).forEach(mk=>{
+    const dMk=mk.replace(/_/g,'/');
+    const lojas={};
+    Object.keys(months[mk].lojas||{}).forEach(lk=>{
+      // find real loja name
+      const realL=Object.keys(LOJAS).find(l=>eK(l)===lk)||lk.replace(/_/g,' ');
+      const pracas={};
+      const lojaConf=LOJAS[realL];
+      Object.keys(months[mk].lojas[lk]||{}).forEach(pk=>{
+        const realP=(lojaConf&&lojaConf.pracas.find(p=>eK(p)===pk))||pk.replace(/_/g,' ');
+        pracas[realP]=months[mk].lojas[lk][pk];
+      });
+      lojas[realL]=pracas;
+    });
+    r[dMk]={lojas};
+  });
+  return r;
+}
+
+// ── DATA HELPERS ──
+function getM(){return data.months[currentMonth]||{lojas:{}};}
+function getPD(loja,praca){
+  const m=getM();
+  if(!m.lojas)m.lojas={};
+  if(!m.lojas[loja])m.lojas[loja]={};
+  if(!m.lojas[loja][praca])m.lojas[loja][praca]={visitas:[{data:'',nota:''},{data:'',nota:''},{data:'',nota:''},{data:'',nota:''}]};
+  return m.lojas[loja][praca];
+}
+function calcMedia(visitas){
+  const ns=visitas.map(v=>v.nota!==''&&v.nota!==null&&v.nota!==undefined?parseFloat(v.nota):NaN).filter(n=>!isNaN(n));
+  if(!ns.length)return null;
+  return ns.reduce((a,b)=>a+b,0)/ns.length;
+}
+function getStatus(visitas){
+  const ns=visitas.map(v=>v.nota!==''&&v.nota!==null&&v.nota!==undefined?parseFloat(v.nota):NaN).filter(n=>!isNaN(n));
+  if(ns.length<4)return'incompleto';
+  const m=ns.reduce((a,b)=>a+b,0)/ns.length;
+  return m>=NOTA_MIN?'elegivel':'nao-elegivel';
+}
+
+// ── VIEW SWITCH ──
+function switchView(v){
+  document.getElementById('view-mensal').style.display=v==='mensal'?'block':'none';
+  document.getElementById('view-anual').style.display=v==='anual'?'block':'none';
+  document.getElementById('vtab-mensal').classList.toggle('active',v==='mensal');
+  document.getElementById('vtab-anual').classList.toggle('active',v==='anual');
+  if(v==='anual')renderAnual();
+}
+
+// ── MONTHS ──
+function renderMonths(){
+  const bar=document.getElementById('monthBar');bar.innerHTML='';
+  sortedMK().forEach(m=>{
+    const wrap=document.createElement('span');wrap.className='month-tab-wrap';
+    const b=document.createElement('button');b.className='month-tab'+(m===currentMonth?' active':'');b.textContent=m;
+    b.onclick=()=>{currentMonth=m;data.currentMonth=m;renderAll();};
+    b.ondblclick=(e)=>{e.stopPropagation();renameMonth(m);};
+    const del=document.createElement('button');del.className='month-del';del.textContent='✕';
+    del.onclick=(e)=>{e.stopPropagation();deleteMonth(m);};
+    wrap.appendChild(b);wrap.appendChild(del);bar.appendChild(wrap);
+  });
+  const a=document.createElement('button');a.className='add-month-btn';a.textContent='＋ Novo mês';a.onclick=addNewMonth;bar.appendChild(a);
+}
+function addNewMonth(){const n=prompt('Nome do mês (ex: Jun/2026):');if(!n||data.months[n])return;data.months[n]={lojas:{}};currentMonth=n;data.currentMonth=n;autoSave();renderAll();}
+function deleteMonth(m){if(Object.keys(data.months).length<=1){alert('Não é possível deletar o único mês.');return;}if(!confirm('Deletar "'+m+'"?'))return;delete data.months[m];if(currentMonth===m){currentMonth=Object.keys(data.months)[0];data.currentMonth=currentMonth;}autoSave();renderAll();}
+function renameMonth(old){const novo=prompt('Novo nome:',old);if(!novo||novo===old)return;if(data.months[novo]){alert('Já existe.');return;}const meses={};Object.keys(data.months).forEach(k=>{meses[k===old?novo:k]=data.months[k];});data.months=meses;if(currentMonth===old){currentMonth=novo;data.currentMonth=novo;}autoSave();renderAll();}
+
+// ── KPIs ──
+function renderKPIs(){
+  let el=0,nel=0,inc=0,tot=0,sum=0,cnt=0;
+  Object.keys(LOJAS).forEach(l=>{LOJAS[l].pracas.forEach(p=>{
+    const pd=getPD(l,p);const st=getStatus(pd.visitas);const med=calcMedia(pd.visitas);
+    tot++;
+    if(st==='elegivel')el++;else if(st==='nao-elegivel')nel++;else inc++;
+    if(med!==null){sum+=med;cnt++;}
+  });});
+  document.getElementById('kpi-el').textContent=el;
+  document.getElementById('kpi-nel').textContent=nel;
+  document.getElementById('kpi-inc').textContent=inc;
+  document.getElementById('kpi-med').textContent=cnt>0?(sum/cnt).toFixed(1):'—';
+  document.getElementById('kpi-tot').textContent=tot;
+}
+
+// ── LOJAS (TABELA ESTILO PLANILHA) ──
+function renderLojas(){
+  const cont=document.getElementById('lojasContent');cont.innerHTML='';
+  Object.keys(LOJAS).forEach(loja=>{
+    const conf=LOJAS[loja];
+    // summary desta loja
+    let el=0,nel=0,inc=0;
+    conf.pracas.forEach(p=>{const st=getStatus(getPD(loja,p).visitas);if(st==='elegivel')el++;else if(st==='nao-elegivel')nel++;else inc++;});
+
+    const block=document.createElement('div');block.className='loja-block';
+
+    // Header da loja
+    const hdr=document.createElement('div');hdr.className='loja-header';
+    hdr.innerHTML=`<span class="loja-title ${conf.titleCls}">${loja}</span>
+      <div class="loja-summary">
+        ${el>0?`<span class="sum-pill pill-ok">✅ ${el} elegível${el!==1?'s':''}</span>`:''}
+        ${nel>0?`<span class="sum-pill pill-bad">❌ ${nel} não elegível${nel!==1?'s':''}</span>`:''}
+        ${inc>0?`<span class="sum-pill pill-inc">⏳ ${inc} incompleta${inc!==1?'s':''}</span>`:''}
+      </div>`;
+    block.appendChild(hdr);
+
+    // Tabela
+    const wrap=document.createElement('div');wrap.className='notas-wrap';
+    const tbl=document.createElement('table');tbl.className='notas-table';
+
+    // Cabeçalho
+    const thead=document.createElement('thead');
+    const thrw=document.createElement('tr');
+    thrw.innerHTML=`<th class="th-data">📅 Data da Visita</th>`+conf.pracas.map(p=>`<th class="th-praca">${p}</th>`).join('');
+    thead.appendChild(thrw);tbl.appendChild(thead);
+
+    // Body: 4 linhas de visita
+    const tbody=document.createElement('tbody');
+    for(let vi=0;vi<4;vi++){
+      const tr=document.createElement('tr');
+      // Data
+      const tdData=document.createElement('td');tdData.className='td-data';
+      // Pega a data da primeira praça (todas as praças compartilham a mesma data de visita)
+      const firstPD=getPD(loja,conf.pracas[0]);
+      const dataVal=firstPD.visitas[vi]?firstPD.visitas[vi].data||'':'';
+      tdData.innerHTML=`<input class="input-data" type="date" value="${dataVal}"
+        onchange="updateData('${loja}',${vi},this.value)">`;
+      tr.appendChild(tdData);
+      // Notas por praça
+      conf.pracas.forEach(praca=>{
+        const pd=getPD(loja,praca);
+        const notaVal=pd.visitas[vi]?pd.visitas[vi].nota:'';
+        const notaNum=parseFloat(notaVal);
+        const notaCls=notaVal!==''&&!isNaN(notaNum)?(notaNum>=NOTA_MIN?'ok':'low'):'';
+        const td=document.createElement('td');
+        td.innerHTML=`<input class="input-nota ${notaCls}" type="number" min="0" max="10" step="0.1"
+          placeholder="—" value="${notaVal!==''&&notaVal!==undefined&&notaVal!==null?notaVal:''}"
+          onchange="updateNota('${loja}','${praca}',${vi},this.value)">`;
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    }
+
+    // Linha de MÉDIAS
+    const trMedia=document.createElement('tr');trMedia.className='media-row';
+    const tdLabel=document.createElement('td');tdLabel.className='td-data';tdLabel.textContent='MÉDIAS';trMedia.appendChild(tdLabel);
+    conf.pracas.forEach(praca=>{
+      const pd=getPD(loja,praca);
+      const med=calcMedia(pd.visitas);
+      const st=getStatus(pd.visitas);
+      const cls=st==='elegivel'?'media-elegivel':st==='nao-elegivel'?'media-nao-elegivel':'media-incompleto';
+      const txt=med!==null?med.toFixed(2):'—';
+      const td=document.createElement('td');
+      td.innerHTML=`<span class="media-cell ${cls}">${txt}</span>`;
+      trMedia.appendChild(td);
+    });
+    tbody.appendChild(trMedia);
+
+    tbl.appendChild(tbody);wrap.appendChild(tbl);block.appendChild(wrap);
+    cont.appendChild(block);
+  });
+}
+
+function updateData(loja,vi,val){
+  // Atualiza a data em TODAS as praças dessa loja para essa visita
+  const m=getM();if(!m.lojas)m.lojas={};if(!m.lojas[loja])m.lojas[loja]={};
+  LOJAS[loja].pracas.forEach(praca=>{
+    if(!m.lojas[loja][praca])m.lojas[loja][praca]={visitas:[{data:'',nota:''},{data:'',nota:''},{data:'',nota:''},{data:'',nota:''}]};
+    m.lojas[loja][praca].visitas[vi].data=val;
+  });
+  data.months[currentMonth]=m;
+  autoSave();
+}
+function updateNota(loja,praca,vi,val){
+  const m=getM();if(!m.lojas)m.lojas={};if(!m.lojas[loja])m.lojas[loja]={};
+  if(!m.lojas[loja][praca])m.lojas[loja][praca]={visitas:[{data:'',nota:''},{data:'',nota:''},{data:'',nota:''},{data:'',nota:''}]};
+  m.lojas[loja][praca].visitas[vi].nota=val;
+  data.months[currentMonth]=m;
+  autoSave();renderKPIs();renderLojas();
+}
+
+// ── ANUAL ──
+function renderAnual(){
+  const cont=document.getElementById('anualContent');cont.innerHTML='';
+  const months=sortedMK();
+  if(!months.length){cont.innerHTML='<div style="padding:40px;text-align:center;color:#9ca3af">Nenhum mês ainda.</div>';return;}
+  Object.keys(LOJAS).forEach(loja=>{
+    const conf=LOJAS[loja];
+    const block=document.createElement('div');block.className='anual-block';
+    block.innerHTML=`<div class="anual-block-header"><span class="loja-tag ${conf.tag}">${loja}</span><span style="font-size:12px;color:#6b7280;margin-left:6px">${conf.pracas.length} praças</span></div>
+      <div style="overflow-x:auto"><table class="anual-table">
+        <thead><tr><th>Praça</th>${months.map(m=>`<th>${m}</th>`).join('')}</tr></thead>
+        <tbody id="anual-${safeId(loja)}"></tbody>
+      </table></div>`;
+    cont.appendChild(block);
+    const tbody=block.querySelector(`#anual-${safeId(loja)}`);
+    conf.pracas.forEach(praca=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${praca}</td>`+months.map(m=>{
+        const mData=data.months[m]||{lojas:{}};
+        const pd=(mData.lojas&&mData.lojas[loja]&&mData.lojas[loja][praca])||{visitas:[{data:'',nota:''},{data:'',nota:''},{data:'',nota:''},{data:'',nota:''}]};
+        const med=calcMedia(pd.visitas);
+        const st=getStatus(pd.visitas);
+        if(med===null)return`<td><span class="nota-badge badge-vazio">—</span></td>`;
+        const cls=st==='elegivel'?'badge-ok':'badge-low';
+        return`<td><span class="nota-badge ${cls}">${med.toFixed(2)}</span></td>`;
+      }).join('');
+      tbody.appendChild(tr);
+    });
+  });
+}
+
+// ── RENDER ALL ──
+function renderAll(){
+  renderMonths();renderKPIs();renderLojas();
+  document.getElementById('headerInfo').textContent=currentMonth+' — '+new Date().toLocaleDateString('pt-BR');
+  if(document.getElementById('vtab-anual').classList.contains('active'))renderAnual();
+}
+
+// ── FIREBASE ──
+function autoSave(){nutriRef.set({currentMonth:data.currentMonth,months:encM(data.months)}).catch(e=>console.error(e));}
+function saveData(){autoSave();const m=document.getElementById('savedMsg');m.style.display='inline';setTimeout(()=>m.style.display='none',2500);}
+
+nutriRef.on('value',snapshot=>{
+  const val=snapshot.val();
+  if(val&&val.months){data.months=decM(val.months);data.currentMonth=val.currentMonth||'';}
+  if(!Object.keys(data.months).length){const hoje=new Date();const meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];const nm=meses[hoje.getMonth()]+'/'+hoje.getFullYear();data.months[nm]={lojas:{}};data.currentMonth=nm;}
+  currentMonth=data.currentMonth||sortedMK()[0];
+  renderAll();
+});
+</script>
+</body>
+</html>
