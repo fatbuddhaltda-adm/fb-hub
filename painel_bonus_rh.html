@@ -445,6 +445,8 @@ function renderAll(){
   renderLojas();
   renderProximo();
   document.getElementById('headerInfo').textContent=currentMonth+' — '+new Date().toLocaleDateString('pt-BR');
+  // Atualiza gráficos se a aba de análise estiver ativa
+  if(document.getElementById('vtab-analytics').classList.contains('active'))renderAnalytics();
 }
 
 // !! FIX: updateKPIs NÃO recalcula bonusValue a partir de numPedidos.
@@ -742,12 +744,4 @@ function renderAnalytics(){
 bonusRef.on('value', snapshot=>{
   const val=snapshot.val();
   if(val&&val.months){
-    data={...val,months:decodeMonthKeys(val.months)};
-    currentMonth=data.currentMonth||"Jan/2026";
-    fixDuplicateIds();
-  }
-  renderAll();
-});
-</script>
-</body>
-</html>
+    data={...val,mon
