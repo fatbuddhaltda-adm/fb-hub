@@ -393,14 +393,6 @@
             <span class="card-arrow">→</span>
           </a>
 
-
-          <a class="card" href="painel_nutri_rh.html" target="_blank">
-            <span class="card-emoji">🥗</span>
-            <div class="card-title">Notas Nutricionista</div>
-            <div class="card-desc">Controle mensal de notas por praça e elegibilidade por loja</div>
-            <span class="card-arrow">→</span>
-          </a>
-
           <a class="card" href="painel_kpi_rh.html" target="_blank">
             <span class="card-emoji">📈</span>
             <div class="card-title">KPIs de RH</div>
@@ -487,7 +479,7 @@
     const erro  = document.getElementById('login-error');
 
     if (input === SENHA_CORRETA) {
-      sessionStorage.setItem(SESSION_KEY, "1");
+      localStorage.setItem(SESSION_KEY, "1");
       mostrarHub();
     } else {
       erro.textContent = "Senha incorreta. Tente novamente.";
@@ -502,7 +494,7 @@
   }
 
   function sair() {
-    sessionStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(SESSION_KEY);
     location.reload();
   }
 
@@ -511,8 +503,8 @@
     if (e.key === 'Enter') tentarLogin();
   });
 
-  // Verifica se já está logado nesta sessão
-  if (sessionStorage.getItem(SESSION_KEY) === "1") mostrarHub();
+  // Verifica se já está logado
+  if (localStorage.getItem(SESSION_KEY) === "1") mostrarHub();
 
   // Abre/fecha uma seção do hub
   function toggleSection(headerEl) {
