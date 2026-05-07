@@ -612,9 +612,13 @@
       <label>Mês</label>
       <select id="fMes"><option value="ALL">Todos</option></select>
     </div>
-    <div class="filter-group" id="periodoFilter" style="display:flex;gap:8px;align-items:flex-end">
-      <div><div class="filter-label">DE</div><input type="date" id="fDe" class="filter-select"></div>
-      <div><div class="filter-label">ATÉ</div><input type="date" id="fAte" class="filter-select"></div>
+    <div class="filter-group">
+      <label>De</label>
+      <input type="date" id="fDe" style="background:var(--panel);border:1px solid var(--line);color:var(--ink);padding:10px 14px;border-radius:8px;font-family:'Manrope',sans-serif;font-size:13px;cursor:pointer;min-width:140px;box-shadow:0 2px 6px rgba(180,120,80,.08)">
+    </div>
+    <div class="filter-group">
+      <label>Até</label>
+      <input type="date" id="fAte" style="background:var(--panel);border:1px solid var(--line);color:var(--ink);padding:10px 14px;border-radius:8px;font-family:'Manrope',sans-serif;font-size:13px;cursor:pointer;min-width:140px;box-shadow:0 2px 6px rgba(180,120,80,.08)">
     </div>
     <div class="filter-group" style="margin-left:auto;flex-direction:row;gap:8px;align-items:flex-end">
       <button class="btn" id="btnExport" title="Exportar tabela detalhada para CSV">⬇ Exportar CSV</button>
