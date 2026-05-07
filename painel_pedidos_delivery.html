@@ -1866,7 +1866,7 @@ function populateDiaFilters(){
   const lojas=[...new Set(RAW_DIA.map(r=>r.Loja).filter(Boolean))].sort();
   const sel=document.getElementById("fDiaLoja"); if(!sel)return;
   sel.innerHTML='<option value="ALL">Todas</option>'+lojas.map(l=>'<option value="'+l+'">'+l+'</option>').join("");
-  if(RAW_DIA.length){const dates=RAW_DIA.map(r=>r.Data).filter(Boolean).sort();const last=dates[dates.length-1];const d7=new Date(last);d7.setDate(d7.getDate()-6);const de=document.getElementById("fDiaDe"),ate=document.getElementById("fDiaAte");if(de&&!de.value)de.value=d7.toISOString().slice(0,10);if(ate&&!ate.value)ate.value=last;}
+  if(RAW_DIA.length){const dates=RAW_DIA.filter(r=>r.Ped_Total>0).map(r=>r.Data).filter(Boolean).sort();const last=dates[dates.length-1];const d7=new Date(last);d7.setDate(d7.getDate()-6);const de=document.getElementById("fDiaDe"),ate=document.getElementById("fDiaAte");if(de&&!de.value)de.value=d7.toISOString().slice(0,10);if(ate&&!ate.value)ate.value=last;}
 }
 function getDiaFiltered(){
   const de=document.getElementById("fDiaDe").value,ate=document.getElementById("fDiaAte").value;
@@ -2995,6 +2995,8 @@ document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", ()=>{
   document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
   t.classList.add("active");
   document.getElementById("page-"+t.dataset.tab).classList.add("active");
+  if(t.dataset.tab==="diario"){renderDiario();}
+  if(t.dataset.tab==="rede"){renderRede();}
 }));
 
 ["fLoja","fPlat","fAno","fMes","fDe","fAte"].forEach(id =>
