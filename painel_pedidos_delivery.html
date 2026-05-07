@@ -1207,7 +1207,10 @@ function getFiltered(){
   const fM=document.getElementById("fMes").value;
   const fDe=document.getElementById("fDe").value;
   const fAte=document.getElementById("fAte").value;
+  const hasAnyFilter = fL!=="ALL" || fA!=="ALL" || fM!=="ALL" || fDe || fAte;
   return RAW.filter(r => {
+    // When no filter is set, exclude months with zero orders (empty future data)
+    if (!hasAnyFilter && r.TPed === 0) return false;
     if (fL!=="ALL" && r.Unidade!==fL) return false;
     if (fA!=="ALL" && String(r.Ano)!==String(fA)) return false;
     if (fM!=="ALL" && String(r.Mes)!==String(fM)) return false;
@@ -1229,8 +1232,9 @@ function getFiltered(){
 
 /* Estima número de dias no período filtrado */
 function calcDiasPeriodo(rows){
-  if (!rows.length) return 0;
-  const periods = [...new Set(rows.map(r => r.Ano*100+r.Mes))];
+  const activeRows = rows.filter(r => r.TPed > 0);
+  if (!activeRows.length) return 0;
+  const periods = [...new Set(activeRows.map(r => r.Ano*100+r.Mes))];
   // Each unique Ano+Mes combination ~ 30 days
   // For a single month, use the actual days in that month
   if (periods.length === 1){
