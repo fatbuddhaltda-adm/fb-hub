@@ -167,7 +167,7 @@
     }
 
     /* âââ HUB ââââââââââââââââââââââââââââââââââââââââââââââ */
-    #hub-screen { display: none; min-height: 100vh; }
+    #hub-screen { display: block; min-height: 100vh; }
 
     /* Topbar */
     .topbar {
@@ -591,7 +591,7 @@
     }
 
     /* âââ HUB ââââââââââââââââââââââââââââââââââââââââââââââ */
-    #hub-screen { display: none; min-height: 100vh; }
+    #hub-screen { display: block; min-height: 100vh; }
 
     /* Topbar */
     .topbar {
@@ -906,7 +906,7 @@ firebase.auth().onAuthStateChanged(async user=>{
       setTimeout(()=>firebase.auth().signOut(),3000);
       return;
     }
-    document.getElementById('auth-overlay').style.display='none';
+    document.getElementById('auth-overlay').style.display='none';var hs=document.getElementById('hub-screen');if(hs)hs.style.display='block';
     document.body.classList.remove('locked');
     let bar=document.getElementById('user-bar');
     if(!bar){
