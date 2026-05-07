@@ -338,6 +338,21 @@
   .smart-alert .icon{font-size:16px}
   .smart-alert strong{font-weight:700}
 
+
+    /* Visao Diaria */
+    #page-diario .kpi-grid{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+    #page-diario .filters{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+    #page-diario .filter-group{display:flex;flex-direction:column;gap:4px}
+    #page-diario .filter-group label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+    #page-diario .filter-group select,#page-diario .filter-group input{padding:6px 10px;border-radius:8px;border:1px solid var(--line);font-size:13px;background:var(--surface)}
+    #tblDiario{width:100%;border-collapse:collapse;font-size:12px}
+    #tblDiario th{position:sticky;top:0;background:var(--surface);padding:10px 8px;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid var(--line)}
+    #tblDiario th:nth-child(-n+4){text-align:left}
+    #tblDiario td{padding:8px;text-align:right;border-bottom:1px solid var(--line)}
+    #tblDiario td:nth-child(-n+4){text-align:left}
+    #tblDiario tr:hover td{background:var(--hover)}
+    #tblDiario .neg{color:var(--red);font-weight:600}
+    #tblDiario .pos{color:var(--green)}
   /* ===== Visão da Rede ===== */
   .rede-header{
     display:flex;justify-content:space-between;align-items:flex-end;
@@ -583,6 +598,7 @@
 <div class="tabs">
   <button class="tab active" data-tab="pedidos">Pedidos &amp; Delivery <span class="tab-badge" id="tabBadgePedidos">—</span></button>
   <button class="tab" data-tab="rede">Visão da Rede <span class="tab-badge" id="tabBadgeRede">—</span></button>
+        <button class="tab" data-tab="diario">Visão Diária <span class="tab-badge" id="tabBadgeDiario">—</span></button>
   <button class="tab" data-tab="operacional">Operacional <span class="tab-badge">live</span></button>
 </div>
 
@@ -730,6 +746,35 @@
   </div>
 
 </section>
+
+
+    <!-- VISÃO DIÁRIA -->
+    <section class="page" id="page-diario">
+      <div class="rede-header"><div>
+        <div class="rede-eyebrow">Dados diários por turno</div>
+        <h1 class="rede-title">Visão Diária</h1>
+        <p class="rede-sub">Pedidos, cancelamentos, atrasos e receita por dia e turno — direto da aba <code>_TotaisDia</code>.</p>
+      </div><div class="rede-period" id="diaPeriod">—</div></div>
+      <div class="filters" id="diaFilters" style="margin-bottom:20px">
+        <div class="filter-group"><label>De</label><input type="date" id="fDiaDe"/></div>
+        <div class="filter-group"><label>Até</label><input type="date" id="fDiaAte"/></div>
+        <div class="filter-group"><label>Loja</label><select id="fDiaLoja"><option value="ALL">Todas</option></select></div>
+        <div class="filter-group"><label>Turno</label><select id="fDiaTurno"><option value="ALL">Todos</option><option value="Almoço">Almoço</option><option value="Jantar">Jantar</option><option value="Dia Todo">Dia Todo</option></select></div>
+      </div>
+      <div class="kpi-grid" id="diaKpiGrid"></div>
+      <div class="grid-2" style="margin-top:24px">
+        <div class="card"><h3>Pedidos por dia</h3><canvas id="chartDiaEvol" height="170"></canvas></div>
+        <div class="card"><h3>Cancelamentos e atrasos por dia</h3><canvas id="chartDiaQual" height="170"></canvas></div>
+      </div>
+      <div class="card" style="padding:0"><div class="table-wrap">
+        <table id="tblDiario"><thead><tr>
+          <th>Data</th><th>Dia</th><th>Loja</th><th>Turno</th>
+          <th>iFood</th><th>99Food</th><th>Olga</th><th>Salão</th><th>Total</th>
+          <th>Can</th><th>%Can</th><th>Atr</th><th>%Atr</th>
+          <th>Receita</th><th>Cortesias</th>
+        </tr></thead><tbody id="tblDiarioBody"></tbody></table>
+      </div></div>
+    </section>
 
 <!-- ===================== OPERACIONAL ===================== -->
 <section class="page" id="page-operacional">
@@ -978,6 +1023,7 @@ function buildMock(){
    ============================================================ */
 let RAW = [];
 let REDE = [];
+let RAW_DIA = [];
 const charts = {};
 
 function setStatus(kind, text){
@@ -1021,7 +1067,12 @@ async function loadData(){
         REDE = parseRedeMatrix(j.totaisMes);
       }
 
-      setStatus("ok","Dados ao vivo · " + RAW.length + " registros · " + REDE.length + " meses na rede");
+        RAW_DIA = [];
+        if (j.totaisDia && Array.isArray(j.totaisDia) && j.totaisDia.length > 1){
+          RAW_DIA = parseDiaMatrix(j.totaisDia);
+        }
+
+      setStatus("ok","Dados ao vivo · " + RAW.length + " registros · " + REDE.length + " meses rede \u00b7 " + RAW_DIA.length + " dias");
       return;
     } catch(err){
       console.error("Erro ao buscar API:", err);
@@ -1070,7 +1121,12 @@ const HEADER_ALIASES = {
   "%Ca":"PctCa","%At":"PctAt","%Re":"PctRe","%Pr":"PctPr",
   "%Can":"PctCa","%Rec":"PctRe","%Prob":"PctPr",
   "PctCa":"PctCa","PctAt":"PctAt","PctRe":"PctRe","PctPr":"PctPr",
-  "Cort":"Cort","Cortesias":"Cort"
+  "Cort":"Cort","Cortesias":"Cort",
+    "Data":"Data","Turno":"Turno","DiaSemana":"DiaSemana","Loja":"Loja",
+    "Ped_iFood":"Ped_iFood","Ped_99":"Ped_99","Ped_Olga":"Ped_Olga","Ped_Salao":"Ped_Salao","Ped_Total":"Ped_Total",
+    "At_iFood":"At_iFood","At_99":"At_99","At_Olga":"At_Olga","At_Salao":"At_Salao","At_Total":"At_Total",
+    "Can_iFood":"Can_iFood","Can_99":"Can_99","Can_Olga":"Can_Olga","Can_Salao":"Can_Salao","Can_Total":"Can_Total",
+    "Rec_iFood":"Rec_iFood","Rec_99":"Rec_99","Rec_Olga":"Rec_Olga","Rec_Salao":"Rec_Salao","Rec_Total":"Rec_Total"
 };
 
 function parseMatrix(matrix){
@@ -1168,6 +1224,25 @@ function parseRedeMatrix(matrix){
     });
   }
   return rows.sort((a,b) => (a.Ano-b.Ano) || (a.Mes-b.Mes));
+}
+
+/* Parseia _TotaisDia */
+function parseDiaMatrix(matrix){
+  const headers = matrix[0].map(h => String(h).trim());
+  const num = v => { if (typeof v === "number") return v; if (v === "" || v === null || v === undefined) return 0; const n = parseFloat(String(v).replace(",",".")); return isNaN(n) ? 0 : n; };
+  const rows = [];
+  for (let i = 1; i < matrix.length; i++){
+    const r = matrix[i];
+    if (!r || r.every(c => c==="" || c===null || c===undefined)) continue;
+    const obj = {};
+    headers.forEach((h, idx) => { obj[h] = r[idx]; });
+    if (!obj.Data) continue;
+    ["Ped_iFood","Ped_99","Ped_Olga","Ped_Salao","Ped_Total","At_iFood","At_99","At_Olga","At_Salao","At_Total","Can_iFood","Can_99","Can_Olga","Can_Salao","Can_Total","Rec_iFood","Rec_99","Rec_Olga","Rec_Salao","Rec_Total","Cortesias"].forEach(k => { if (k in obj) obj[k] = num(obj[k]); });
+    if (obj.Data instanceof Date || (typeof obj.Data === "string" && obj.Data.includes("T"))) { obj.Data = new Date(obj.Data).toISOString().slice(0,10); }
+    else if (typeof obj.Data === "string") { const m = obj.Data.match(/(\d{2})\/(\d{2})\/(\d{4})/); if (m) obj.Data = m[3]+"-"+m[2]+"-"+m[1]; }
+    rows.push(obj);
+  }
+  return rows;
 }
 
 /* Compat: caso a API algum dia devolva array de objetos */
@@ -1783,6 +1858,42 @@ function renderRede(){
       <td class="${r.PctPr>8?'neg':'pos'}">${fmtPct(r.PctPr)}</td>
     </tr>
   `).join("");
+}
+
+
+/* ____________ VISÃO DIÁRIA ____________ */
+function populateDiaFilters(){
+  const lojas=[...new Set(RAW_DIA.map(r=>r.Loja).filter(Boolean))].sort();
+  const sel=document.getElementById("fDiaLoja"); if(!sel)return;
+  sel.innerHTML='<option value="ALL">Todas</option>'+lojas.map(l=>'<option value="'+l+'">'+l+'</option>').join("");
+  if(RAW_DIA.length){const dates=RAW_DIA.map(r=>r.Data).filter(Boolean).sort();const last=dates[dates.length-1];const d7=new Date(last);d7.setDate(d7.getDate()-6);const de=document.getElementById("fDiaDe"),ate=document.getElementById("fDiaAte");if(de&&!de.value)de.value=d7.toISOString().slice(0,10);if(ate&&!ate.value)ate.value=last;}
+}
+function getDiaFiltered(){
+  const de=document.getElementById("fDiaDe").value,ate=document.getElementById("fDiaAte").value;
+  const loja=document.getElementById("fDiaLoja").value,turno=document.getElementById("fDiaTurno").value;
+  return RAW_DIA.filter(r=>{if(de&&r.Data<de)return false;if(ate&&r.Data>ate)return false;if(loja!=="ALL"&&r.Loja!==loja)return false;if(turno!=="ALL"&&r.Turno!==turno)return false;return true;});
+}
+function renderDiario(){
+  const rows=getDiaFiltered();
+  const fmtN=n=>n==null?"—":Number(n).toLocaleString("pt-BR");
+  const fmtR=n=>n==null?"—":"R$ "+Number(n).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fmtP=(a,b)=>b?((a/b)*100).toFixed(1)+"%":"—";
+  const sum=(a,k)=>a.reduce((s,r)=>s+(r[k]||0),0);
+  const tPed=sum(rows,"Ped_Total"),tCan=sum(rows,"Can_Total"),tAt=sum(rows,"At_Total"),tRec=sum(rows,"Rec_Total"),tCort=sum(rows,"Cortesias");
+  const nDias=new Set(rows.map(r=>r.Data)).size;
+  const kg=document.getElementById("diaKpiGrid");
+  if(kg)kg.innerHTML=[{l:"Pedidos",v:fmtN(tPed),s:nDias+" dias"},{l:"Cancelamentos",v:fmtN(tCan),s:fmtP(tCan,tPed)},{l:"Atrasos",v:fmtN(tAt),s:fmtP(tAt,tPed)},{l:"Receita",v:fmtR(tRec),s:"total no período"},{l:"Cortesias",v:fmtN(tCort),s:"no período"},{l:"Média/dia",v:fmtN(nDias?Math.round(tPed/nDias):0),s:"pedidos"}].map(k=>'<div class="kpi"><div class="kpi-value">'+k.v+'</div><div class="kpi-label">'+k.l+'</div><div class="kpi-sub">'+k.s+'</div></div>').join("");
+  const pe=document.getElementById("diaPeriod");
+  if(pe&&rows.length){const ds=rows.map(r=>r.Data).sort();pe.textContent=ds[0]+" → "+ds[ds.length-1];}
+  const byDate={};rows.forEach(r=>{if(!byDate[r.Data])byDate[r.Data]={ped:0,can:0,at:0};byDate[r.Data].ped+=r.Ped_Total||0;byDate[r.Data].can+=r.Can_Total||0;byDate[r.Data].at+=r.At_Total||0;});
+  const sd=Object.keys(byDate).sort(),cl=sd.map(d=>{const p=d.split("-");return p[2]+"/"+p[1];});
+  if(charts.diaEvol)charts.diaEvol.destroy();const c1=document.getElementById("chartDiaEvol");
+  if(c1){charts.diaEvol=new Chart(c1,{type:"bar",data:{labels:cl,datasets:[{label:"iFood",data:sd.map(d=>{let s=0;rows.filter(r=>r.Data===d).forEach(r=>s+=r.Ped_iFood||0);return s;}),backgroundColor:"#ea1d2c"},{label:"99Food",data:sd.map(d=>{let s=0;rows.filter(r=>r.Data===d).forEach(r=>s+=r.Ped_99||0);return s;}),backgroundColor:"#ffdc00"},{label:"Olga",data:sd.map(d=>{let s=0;rows.filter(r=>r.Data===d).forEach(r=>s+=r.Ped_Olga||0);return s;}),backgroundColor:"#6c5ce7"},{label:"Salão",data:sd.map(d=>{let s=0;rows.filter(r=>r.Data===d).forEach(r=>s+=r.Ped_Salao||0);return s;}),backgroundColor:"#00b894"}]},options:{responsive:true,plugins:{legend:{position:"bottom"}},scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,beginAtZero:true}}}});}
+  if(charts.diaQual)charts.diaQual.destroy();const c2=document.getElementById("chartDiaQual");
+  if(c2){charts.diaQual=new Chart(c2,{type:"line",data:{labels:cl,datasets:[{label:"Cancelamentos",data:sd.map(d=>byDate[d].can),borderColor:"var(--red)",backgroundColor:"rgba(239,68,68,.1)",fill:true,tension:.3},{label:"Atrasos",data:sd.map(d=>byDate[d].at),borderColor:"#f59e0b",backgroundColor:"rgba(245,158,11,.1)",fill:true,tension:.3}]},options:{responsive:true,plugins:{legend:{position:"bottom"}},scales:{x:{grid:{display:false}},y:{beginAtZero:true}}}});}
+  const tb=document.getElementById("tblDiarioBody");
+  if(tb){tb.innerHTML=rows.sort((a,b)=>b.Data.localeCompare(a.Data)||a.Loja.localeCompare(b.Loja)).map(r=>{const pC=r.Ped_Total?((r.Can_Total/r.Ped_Total)*100).toFixed(1):"0.0";const pA=r.Ped_Total?((r.At_Total/r.Ped_Total)*100).toFixed(1):"0.0";return '<tr><td>'+r.Data+'</td><td>'+(r.DiaSemana||"")+'</td><td>'+(r.Loja||"")+'</td><td>'+(r.Turno||"")+'</td><td>'+fmtN(r.Ped_iFood)+'</td><td>'+fmtN(r.Ped_99)+'</td><td>'+fmtN(r.Ped_Olga)+'</td><td>'+fmtN(r.Ped_Salao)+'</td><td><strong>'+fmtN(r.Ped_Total)+'</strong></td><td class="'+(pC>10?"neg":"")+'">'+fmtN(r.Can_Total)+'</td><td class="'+(pC>10?"neg":"")+'">'+pC+'%</td><td class="'+(pA>5?"neg":"")+'">'+fmtN(r.At_Total)+'</td><td class="'+(pA>5?"neg":"")+'">'+pA+'%</td><td>'+fmtR(r.Rec_Total)+'</td><td>'+fmtN(r.Cortesias)+'</td></tr>';}).join("");}
+  const bg=document.getElementById("tabBadgeDiario");if(bg)bg.textContent=RAW_DIA.length?RAW_DIA.length+" reg":"—";
 }
 
 function renderAll(){
@@ -2890,6 +3001,8 @@ document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", ()=>{
   document.getElementById(id).addEventListener("change", renderAll)
 );
 
+    ["fDiaDe","fDiaAte","fDiaLoja","fDiaTurno"].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener("change",renderDiario);});
+
 /* ============================================================
    Export CSV (Pedidos & Delivery — tabela detalhada)
    ============================================================ */
@@ -2970,6 +3083,8 @@ document.getElementById("btnReload").addEventListener("click", async ()=>{
   populateFilters();
   renderAll();
   renderRede();
+    populateDiaFilters();
+    renderDiario();
 });
 
 (async function init(){
@@ -2978,6 +3093,8 @@ document.getElementById("btnReload").addEventListener("click", async ()=>{
   renderAll();
   renderRede();
   renderOperacional();
+    populateDiaFilters();
+    renderDiario();
 })();
 </script>
 
