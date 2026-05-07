@@ -490,6 +490,73 @@
   .mp-card .mp-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0}
   .mp-card .mp-row.best{color:var(--green);font-weight:600}
   .mp-card .mp-row.worst{color:var(--red);font-weight:600}
+
+  /* ===== Improvement CSS ===== */
+  .hidden{display:none!important}
+
+  /* Média diária section */
+  .media-diaria-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:24px;
+  }
+  .media-diaria-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;
+    box-shadow:var(--shadow-sm);position:relative;overflow:hidden;
+  }
+  .media-diaria-card::before{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(300px 80px at 0% 0%, rgba(163,126,58,.08), transparent 60%);
+    pointer-events:none;
+  }
+  .media-diaria-card .md-label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px;font-family:'JetBrains Mono',monospace}
+  .media-diaria-card .md-value{font-family:'Fraunces',serif;font-weight:600;font-size:26px;letter-spacing:-.02em;color:var(--ink)}
+  .media-diaria-card .md-sub{font-size:10px;color:var(--ink-3);margin-top:4px;font-family:'JetBrains Mono',monospace}
+  .media-diaria-card .md-delta{font-family:'JetBrains Mono',monospace;font-size:10px;margin-top:4px;display:inline-block;padding:1px 6px;border-radius:99px;font-weight:700}
+  .media-diaria-card .md-delta.up{color:var(--green);background:var(--green-soft)}
+  .media-diaria-card .md-delta.down{color:var(--red);background:var(--red-soft)}
+
+  /* Ocorrências detail panel */
+  .ocorr-detail{
+    background:var(--panel-2);border:1px solid var(--line);border-radius:10px;
+    padding:14px 16px;margin-top:14px;animation:fadein .25s ease;
+  }
+  .ocorr-detail .ocorr-title{font-size:11px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.15em;color:var(--ink-3);margin-bottom:10px;font-weight:700}
+  .ocorr-detail .ocorr-item{
+    padding:8px 12px;border-radius:8px;font-size:13px;margin-bottom:6px;
+    border:1px solid var(--line);background:var(--panel);
+  }
+  .ocorr-detail .ocorr-item.danger{border-color:var(--red);background:var(--red-soft);color:var(--red)}
+  .ocorr-detail .ocorr-item.warn{border-color:#fcd34d;background:#fef3c7;color:#92400e}
+
+  /* Motivos por loja */
+  .motivo-section{margin-top:20px}
+  .motivo-loja-title{font-family:'Manrope',sans-serif;font-weight:700;font-size:12px;letter-spacing:.06em;color:var(--ink-2);margin:14px 0 8px;text-transform:uppercase}
+  .motivo-bar{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:6px;background:var(--panel-2);border:1px solid var(--line);margin-bottom:4px;font-size:12px}
+  .motivo-bar .mb-name{flex:1;color:var(--ink);font-weight:500}
+  .motivo-bar .mb-count{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--red);font-size:11px}
+  .motivo-bar .mb-pct{font-family:'JetBrains Mono',monospace;color:var(--ink-3);font-size:10px;min-width:40px;text-align:right}
+
+  /* Taxa problemas por plataforma */
+  .taxa-plat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px}
+  .taxa-plat-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;
+    box-shadow:var(--shadow-sm);
+  }
+  .taxa-plat-card .tp-name{font-family:'Manrope',sans-serif;font-weight:700;font-size:13px;color:var(--ink);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .taxa-plat-card .tp-dot{width:8px;height:8px;border-radius:50%}
+  .taxa-plat-card .tp-row{display:flex;justify-content:space-between;font-size:11px;font-family:'JetBrains Mono',monospace;padding:4px 0;border-bottom:1px solid var(--line)}
+  .taxa-plat-card .tp-row:last-child{border-bottom:none;font-weight:700;color:var(--ink)}
+  .taxa-plat-card .tp-row .bad{color:var(--red);font-weight:700}
+
+  /* Filter date inputs */
+  input[type="date"].filter-select{
+    background:var(--panel);border:1px solid var(--line);color:var(--ink);
+    padding:10px 14px;border-radius:8px;font-family:'Manrope',sans-serif;font-size:13px;
+    cursor:pointer;transition:all .15s;min-width:140px;
+    box-shadow:var(--shadow-sm);
+  }
+  input[type="date"].filter-select:hover{border-color:var(--coral);background:var(--panel-2)}
+  input[type="date"].filter-select:focus{outline:none;border-color:var(--coral-2);box-shadow:0 0 0 3px rgba(247,165,165,.25)}
+  .filter-label{font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--ink-3);font-family:'JetBrains Mono',monospace;margin-bottom:6px}
 </style>
 </head>
 <body>
@@ -545,6 +612,10 @@
       <label>Mês</label>
       <select id="fMes"><option value="ALL">Todos</option></select>
     </div>
+    <div class="filter-group" id="periodoFilter" style="display:flex;gap:8px;align-items:flex-end">
+      <div><div class="filter-label">DE</div><input type="date" id="fDe" class="filter-select"></div>
+      <div><div class="filter-label">ATÉ</div><input type="date" id="fAte" class="filter-select"></div>
+    </div>
     <div class="filter-group" style="margin-left:auto;flex-direction:row;gap:8px;align-items:flex-end">
       <button class="btn" id="btnExport" title="Exportar tabela detalhada para CSV">⬇ Exportar CSV</button>
       <button class="btn btn-primary" id="btnReload">↻ Atualizar dados</button>
@@ -556,6 +627,10 @@
 
   <!-- KPIs -->
   <div class="kpi-grid" id="kpiGrid"></div>
+
+  <!-- Média diária -->
+  <div class="section-title">Média diária</div>
+  <div class="media-diaria-grid" id="mediaDiaria"></div>
 
   <!-- Plataformas -->
   <div class="section-title">Quebra por plataforma</div>
@@ -583,6 +658,10 @@
       <canvas id="chartLojas" height="160"></canvas>
     </div>
   </div>
+
+  <!-- Taxa de problemas por plataforma -->
+  <div class="section-title">Taxa de problemas por plataforma</div>
+  <div class="taxa-plat-grid" id="taxaPlataforma"></div>
 
   <!-- Tabela -->
   <div class="section-title">Detalhamento</div>
@@ -670,6 +749,7 @@
   <!-- ========== HOJE ========== -->
   <div class="subpage active" id="sub-hoje">
     <div class="kpi-grid" id="opHojeKpis"></div>
+    <div id="ocorrDetail" class="ocorr-detail hidden"></div>
 
     <div class="grid-2">
       <div class="card">
@@ -740,6 +820,11 @@
         <h4 class="card-sub">Por turno</h4>
         <div id="opPorTurno" class="metric-rows"></div>
       </div>
+    </div>
+
+    <div class="card">
+      <h3>📊 Motivos por loja</h3>
+      <div id="motivosPorLoja" class="motivo-section"></div>
     </div>
 
     <div class="card">
@@ -1116,11 +1201,47 @@ function getFiltered(){
   const fL=document.getElementById("fLoja").value;
   const fA=document.getElementById("fAno").value;
   const fM=document.getElementById("fMes").value;
-  return RAW.filter(r =>
-    (fL==="ALL" || r.Unidade===fL) &&
-    (fA==="ALL" || String(r.Ano)===String(fA)) &&
-    (fM==="ALL" || String(r.Mes)===String(fM))
-  );
+  const fDe=document.getElementById("fDe").value;
+  const fAte=document.getElementById("fAte").value;
+  return RAW.filter(r => {
+    if (fL!=="ALL" && r.Unidade!==fL) return false;
+    if (fA!=="ALL" && String(r.Ano)!==String(fA)) return false;
+    if (fM!=="ALL" && String(r.Mes)!==String(fM)) return false;
+    // Date range filter (month-level granularity from Ano+Mes)
+    if (fDe || fAte){
+      const rowDate = String(r.Ano)+"-"+String(r.Mes).padStart(2,"0");
+      if (fDe){
+        const deMonth = fDe.slice(0,7); // YYYY-MM
+        if (rowDate < deMonth) return false;
+      }
+      if (fAte){
+        const ateMonth = fAte.slice(0,7);
+        if (rowDate > ateMonth) return false;
+      }
+    }
+    return true;
+  });
+}
+
+/* Estima número de dias no período filtrado */
+function calcDiasPeriodo(rows){
+  if (!rows.length) return 0;
+  const periods = [...new Set(rows.map(r => r.Ano*100+r.Mes))];
+  // Each unique Ano+Mes combination ~ 30 days
+  // For a single month, use the actual days in that month
+  if (periods.length === 1){
+    const y = Math.floor(periods[0]/100);
+    const m = periods[0]%100;
+    return new Date(y, m, 0).getDate();
+  }
+  // Multiple months: sum days of each month
+  let totalDias = 0;
+  periods.forEach(p => {
+    const y = Math.floor(p/100);
+    const m = p%100;
+    totalDias += new Date(y, m, 0).getDate();
+  });
+  return totalDias;
 }
 
 /* Para uma plataforma específica, soma as colunas dela; ALL = totais */
@@ -1191,7 +1312,11 @@ function renderKPIs(rows, platKey){
     {label:"Reclamações",       value:fmt(TRec), sub:fmtPct(pctRec), delta: variation(TRec, PTRec, false)},
     {label:"Total problemático",value:fmt(TProb),sub:fmtPct(pctProb), cls: pctProb>8?"danger":"", delta: variation(TProb, PTProb, false)},
   ];
-  if (Cort!==null) kpis.push({label:"Cortesias", value:fmt(Cort), sub:"itens oferecidos"});
+  if (Cort!==null) {
+    const diasPeriodo = calcDiasPeriodo(rows);
+    const mediaCort = diasPeriodo > 0 ? (Cort / diasPeriodo).toFixed(1) : '–';
+    kpis.push({label:"Cortesias", value:fmt(Cort), sub:`${mediaCort} itens/dia · ${diasPeriodo} dias`});
+  }
 
   document.getElementById("kpiGrid").innerHTML = kpis.map(k=>`
     <div class="kpi ${k.cls||""}">
@@ -1234,6 +1359,90 @@ function getPreviousPeriodRows(){
 }
 
 function platLabel(key){ return PLATAFORMAS.find(p=>p.key===key)?.label || key; }
+
+/* ============================================================
+   MÉDIA DIÁRIA DE PEDIDOS POR PLATAFORMA
+   ============================================================ */
+function renderMediaDiaria(rows, platKey){
+  const el = document.getElementById("mediaDiaria");
+  if (!el) return;
+  const dias = calcDiasPeriodo(rows);
+  if (dias === 0 || rows.length === 0){
+    el.innerHTML = `<div style="font-size:12px;color:var(--ink-3);font-family:'JetBrains Mono',monospace">Sem dados para calcular média diária</div>`;
+    return;
+  }
+
+  const prevRows = getPreviousPeriodRows();
+  const hasPrev = prevRows && prevRows.length > 0;
+  const prevDias = hasPrev ? calcDiasPeriodo(prevRows) : 0;
+
+  const variation = (cur, prev) => {
+    if (prev === null || prev === undefined || prev === 0) return null;
+    const pct = ((cur - prev) / prev) * 100;
+    const arrow = pct > 0 ? "▲" : pct < 0 ? "▼" : "—";
+    return { label: `${arrow} ${Math.abs(pct).toFixed(1)}%`, isGood: pct > 0 };
+  };
+
+  // Total
+  const TPed = rows.reduce((s,r) => s + (r.TPed||0), 0);
+  const mediaTot = (TPed / dias).toFixed(1);
+  const prevTPed = hasPrev ? prevRows.reduce((s,r) => s + (r.TPed||0), 0) : 0;
+  const prevMediaTot = prevDias > 0 ? prevTPed / prevDias : 0;
+  const deltaTot = variation(parseFloat(mediaTot), prevMediaTot);
+
+  const cards = [{label:"Total", value:mediaTot, delta:deltaTot}];
+
+  // Per platform
+  PLATAFORMAS.forEach(p => {
+    const rec = rows.reduce((s,r) => s + (r[p.colsP]||0), 0);
+    const media = (rec / dias).toFixed(1);
+    const prevRec = hasPrev ? prevRows.reduce((s,r) => s + (r[p.colsP]||0), 0) : 0;
+    const prevMedia = prevDias > 0 ? prevRec / prevDias : 0;
+    const delta = variation(parseFloat(media), prevMedia);
+    cards.push({label:p.label, value:media, delta:delta, cor:p.cor});
+  });
+
+  el.innerHTML = cards.map(c => `
+    <div class="media-diaria-card">
+      ${c.cor ? `<div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${c.cor}"></div>` : ''}
+      <div class="md-label">${c.label}</div>
+      <div class="md-value">${c.value}</div>
+      ${c.delta ? `<div class="md-delta ${c.delta.isGood?'up':'down'}">${c.delta.label}</div>` : ''}
+      <div class="md-sub">pedidos/dia · ${dias} dias</div>
+    </div>
+  `).join("");
+}
+
+/* ============================================================
+   TAXA DE PROBLEMAS POR PLATAFORMA
+   ============================================================ */
+function renderTaxaPlataforma(rows){
+  const el = document.getElementById("taxaPlataforma");
+  if (!el) return;
+  if (!rows.length){ el.innerHTML = ""; return; }
+
+  el.innerHTML = PLATAFORMAS.map(p => {
+    const rec = rows.reduce((s,r) => s + (r[p.colsP]||0), 0);
+    const can = rows.reduce((s,r) => s + (r[p.colsC]||0), 0);
+    const atr = rows.reduce((s,r) => s + (r[p.colsA]||0), 0);
+    const recl = rows.reduce((s,r) => s + (r[p.colsR]||0), 0);
+    const prob = can + atr + recl;
+    const pCan = rec ? (can/rec*100).toFixed(2) : "0.00";
+    const pAtr = rec ? (atr/rec*100).toFixed(2) : "0.00";
+    const pRecl = rec ? (recl/rec*100).toFixed(2) : "0.00";
+    const pProb = rec ? (prob/rec*100).toFixed(2) : "0.00";
+    const isBad = parseFloat(pProb) > 5;
+    return `
+      <div class="taxa-plat-card" ${isBad ? 'style="border-color:var(--red)"' : ''}>
+        <div class="tp-name"><span class="tp-dot" style="background:${p.cor}"></span>${p.label}</div>
+        <div class="tp-row"><span>% Cancelamento</span><span class="${parseFloat(pCan)>5?'bad':''}">${pCan.replace(".",",")}%</span></div>
+        <div class="tp-row"><span>% Atraso</span><span class="${parseFloat(pAtr)>5?'bad':''}">${pAtr.replace(".",",")}%</span></div>
+        <div class="tp-row"><span>% Reclamação</span><span>${pRecl.replace(".",",")}%</span></div>
+        <div class="tp-row"><span>% Total problemas</span><span class="${isBad?'bad':''}">${pProb.replace(".",",")}%</span></div>
+      </div>
+    `;
+  }).join("");
+}
 
 function renderPlatGrid(rows){
   const totalRec = rows.reduce((s,r)=>s+r.TPed,0);
@@ -1573,7 +1782,9 @@ function renderAll(){
   const rows = getFiltered();
   renderSmartAlerts(rows);
   renderKPIs(rows, platKey);
+  renderMediaDiaria(rows, platKey);
   renderPlatGrid(rows);
+  renderTaxaPlataforma(rows);
   renderEvolucao(rows, platKey);
   renderMix(rows);
   renderProblemas(rows, platKey);
@@ -1658,8 +1869,69 @@ function renderSmartAlerts(rows){
     }
   }
 
+  // Alerta 4: variação > 15% vs período anterior em qualquer métrica
+  const prevRows = getPreviousPeriodRows();
+  if (prevRows && prevRows.length > 0){
+    const curTPed = scope.reduce((s,r) => s+r.TPed, 0);
+    const prevTPedA = prevRows.reduce((s,r) => s+r.TPed, 0);
+    if (prevTPedA > 0){
+      const varPed = ((curTPed - prevTPedA) / prevTPedA) * 100;
+      if (Math.abs(varPed) > 15){
+        alerts.push({
+          level: varPed < -15 ? "warning" : "info",
+          icon: varPed < 0 ? "📉" : "📈",
+          text: `Pedidos ${varPed>0?"subiram":"caíram"} <strong>${Math.abs(varPed).toFixed(1)}%</strong> vs período anterior`
+        });
+      }
+    }
+    const curTCan = scope.reduce((s,r) => s+r.TCan, 0);
+    const prevTCanA = prevRows.reduce((s,r) => s+r.TCan, 0);
+    if (prevTCanA > 0){
+      const varCan = ((curTCan - prevTCanA) / prevTCanA) * 100;
+      if (varCan > 15){
+        alerts.push({
+          level: "warning",
+          icon: "⚠️",
+          text: `Cancelamentos subiram <strong>${varCan.toFixed(1)}%</strong> vs período anterior — investigar causas`
+        });
+      }
+    }
+  }
+
+  // Alerta 5: plataforma com taxa de problemas > 5%
+  PLATAFORMAS.forEach(p => {
+    const rec = scope.reduce((s,r) => s + (r[p.colsP]||0), 0);
+    const can = scope.reduce((s,r) => s + (r[p.colsC]||0), 0);
+    const atr = scope.reduce((s,r) => s + (r[p.colsA]||0), 0);
+    const recl = scope.reduce((s,r) => s + (r[p.colsR]||0), 0);
+    if (rec > 0){
+      const pctProb = (can+atr+recl)/rec*100;
+      if (pctProb > 5){
+        alerts.push({
+          level: pctProb > 10 ? "critical" : "warning",
+          icon: "🔴",
+          text: `<strong>${p.label}</strong>: taxa de problemas em <strong>${pctProb.toFixed(1)}%</strong> ${scopeLabel}`
+        });
+      }
+    }
+  });
+
+  // Alerta 6: cortesias diárias acima de 5 itens/dia
+  const totalCort = scope.reduce((s,r) => s + (r.Cort||0), 0);
+  const diasScope = calcDiasPeriodo(scope);
+  if (diasScope > 0 && totalCort > 0){
+    const mediaCortDia = totalCort / diasScope;
+    if (mediaCortDia > 5){
+      alerts.push({
+        level: mediaCortDia > 10 ? "critical" : "warning",
+        icon: "🎁",
+        text: `Cortesias em <strong>${mediaCortDia.toFixed(1)} itens/dia</strong> ${scopeLabel} — acima do esperado`
+      });
+    }
+  }
+
   // Renderiza
-  el.innerHTML = alerts.slice(0, 4).map(a => `
+  el.innerHTML = alerts.slice(0, 6).map(a => `
     <div class="smart-alert ${a.level}">
       <span class="icon">${a.icon}</span>
       <span>${a.text}</span>
@@ -2219,12 +2491,25 @@ function renderOpHoje(){
       <div class="value">${d.relatorios.pendentes}</div>
       <div class="sub">${d.relatorios.pendentes>0?"faltam enviar":"todos OK"}</div>
     </div>
-    <div class="kpi ${d.ocorrenciasTotal>0?'danger':'success'}">
+    <div class="kpi ${d.ocorrenciasTotal>0?'danger':'success'}" onclick="document.getElementById('ocorrDetail').classList.toggle('hidden')" style="cursor:pointer">
       <div class="label">Ocorrências</div>
       <div class="value">${d.ocorrenciasTotal}</div>
-      <div class="sub">${d.ocorrenciasTotal>0?"requer atenção":"sem incidentes"}</div>
+      <div class="sub">${d.ocorrenciasTotal>0?"clique para ver detalhes":"sem incidentes"}</div>
     </div>
   `;
+
+  // Ocorrências detail panel
+  const ocorrEl = document.getElementById("ocorrDetail");
+  if (ocorrEl){
+    const items = d.ocorrencias || d.alertas || [];
+    if (items.length > 0){
+      ocorrEl.innerHTML = `<div class="ocorr-title">Detalhamento de ocorrências</div>` +
+        items.map(a => `<div class="ocorr-item ${a.tipo||''}">${a.texto || a.descricao || JSON.stringify(a)}</div>`).join("");
+    } else {
+      ocorrEl.innerHTML = `<div class="ocorr-title">Ocorrências</div><div class="ocorr-item" style="color:var(--green)">Nenhuma ocorrência registrada hoje</div>`;
+    }
+    ocorrEl.classList.add("hidden");
+  }
 
   // Logística
   document.getElementById("opLogistica").innerHTML = d.logistica.map(l => {
@@ -2272,7 +2557,10 @@ function renderOpSemanal(){
     data:{ labels, datasets:[
       { label:"Brooklin · máx",     data:s.logistica.map(d=>d.brookMax||null), borderColor:"#e51b24", backgroundColor:"rgba(229,27,36,.06)", borderWidth:2, tension:.3, pointRadius:3 },
       { label:"Perdizes · máx",     data:s.logistica.map(d=>d.perdMax||null), borderColor:"#f7a5a5", backgroundColor:"rgba(247,165,165,.10)", borderWidth:2, tension:.3, pointRadius:3 },
-      { label:"Vila Mariana · máx", data:s.logistica.map(d=>d.vmMax||null),   borderColor:"#a37e3a", backgroundColor:"rgba(163,126,58,.06)", borderWidth:2, tension:.3, pointRadius:3 }
+      { label:"Vila Mariana · máx", data:s.logistica.map(d=>d.vmMax||null),   borderColor:"#a37e3a", backgroundColor:"rgba(163,126,58,.06)", borderWidth:2, tension:.3, pointRadius:3 },
+      { label:"Brooklin · mín",     data:s.logistica.map(d=>d.brookMin||null), borderColor:"#e51b24", borderDash:[5,5], borderWidth:1.5, tension:.3, pointRadius:2, backgroundColor:"transparent" },
+      { label:"Perdizes · mín",     data:s.logistica.map(d=>d.perdMin||null), borderColor:"#f7a5a5", borderDash:[5,5], borderWidth:1.5, tension:.3, pointRadius:2, backgroundColor:"transparent" },
+      { label:"Vila Mariana · mín", data:s.logistica.map(d=>d.vmMin||null),   borderColor:"#a37e3a", borderDash:[5,5], borderWidth:1.5, tension:.3, pointRadius:2, backgroundColor:"transparent" }
     ]},
     options:{
       plugins:{legend:{position:"top",labels:{boxWidth:10,boxHeight:10,padding:10}}},
@@ -2362,11 +2650,40 @@ function renderRankList(elemId, items){
   `).join("");
 }
 
+function renderMotivosPorLoja(rows){
+  const el = document.getElementById("motivosPorLoja");
+  if (!el) return;
+  if (!rows.length){ el.innerHTML = `<div style="font-size:12px;color:var(--ink-3)">Sem registros de motivos</div>`; return; }
+
+  const byLoja = {};
+  rows.forEach(r => {
+    if (!r.motivo || !r.motivo.trim()) return;
+    const loja = r.loja || "Desconhecida";
+    if (!byLoja[loja]) byLoja[loja] = {};
+    byLoja[loja][r.motivo] = (byLoja[loja][r.motivo]||0) + 1;
+  });
+
+  let html = "";
+  OP_LOJAS.forEach(loja => {
+    const motivos = byLoja[loja];
+    if (!motivos) return;
+    const sorted = Object.entries(motivos).sort((a,b) => b[1]-a[1]);
+    const total = sorted.reduce((s,e) => s+e[1], 0);
+    html += `<div class="motivo-loja-title">${loja} (${total} registros)</div>`;
+    sorted.slice(0,8).forEach(([motivo, count]) => {
+      const pct = total ? (count/total*100).toFixed(1) : "0.0";
+      html += `<div class="motivo-bar"><span class="mb-name">${motivo}</span><span class="mb-count">${count}</span><span class="mb-pct">${pct}%</span></div>`;
+    });
+  });
+  el.innerHTML = html || `<div style="font-size:12px;color:var(--ink-3)">Nenhum motivo registrado</div>`;
+}
+
 function renderOpProdutos(){
   const rows = OP_DATA.produtos.registros.filter(r => r.produto && r.produto.trim());
 
   // Top 10 geral
   renderRankList("opTopGeral", aggregateTopProdutos(rows, null));
+  renderMotivosPorLoja(rows);
 
   // Tabs por loja + Top 10 da loja selecionada
   document.getElementById("opByLojaTabs").innerHTML = OP_LOJAS.map(l =>
@@ -2561,7 +2878,7 @@ document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", ()=>{
   document.getElementById("page-"+t.dataset.tab).classList.add("active");
 }));
 
-["fLoja","fPlat","fAno","fMes"].forEach(id =>
+["fLoja","fPlat","fAno","fMes","fDe","fAte"].forEach(id =>
   document.getElementById(id).addEventListener("change", renderAll)
 );
 
