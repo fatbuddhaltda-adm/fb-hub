@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GestÃ£o de BÃ´nus Â· Fat Buddha Hub</title>
+<title>Gestão de Bônus · Fat Buddha Hub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -32,7 +32,7 @@ body{
   min-height:100vh;color:var(--ink);
 }
 
-/* âââ HEADER âââ */
+/* ═══ HEADER ═══ */
 .header{
   background-color:rgba(250,243,236,.9);
   backdrop-filter:blur(10px);
@@ -58,7 +58,7 @@ body{
   box-shadow:0 4px 14px -4px rgba(229,27,36,.18);
   flex-shrink:0;
 }
-.brand-mark::after{content:"ð¯";font-size:22px}
+.brand-mark::after{content:"🎯";font-size:22px}
 .header-text{line-height:1.1}
 .header-text h1{
   font-family:'Fraunces',serif;font-weight:700;letter-spacing:-.02em;
@@ -74,7 +74,7 @@ body{
   font-family:'JetBrains Mono',monospace;letter-spacing:.05em;
 }
 
-/* âââ VIEW BAR âââ */
+/* ═══ VIEW BAR ═══ */
 .view-bar{
   background:var(--panel);
   padding:0 28px;display:flex;
@@ -91,7 +91,7 @@ body{
 .view-tab:hover{color:var(--ink-2)}
 .view-tab.active{color:var(--red);border-bottom-color:var(--red);font-weight:700}
 
-/* âââ MONTH BAR âââ */
+/* ═══ MONTH BAR ═══ */
 .month-bar{
   background:var(--panel);border-bottom:1px solid var(--line);
   padding:12px 28px;display:flex;align-items:center;gap:8px;overflow-x:auto;
@@ -119,7 +119,7 @@ body{
 .month-del:hover{background:var(--red-soft);color:var(--red);border-color:var(--coral)}
 .month-tab-wrap .month-tab{border-radius:99px 6px 6px 99px}
 
-/* âââ KPI CARDS âââ */
+/* ═══ KPI CARDS ═══ */
 .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:20px 28px 0}
 .kpi-card{
   background:var(--panel);border:1px solid var(--line);
@@ -149,7 +149,7 @@ body{
 }
 .kpi-sub{font-size:11px;color:var(--ink-3);font-family:'JetBrains Mono',monospace}
 
-/* âââ CONTROLS âââ */
+/* ═══ CONTROLS ═══ */
 .controls{
   background:var(--panel);margin:14px 28px 0;border-radius:14px;
   padding:16px 20px;box-shadow:var(--shadow-sm);
@@ -197,7 +197,7 @@ body{
 }
 .btn-danger:hover{background:var(--coral);color:#fff}
 
-/* âââ SECTIONS âââ */
+/* ═══ SECTIONS ═══ */
 .section{
   background:var(--panel);margin:14px 28px;border-radius:14px;
   box-shadow:var(--shadow-sm);overflow:hidden;
@@ -222,7 +222,7 @@ body{
 .badge-red{background:var(--red-soft);color:#991b1b;border-color:var(--coral)}
 .badge-blue{background:var(--blue-soft);color:#1e40af;border-color:#93c5fd}
 
-/* âââ TABLE âââ */
+/* ═══ TABLE ═══ */
 .tbl-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th{
@@ -239,7 +239,7 @@ td{
 tr:last-child td{border-bottom:none}
 tr:hover td{background:rgba(247,165,165,.06)}
 
-/* âââ STATUS BADGE (preserva cores semÃ¢nticas suavizadas) âââ */
+/* ═══ STATUS BADGE (preserva cores semânticas suavizadas) ═══ */
 .status-badge{
   display:inline-flex;align-items:center;gap:4px;
   padding:4px 10px;border-radius:99px;
@@ -248,7 +248,7 @@ tr:hover td{background:rgba(247,165,165,.06)}
   border:1px solid transparent;
   transition:all .15s;
 }
-.status-badge::after{content:'â¾';font-size:9px;opacity:.7}
+.status-badge::after{content:'▾';font-size:9px;opacity:.7}
 .status-badge:hover{transform:translateY(-1px)}
 .s-elegivel{background:var(--green-soft);color:#166534;border-color:#86efac}
 .s-atestado{background:var(--amber-soft);color:#92400e;border-color:#fcd34d}
@@ -258,7 +258,7 @@ tr:hover td{background:rgba(247,165,165,.06)}
 .s-nota-praca{background:var(--purple-soft);color:#5b21b6;border-color:#c4b5fd}
 .s-demitido{background:var(--nude);color:var(--ink-3);border-color:var(--line-2)}
 
-/* âââ STATUS MENU âââ */
+/* ═══ STATUS MENU ═══ */
 .status-menu{
   display:none;position:fixed;background:var(--panel);
   border:1px solid var(--line);border-radius:12px;
@@ -293,7 +293,7 @@ tr:hover td{background:rgba(247,165,165,.06)}
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;
 }
 
-/* âââ LOJA TAGS âââ */
+/* ═══ LOJA TAGS ═══ */
 .loja-tag{
   font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;
   white-space:nowrap;letter-spacing:.05em;
@@ -306,7 +306,7 @@ tr:hover td{background:rgba(247,165,165,.06)}
 .loja-matriz{background:var(--amber-soft);color:#92400e;border-color:#fcd34d}
 .loja-outro{background:var(--nude);color:var(--ink-2);border-color:var(--line-2)}
 
-/* âââ LOJAS GRID âââ */
+/* ═══ LOJAS GRID ═══ */
 .lojas-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:18px 20px}
 .loja-card{
   background:var(--panel-2);border-radius:10px;padding:14px;
@@ -325,7 +325,7 @@ tr:hover td{background:rgba(247,165,165,.06)}
   font-family:'Fraunces',serif;
 }
 
-/* âââ MODAL âââ */
+/* ═══ MODAL ═══ */
 .modal-overlay{
   display:none;position:fixed;inset:0;
   background:rgba(42,31,23,.55);backdrop-filter:blur(4px);
@@ -362,7 +362,7 @@ tr:hover td{background:rgba(247,165,165,.06)}
 }
 .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
 
-/* âââ PROXIMO LIST âââ */
+/* ═══ PROXIMO LIST ═══ */
 .proximo-list{
   padding:14px 20px;display:flex;flex-wrap:wrap;gap:8px;min-height:50px;
 }
@@ -386,7 +386,7 @@ tr:hover td{background:rgba(247,165,165,.06)}
   font-family:'Manrope',sans-serif;color:var(--ink);
 }
 
-/* âââ SAVE BAR âââ */
+/* ═══ SAVE BAR ═══ */
 .save-bar{
   background:var(--panel);border-top:1px solid var(--line);
   padding:14px 28px;display:flex;align-items:center;justify-content:space-between;
@@ -404,7 +404,7 @@ tr:hover td{background:rgba(247,165,165,.06)}
 }
 .copy-btn:hover{background:#86efac}
 
-/* âââ ANALYTICS âââ */
+/* ═══ ANALYTICS ═══ */
 #view-analytics{display:none;padding:20px 28px 32px}
 .an-kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
 .an-kpi{
@@ -493,42 +493,12 @@ tr:hover td{background:rgba(247,165,165,.06)}
 }
 </style>
 </head>
+
 <!-- Firebase SDK -->
+
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<!-- ===== INÃCIO BLOCO DE LOGIN - NÃO MEXER ===== -->
-<style>
-#auth-overlay{position:fixed;inset:0;background:#faf3ec;z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:'Manrope',sans-serif;}
-#auth-box{background:#fff;padding:48px 56px;border-radius:20px;box-shadow:0 20px 60px -20px rgba(180,120,80,.18);text-align:center;max-width:420px;width:90%;}
-#auth-logo{width:64px;height:64px;margin:0 auto 20px;border-radius:50%;background:#2a1f17;display:flex;align-items:center;justify-content:center;color:#faf3ec;font-family:'Fraunces',serif;font-weight:600;font-size:28px;letter-spacing:-.02em;}
-#auth-title{font-family:'Fraunces',serif;font-size:26px;font-weight:600;color:#2a1f17;margin:0 0 8px;letter-spacing:-.01em;}
-#auth-sub{font-size:13px;color:#8a7563;margin:0 0 28px;font-weight:500;}
-#btn-login{background:#fff;border:1px solid #e8d9c8;color:#2a1f17;font-size:14px;font-weight:600;padding:12px 24px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:10px;transition:all .2s;font-family:inherit;}
-#btn-login:hover{background:#faf3ec;border-color:#d4a64a;}
-#btn-login svg{width:18px;height:18px;}
-#auth-error{color:#e51b24;font-size:13px;margin-top:16px;font-weight:500;display:none;}
-#auth-loading{color:#8a7563;font-size:13px;margin-top:16px;font-weight:500;}
-#user-bar{position:fixed;top:12px;right:16px;z-index:9999;background:#fff;border:1px solid #e8d9c8;border-radius:10px;padding:6px 12px;display:flex;align-items:center;gap:10px;font-family:'Manrope',sans-serif;font-size:12px;color:#5e4b3c;box-shadow:0 4px 12px rgba(180,120,80,.08);}
-#user-bar img{width:24px;height:24px;border-radius:50%;}
-#btn-logout{background:none;border:none;color:#e51b24;font-weight:600;cursor:pointer;font-size:12px;padding:4px 8px;border-radius:6px;font-family:inherit;}
-#btn-logout:hover{background:#f4c8c8;}
-body.locked{overflow:hidden;}
-body.locked > *:not(#auth-overlay):not(script){visibility:hidden;}
-</style>
-<div id="auth-overlay">
-  <div id="auth-box">
-    <div id="auth-logo">FB</div>
-    <h1 id="auth-title">Fat Buddha</h1>
-    <p id="auth-sub">Acesso restrito Â· FaÃ§a login para continuar</p>
-    <button id="btn-login" onclick="doLogin()">
-      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-      Entrar com Google
-    </button>
-    <p id="auth-error"></p>
-    <p id="auth-loading">Verificando acesso...</p>
-  </div>
-</div>
 <script>
 const FB_AUTH_CONFIG={apiKey:"AIzaSyCyMw54A5hb1uiOypt5mABVxo96aUNLZtw",authDomain:"fat-buddha-hub.firebaseapp.com",databaseURL:"https://fat-buddha-hub-default-rtdb.firebaseio.com",projectId:"fat-buddha-hub",storageBucket:"fat-buddha-hub.firebasestorage.app",messagingSenderId:"748093225714",appId:"1:748093225714:web:58c7e22c7b588b797eee6b"};
 if(!firebase.apps.length){firebase.initializeApp(FB_AUTH_CONFIG);}
@@ -557,7 +527,7 @@ firebase.auth().onAuthStateChanged(async user=>{
     const admins=snap.val()||[];
     const list=Array.isArray(admins)?admins:Object.values(admins);
     if(!list.includes(user.email)){
-      showAuthError('Acesso negado. E-mail '+user.email+' nÃ£o autorizado.');
+      showAuthError('Acesso negado. E-mail '+user.email+' não autorizado.');
       setTimeout(()=>firebase.auth().signOut(),3000);
       return;
     }
@@ -572,108 +542,45 @@ firebase.auth().onAuthStateChanged(async user=>{
     }
     window._authReady=true;
     if(window._authReadyResolve)window._authReadyResolve(user);
-  }catch(e){showAuthError('Erro verificando autorizaÃ§Ã£o: '+e.message);}
-});
-</script>
-<!-- ===== FIM BLOCO DE LOGIN ===== -->
-<body>
-<div id="auth-overlay"><div class="auth-card"><div class="auth-title">Fat Buddha</div><div class="auth-sub">Controle de Uniformes</div><button class="btn-login-google" id="btn-login"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20H24v8h11.3C33.6 33.3 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.1-4z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.5 16 19 12 24 12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4 16.3 4 9.7 8.4 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.4 35.5 26.8 36 24 36c-5.3 0-9.5-2.7-11.3-6.9l-6.5 5C9.7 39.6 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20H24v8h11.3c-.9 2.5-2.5 4.5-4.5 6l6.2 5.2C40.9 35.6 44 30.3 44 24c0-1.3-.1-2.7-.4-4z"/></svg> Entrar com Google</button><p id="auth-status" style="margin-top:10px;font-size:12px;color:#888">Verificando acesso...</p></div></div>
-<div id="main-app" style="display:none"><h2 style="padding:20px;color:#C0392B">Controle de Uniformes - Em construcao</h2><p style="padding:0 20px">Firebase conectado com sucesso! O painel completo sera carregado aqui.</p></div>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<!-- ===== INÃCIO BLOCO DE LOGIN - NÃO MEXER ===== -->
-<style>
-#auth-overlay{position:fixed;inset:0;background:#faf3ec;z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:'Manrope',sans-serif;}
-#auth-box{background:#fff;padding:48px 56px;border-radius:20px;box-shadow:0 20px 60px -20px rgba(180,120,80,.18);text-align:center;max-width:420px;width:90%;}
-#auth-logo{width:64px;height:64px;margin:0 auto 20px;border-radius:50%;background:#2a1f17;display:flex;align-items:center;justify-content:center;color:#faf3ec;font-family:'Fraunces',serif;font-weight:600;font-size:28px;letter-spacing:-.02em;}
-#auth-title{font-family:'Fraunces',serif;font-size:26px;font-weight:600;color:#2a1f17;margin:0 0 8px;letter-spacing:-.01em;}
-#auth-sub{font-size:13px;color:#8a7563;margin:0 0 28px;font-weight:500;}
-#btn-login{background:#fff;border:1px solid #e8d9c8;color:#2a1f17;font-size:14px;font-weight:600;padding:12px 24px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:10px;transition:all .2s;font-family:inherit;}
-#btn-login:hover{background:#faf3ec;border-color:#d4a64a;}
-#btn-login svg{width:18px;height:18px;}
-#auth-error{color:#e51b24;font-size:13px;margin-top:16px;font-weight:500;display:none;}
-#auth-loading{color:#8a7563;font-size:13px;margin-top:16px;font-weight:500;}
-#user-bar{position:fixed;top:12px;right:16px;z-index:9999;background:#fff;border:1px solid #e8d9c8;border-radius:10px;padding:6px 12px;display:flex;align-items:center;gap:10px;font-family:'Manrope',sans-serif;font-size:12px;color:#5e4b3c;box-shadow:0 4px 12px rgba(180,120,80,.08);}
-#user-bar img{width:24px;height:24px;border-radius:50%;}
-#btn-logout{background:none;border:none;color:#e51b24;font-weight:600;cursor:pointer;font-size:12px;padding:4px 8px;border-radius:6px;font-family:inherit;}
-#btn-logout:hover{background:#f4c8c8;}
-body.locked{overflow:hidden;}
-body.locked > *:not(#auth-overlay):not(script){visibility:hidden;}
-</style>
-<div id="auth-overlay">
-  <div id="auth-box">
-    <div id="auth-logo">FB</div>
-    <h1 id="auth-title">Fat Buddha</h1>
-    <p id="auth-sub">Acesso restrito Â· FaÃ§a login para continuar</p>
-    <button id="btn-login" onclick="doLogin()">
-      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-      Entrar com Google
-    </button>
-    <p id="auth-error"></p>
-    <p id="auth-loading">Verificando acesso...</p>
-  </div>
-</div>
-<script>
-const FB_AUTH_CONFIG={apiKey:"AIzaSyCyMw54A5hb1uiOypt5mABVxo96aUNLZtw",authDomain:"fat-buddha-hub.firebaseapp.com",databaseURL:"https://fat-buddha-hub-default-rtdb.firebaseio.com",projectId:"fat-buddha-hub",storageBucket:"fat-buddha-hub.firebasestorage.app",messagingSenderId:"748093225714",appId:"1:748093225714:web:58c7e22c7b588b797eee6b"};
-if(!firebase.apps.length){firebase.initializeApp(FB_AUTH_CONFIG);}
-document.body.classList.add('locked');
-window._authReady=false;
-window._authReadyResolve=null;
-window._authReadyPromise=new Promise(r=>{window._authReadyResolve=r;});
-function showAuthError(msg){document.getElementById('auth-error').textContent=msg;document.getElementById('auth-error').style.display='block';document.getElementById('auth-loading').style.display='none';}
-function hideAuthLoading(){document.getElementById('auth-loading').style.display='none';}
-function doLogin(){
-  const provider=new firebase.auth.GoogleAuthProvider();
-  document.getElementById('auth-error').style.display='none';
-  document.getElementById('auth-loading').textContent='Abrindo login...';
-  document.getElementById('auth-loading').style.display='block';
-  firebase.auth().signInWithPopup(provider).catch(err=>{
-    if(err.code==='auth/popup-blocked'){showAuthError('Popup bloqueado pelo navegador. Permita popups e tente novamente.');}
-    else if(err.code==='auth/popup-closed-by-user'){hideAuthLoading();}
-    else{showAuthError('Erro ao fazer login: '+err.message);}
-  });
-}
-function doLogout(){firebase.auth().signOut().then(()=>{location.reload();});}
-firebase.auth().onAuthStateChanged(async user=>{
-  if(!user){document.getElementById('auth-overlay').style.display='flex';document.body.classList.add('locked');hideAuthLoading();return;}
-  try{
-    const snap=await firebase.database().ref('authorized/admins').once('value');
-    const admins=snap.val()||[];
-    const list=Array.isArray(admins)?admins:Object.values(admins);
-    if(!list.includes(user.email)){
-      showAuthError('Acesso negado. E-mail '+user.email+' nÃ£o autorizado.');
-      setTimeout(()=>firebase.auth().signOut(),3000);
-      return;
-    }
-    document.getElementById('auth-overlay').style.display='none';
-    document.body.classList.remove('locked');
-    let bar=document.getElementById('user-bar');
-    if(!bar){
-      bar=document.createElement('div');
-      bar.id='user-bar';
-      bar.innerHTML='<img src="'+(user.photoURL||'')+'" alt=""><span>'+user.email+'</span><button id="btn-logout" onclick="doLogout()">Sair</button>';
-      document.body.appendChild(bar);
-    }
-    window._authReady=true;
-    if(window._authReadyResolve)window._authReadyResolve(user);
-  }catch(e){showAuthError('Erro verificando autorizaÃ§Ã£o: '+e.message);}
+  }catch(e){showAuthError('Erro verificando autorização: '+e.message);}
 });
 </script>
 <script>
 var ALLOWED=["rh@fatbuddha.com.br"];
-var PN={camiseta:"Camiseta",calca:"Calça",calcado:"Calçado"};
+var PN={camiseta:"Camiseta",calca:"Cal�a Quadriculada",calcado:"Cal�ado"};
 var SZ={camiseta:["P","M","G","GG"],calca:["P","M","G","GG"],calcado:["35/36","37/38","39/40","41/42","43/44"]};
 var ST=["Loja 1","Loja 2","Loja 3","Loja 4","Loja 5"];
 var DR={camiseta:{P:3,M:4,G:8,GG:2},calca:{P:2,M:3,G:6,GG:1},calcado:{"35/36":1,"37/38":2,"39/40":2,"41/42":2,"43/44":1}};
 var DS={camiseta:{P:11,M:10,G:1,GG:0},calca:{P:11,M:16,G:6,GG:0},calcado:{"35/36":3,"37/38":2,"39/40":1,"41/42":4,"43/44":9}};
-var S={stock:{},rb:{},emps:[],movs:[],ocs:[]},ok=false;
-function initApp(){firebase.database().ref("uniformes").on("value",function(sn){var d=sn.val()||{};S.stock=d.stock||JSON.parse(JSON.stringify(DS));S.rb=d.rb||JSON.parse(JSON.stringify(DR));S.emps=d.emps?Object.values(d.emps):[];S.movs=d.movs?Object.values(d.movs).sort(function(a,b){return b.ts-a.ts;}):[];S.ocs=d.ocs?Object.values(d.ocs).sort(function(a,b){return b.ts-a.ts;}):[];ok=true;renderAll();});}
-function sv(){if(!ok)return;var e={},m={},o={};S.emps.forEach(function(x){e[x.id]=x;});S.movs.forEach(function(x){m[x.id]=x;});S.ocs.forEach(function(x){o[x.id]=x;});firebase.database().ref("uniformes").set({stock:S.stock,rb:S.rb,emps:e,movs:m,ocs:o});}
-function st(p,s){var q=(S.stock[p]||{})[s]||0,r=(S.rb[p]||{})[s]||0;return q===0||q<=r?"danger":q<=r*1.5?"warn":"ok";}
+var S={stock:{},rb:{},emps:[],movs:[],ocs:[]},fbOk=false;
+function initApp(){firebase.database().ref("uniformes").on("value",function(sn){var d=sn.val()||{};S.stock=d.stock||JSON.parse(JSON.stringify(DS));S.rb=d.rb||JSON.parse(JSON.stringify(DR));S.emps=d.emps?Object.values(d.emps):[];S.movs=d.movs?Object.values(d.movs).sort(function(a,b){return b.ts-a.ts;}):[];S.ocs=d.ocs?Object.values(d.ocs).sort(function(a,b){return b.ts-a.ts;}):[];fbOk=true;renderAll();});}
+function sv(){if(!fbOk)return;var e={},m={},o={};S.emps.forEach(function(x){e[x.id]=x;});S.movs.forEach(function(x){m[x.id]=x;});S.ocs.forEach(function(x){o[x.id]=x;});firebase.database().ref("uniformes").set({stock:S.stock,rb:S.rb,emps:e,movs:m,ocs:o});}
+function ss(p,s){var q=(S.stock[p]||{})[s]||0,r=(S.rb[p]||{})[s]||0;return q===0||q<=r?"danger":q<=r*1.5?"warn":"ok";}
 document.getElementById("btn-login").addEventListener("click",function(){firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(function(e){document.getElementById("auth-status").textContent=e.message;});});
-firebase.auth().onAuthStateChanged(function(user){var ov=document.getElementById("auth-overlay"),ap=document.getElementById("main-app");if(user&&ALLOWED.includes(user.email)){if(ov)ov.style.display="none";if(ap)ap.style.display="block";initApp();}else if(user){document.getElementById("auth-status").textContent="Acesso nao autorizado";firebase.auth().signOut();}else{if(ov)ov.style.display="flex";if(ap)ap.style.display="none";}});
+firebase.auth().onAuthStateChanged(function(user){var ov=document.getElementById("auth-overlay"),ap=document.getElementById("app"),st=document.getElementById("auth-status");if(!ov||!ap)return;if(user&&ALLOWED.includes(user.email)){ov.style.display="none";ap.style.display="block";initApp();}else if(user){st.textContent="Acesso n�o autorizado: "+user.email;firebase.auth().signOut();}else{ov.style.display="flex";ap.style.display="none";st.textContent="";}
+});
+function showTab(n,el){document.querySelectorAll(".tab-panel").forEach(function(x){x.classList.remove("active");});document.querySelectorAll(".tab").forEach(function(x){x.classList.remove("active");});document.getElementById("tab-"+n).classList.add("active");el.classList.add("active");renderAll();}
+function openModal(id){if(id==="modal-entrada"){uTS("ent-tamanho","camiseta");}if(id==="modal-saida"){uTS("sai-tamanho","camiseta");pCS("sai-colaborador");}if(id==="modal-ocorrencia"){uTS("oc-tamanho","camiseta");pCS("oc-colaborador",true);document.getElementById("oc-data").value=new Date().toLocaleDateString("pt-BR");}document.getElementById(id).classList.add("open");}
+function closeModal(id){document.getElementById(id).classList.remove("open");if(id==="modal-colaborador")clrF();}
+document.querySelectorAll(".modal-overlay").forEach(function(m){m.addEventListener("click",function(e){if(e.target===m)m.classList.remove("open");});});
+function uTS(id,p){document.getElementById(id).innerHTML=SZ[p].map(function(s){return"<option>"+s+"</option>";}).join("");}
+function pCS(id,all){var l=all?S.emps:S.emps.filter(function(e){return e.status==="ativo";});document.getElementById(id).innerHTML="<option value=''>-</option>"+l.map(function(e){return"<option value='"+e.id+"'>"+ e.nome+" ("+e.loja+")</option>";}).join("");}
+function pSS(){["colab-loja","filter-loja","filter-oc-loja"].forEach(function(id){var el=document.getElementById(id);if(!el)return;var pv=el.value,pre=id!=="colab-loja"?"<option value=''>Todas as lojas</option>":"";el.innerHTML=pre+ST.map(function(s){return"<option>"+s+"</option>";}).join("");if(pv)el.value=pv;});}
+function clrF(){["colab-edit-id","colab-nome"].forEach(function(id){document.getElementById(id).value="";});document.getElementById("colab-loja").value=ST[0];document.getElementById("colab-tipo").value="CLT";document.getElementById("colab-status").value="ativo";["cam","cal","calc"].forEach(function(x){document.getElementById("colab-"+x+"-tam").value="";});document.getElementById("colab-cam-qtd").value="3";document.getElementById("colab-cal-qtd").value="2";document.getElementById("colab-calc-qtd").value="1";document.getElementById("modal-colab-title").textContent="Novo colaborador";}
+function saveColaborador(){var n=document.getElementById("colab-nome").value.trim();if(!n){alert("Informe o nome.");return;}var eid=document.getElementById("colab-edit-id").value,dados={nome:n,loja:document.getElementById("colab-loja").value,tipo:document.getElementById("colab-tipo").value,status:document.getElementById("colab-status").value,uniforms:{camiseta:{tam:document.getElementById("colab-cam-tam").value,qtd:+document.getElementById("colab-cam-qtd").value||0},calca:{tam:document.getElementById("colab-cal-tam").value,qtd:+document.getElementById("colab-cal-qtd").value||0},calcado:{tam:document.getElementById("colab-calc-tam").value,qtd:+document.getElementById("colab-calc-qtd").value||0}}};if(eid){var i=S.emps.findIndex(function(e){return e.id===eid;});if(i>=0)S.emps[i]=Object.assign({},S.emps[i],dados);}else S.emps.push(Object.assign({id:Date.now().toString()},dados));sv();closeModal("modal-colaborador");renderAll();}
+function editColaborador(id){var e=S.emps.find(function(x){return x.id===id;});if(!e)return;document.getElementById("colab-edit-id").value=e.id;document.getElementById("colab-nome").value=e.nome;document.getElementById("colab-loja").value=e.loja;document.getElementById("colab-tipo").value=e.tipo;document.getElementById("colab-status").value=e.status;document.getElementById("colab-cam-tam").value=e.uniforms.camiseta.tam||"";document.getElementById("colab-cam-qtd").value=e.uniforms.camiseta.qtd||3;document.getElementById("colab-cal-tam").value=e.uniforms.calca.tam||"";document.getElementById("colab-cal-qtd").value=e.uniforms.calca.qtd||2;document.getElementById("colab-calc-tam").value=e.uniforms.calcado.tam||"";document.getElementById("colab-calc-qtd").value=e.uniforms.calcado.qtd||1;document.getElementById("modal-colab-title").textContent="Editar colaborador";openModal("modal-colaborador");}
+function toggleStatus(id){var e=S.emps.find(function(x){return x.id===id;});if(!e)return;e.status=e.status==="ativo"?"inativo":"ativo";sv();renderAll();}
+function renderColaboradores(){var sc=document.getElementById("search-colab").value.toLowerCase(),lj=document.getElementById("filter-loja").value,tp=document.getElementById("filter-tipo").value,st=document.getElementById("filter-status").value;var l=S.emps.filter(function(e){if(sc&&!e.nome.toLowerCase().includes(sc))return false;if(lj&&e.loja!==lj)return false;if(tp&&e.tipo!==tp)return false;if(st&&e.status!==st)return false;return true;});var tb=document.getElementById("colab-table-body");if(!l.length){tb.innerHTML="<tr><td colspan=8>Nenhum.</td></tr>";return;}tb.innerHTML=l.map(function(e){return"<tr><td><strong>"+e.nome+"</strong></td><td>"+e.loja+"</td><td>"+e.tipo+"</td><td>"+(e.status==="ativo"?"Ativo":"Inativo")+"</td><td>"+(e.uniforms.camiseta.tam?e.uniforms.camiseta.qtd+"x "+e.uniforms.camiseta.tam:"-")+"</td><td>"+(e.uniforms.calca.tam?e.uniforms.calca.qtd+"x "+e.uniforms.calca.tam:"-")+"</td><td>"+(e.uniforms.calcado.tam?e.uniforms.calcado.qtd+"x "+e.uniforms.calcado.tam:"-")+"</td><td><button class=btn-icon onclick='editColaborador(""+e.id+"")'>&#9999;</button> <button class=btn-icon onclick='toggleStatus(""+e.id+"")'>&#128308;</button></td></tr>";}).join("");}
+function updateReorder(p,s,v){var n=parseInt(v);if(isNaN(n)||n<0)return;if(!S.rb[p])S.rb[p]={};S.rb[p][s]=n;sv();renderDashboard();}
+function renderEstoque(){document.getElementById("estoque-tables").innerHTML=Object.entries(S.stock).map(function(pe){var p=pe[0],sz=pe[1];var rows=Object.entries(sz).map(function(se){var s=se[0],q=se[1];var r=(S.rb[p]||{})[s]||0,st=ss(p,s);var tag=st==="danger"?"<span class=tag-danger>Repor</span>":st==="warn"?"<span class=tag-warn>Aten��o</span>":"<span class=tag-ok>OK</span>";return"<tr class=size-row-"+st+"><td><strong>"+s+"</strong></td><td>"+q+"</td><td><input class=reorder-input type=number min=0 value="+r+" onchange='updateReorder(""+p+"",""+s+"",this.value)'></td><td>"+tag+"</td></tr>";}).join("");var tot=Object.values(sz).reduce(function(a,b){return a+b;},0),al=Object.entries(sz).filter(function(x){return ss(p,x[0])!="ok";}).length;return"<div class=card><div style='display:flex;align-items:center;justify-content:space-between;margin-bottom:14px'><div><div class=card-title>"+PN[p]+"</div><span style='font-size:20px;font-weight:600'>"+tot+" un</span></div>"+(al>0?"<span class=tag-danger>"+al+" abaixo</span>":"<span class=tag-ok>OK</span>")+"</div><table><thead><tr><th>Tam</th><th>Estoque</th><th>Reposi��o</th><th>Status</th></tr></thead><tbody>"+rows+"</tbody></table></div>";}).join("");}
+function saveEntrada(){var p=document.getElementById("ent-produto").value,s=document.getElementById("ent-tamanho").value,q=parseInt(document.getElementById("ent-qtd").value)||0,ob=document.getElementById("ent-obs").value.trim();if(q<=0){alert("Qtd inv�lida.");return;}if(!S.stock[p])S.stock[p]={};S.stock[p][s]=(S.stock[p][s]||0)+q;S.movs.unshift({id:Date.now().toString(),ts:Date.now(),date:new Date().toLocaleDateString("pt-BR"),type:"entrada",product:p,size:s,qty:q,obs:ob});sv();closeModal("modal-entrada");renderAll();}
+function saveSaida(){var p=document.getElementById("sai-produto").value,s=document.getElementById("sai-tamanho").value,q=parseInt(document.getElementById("sai-qtd").value)||0,tp=document.getElementById("sai-tipo").value,eid=document.getElementById("sai-colaborador").value,ob=document.getElementById("sai-obs").value.trim();if(q<=0){alert("Qtd inv�lida.");return;}var cur=(S.stock[p]||{})[s]||0;if(q>cur){alert("Insuficiente: "+cur+" un.");return;}S.stock[p][s]-=q;if(eid&&tp==="distribuicao"){var emp=S.emps.find(function(x){return x.id===eid;});if(emp){var u=emp.uniforms[p];if(!u.tam){u.tam=s;u.qtd=q;}else u.qtd+=q;}}S.movs.unshift({id:Date.now().toString(),ts:Date.now(),date:new Date().toLocaleDateString("pt-BR"),type:tp,product:p,size:s,qty:q,employeeId:eid||null,obs:ob});sv();closeModal("modal-saida");renderAll();}
+function renderDashboard(){var al=[];Object.entries(S.stock).forEach(function(pe){var p=pe[0],sz=pe[1];Object.entries(sz).forEach(function(se){var s=se[0],q=se[1];var st=ss(p,s),r=(S.rb[p]||{})[s];if(st==="danger")al.push("<div class='alert alert-danger'><div class=alert-dot></div><strong>"+PN[p]+" "+s+"</strong>: "+q+"un (m�n:"+r+")</div>");else if(st==="warn")al.push("<div class='alert alert-warning'><div class=alert-dot></div><strong>"+PN[p]+" "+s+"</strong>: "+q+"un (m�n:"+r+")</div>");});});document.getElementById("dashboard-alerts").innerHTML=al.length?al.join(""):"<div class='alert alert-success'><div class=alert-dot></div>Todos os tamanhos OK.</div>";var atv=S.emps.filter(function(e){return e.status==="ativo";}).length;document.getElementById("stat-cards").innerHTML="<div class=stat-card><div class=stat-label>Colaboradores ativos</div><div class=stat-value>"+atv+"</div></div>";document.getElementById("stock-size-overview").innerHTML=Object.entries(S.stock).map(function(pe){var p=pe[0],sz=pe[1];return"<div style=margin-bottom:12px><strong>"+PN[p]+"</strong><br>"+Object.entries(sz).map(function(se){var s=se[0],q=se[1];var ic=ss(p,s)==="danger"?"&#128308;":ss(p,s)==="warn"?"&#128993;":"&#128994;";return ic+" "+s+": "+q+" un";}).join(" | ")+"</div>";}).join("");document.getElementById("store-overview").innerHTML=ST.map(function(s){var n=S.emps.filter(function(e){return e.loja===s&&e.status==="ativo";}).length;return"<div style='display:flex;justify-content:space-between;padding:5px 0'>"+s+"<strong>"+n+"</strong></div>";}).join("");document.getElementById("ocorrencias-overview").innerHTML="<div style='color:var(--text-muted);font-size:13px'>"+(S.ocs.length||"Nenhuma")+" ocorr�ncia registrada</div>";}
+function renderMovimentacoes(){var l=S.movs;var tb=document.getElementById("mov-table-body");if(!l.length){tb.innerHTML="<tr><td colspan=7>Nenhuma.</td></tr>";return;}var lb={entrada:"Entrada",saida:"Sa�da",distribuicao:"Distribui��o",devolucao:"Devolu��o"};tb.innerHTML=l.map(function(m){return"<tr><td>"+m.date+"</td><td>"+(lb[m.type]||m.type)+"</td><td>"+PN[m.product]+"</td><td>"+m.size+"</td><td>"+(m.type==="entrada"?"+":"-")+m.qty+"</td><td>"+(m.employeeId?S.emps.find(function(e){return e.id===m.employeeId;})||{nome:"-"}:{nome:"-"}).nome+"</td><td>"+(m.obs||"-")+"</td></tr>";}).join("");}
+function saveOcorrencia(){var eid=document.getElementById("oc-colaborador").value,mo=document.getElementById("oc-motivo").value,p=document.getElementById("oc-produto").value,s=document.getElementById("oc-tamanho").value,q=parseInt(document.getElementById("oc-qtd").value)||1,ob=document.getElementById("oc-obs").value.trim(),dt=document.getElementById("oc-data").value||new Date().toLocaleDateString("pt-BR");if(!ob){alert("Informe a justificativa.");return;}var e=eid?S.emps.find(function(x){return x.id===eid;}):null;S.ocs.unshift({id:Date.now().toString(),ts:Date.now(),date:dt,empId:eid||null,loja:e?e.loja:"-",motivo:mo,product:p,size:s,qty:q,obs:ob});document.getElementById("oc-obs").value="";sv();closeModal("modal-ocorrencia");renderAll();}
+function renderOcorrencias(){var tb=document.getElementById("oc-table-body");if(!S.ocs.length){tb.innerHTML="<tr><td colspan=9>Nenhuma.</td></tr>";return;}var ML={"dano":"Dano","perda":"Perda","extravio":"Extravio","nao-devolucao":"N�o devol."};tb.innerHTML=S.ocs.map(function(o){var e=o.empId?S.emps.find(function(x){return x.id===o.empId;}):null;return"<tr><td>"+o.date+"</td><td>"+(e?e.nome:"-")+"</td><td>"+o.loja+"</td><td>"+o.product+"</td><td>"+o.size+"</td><td>"+o.qty+"</td><td>"+(ML[o.motivo]||o.motivo)+"</td><td>"+o.obs+"</td></tr>";}).join("");}
+function renderAll(){pSS();renderDashboard();renderColaboradores();renderEstoque();renderMovimentacoes();renderOcorrencias();}
+uTS("ent-tamanho","camiseta");uTS("sai-tamanho","camiseta");uTS("oc-tamanho","camiseta");
 </script>
-
 </body>
 </html>
