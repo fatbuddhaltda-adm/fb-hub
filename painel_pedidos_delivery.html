@@ -572,9 +572,38 @@
   input[type="date"].filter-select:hover{border-color:var(--coral);background:var(--panel-2)}
   input[type="date"].filter-select:focus{outline:none;border-color:var(--coral-2);box-shadow:0 0 0 3px rgba(247,165,165,.25)}
   .filter-label{font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--ink-3);font-family:'JetBrains Mono',monospace;margin-bottom:6px}
+    /* Auth overlay */
+    body.locked>*:not(#auth-overlay):not(script):not(link){filter:blur(8px);pointer-events:none;user-select:none}
+    #auth-overlay{display:none;position:fixed;inset:0;z-index:9999;background:rgba(255,248,240,.97);justify-content:center;align-items:center;flex-direction:column;gap:16px;font-family:inherit}
+    #auth-overlay h1{font-family:"Fraunces",serif;font-size:28px;color:#3b2f1e;margin:0}
+    #auth-overlay p{color:#7a6a55;font-size:14px;margin:4px 0}
+    #auth-overlay #auth-logo{width:64px;height:64px;border-radius:50%;background:#e51b24;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:22px;font-family:"Fraunces",serif}
+    #btn-login{display:flex;align-items:center;gap:10px;padding:12px 24px;border:1px solid #ddd;border-radius:8px;background:#fff;font-size:14px;cursor:pointer;margin-top:12px;font-weight:500;transition:box-shadow .2s}
+    #btn-login:hover{box-shadow:0 2px 8px rgba(0,0,0,.12)}
+    #btn-login svg{width:20px;height:20px}
+    #auth-error{color:#e51b24;display:none;font-size:13px;max-width:320px;text-align:center}
+    #auth-loading{color:#7a6a55;font-size:13px}
+    #user-bar{position:fixed;top:0;left:0;right:0;z-index:9998;background:#3b2f1e;color:#fff;display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:6px 16px;font-size:12px}
+    #user-bar img{width:24px;height:24px;border-radius:50%}
+    #user-bar button{background:none;border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:11px}
+    body:not(.locked) #user-bar~*{margin-top:36px}
 </style>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 </head>
 <body>
+<div id="auth-overlay">
+  <div id="auth-logo">FB</div>
+  <h1>Fat Buddha</h1>
+  <p>Acesso restrito · Faça login para continuar</p>
+  <button id="btn-login" onclick="doLogin()">
+    <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+    Entrar com Google
+  </button>
+  <p id="auth-error"></p>
+  <p id="auth-loading">Verificando acesso...</p>
+</div>
 
 <div class="topbar">
   <a href="./index.html" class="back-to-hub" title="Voltar para o Hub">
@@ -958,6 +987,38 @@
   Fat Buddha · FTB4 Holding · Brooklin · Perdizes · Vila Mariana
 </div>
 
+<script>
+const FB_AUTH_CONFIG={apiKey:"AIzaSyCyMw54A5hb1uiOypt5mABVxo96aUNLZtw",authDomain:"fat-buddha-hub.firebaseapp.com",databaseURL:"https://fat-buddha-hub-default-rtdb.firebaseio.com",projectId:"fat-buddha-hub",storageBucket:"fat-buddha-hub.firebasestorage.app",messagingSenderId:"748093225714",appId:"1:748093225714:web:58c7e22c7b588b797eee6b"};
+if(!firebase.apps.length){firebase.initializeApp(FB_AUTH_CONFIG);}
+document.body.classList.add("locked");
+function showAuthError(msg){document.getElementById("auth-error").textContent=msg;document.getElementById("auth-error").style.display="block";document.getElementById("auth-loading").style.display="none";}
+function hideAuthLoading(){document.getElementById("auth-loading").style.display="none";}
+function doLogin(){
+  const provider=new firebase.auth.GoogleAuthProvider();
+  document.getElementById("auth-error").style.display="none";
+  document.getElementById("auth-loading").style.display="block";
+  document.getElementById("auth-loading").textContent="Entrando...";
+  firebase.auth().signInWithPopup(provider).catch(err=>{showAuthError("Erro: "+err.message);});
+}
+function doLogout(){firebase.auth().signOut().then(()=>{location.reload();});}
+firebase.auth().onAuthStateChanged(async user=>{
+  if(!user){document.getElementById("auth-overlay").style.display="flex";document.body.classList.add("locked");hideAuthLoading();return;}
+  try{
+    const snap=await firebase.database().ref("authorized/pedidos").once("value");
+    const list=snap.val()||[];
+    const arr=Array.isArray(list)?list:Object.values(list);
+    if(!arr.includes(user.email)){
+      showAuthError("Acesso negado. E-mail "+user.email+" n\u00e3o autorizado.");
+      setTimeout(()=>firebase.auth().signOut(),3000);
+      return;
+    }
+    document.getElementById("auth-overlay").style.display="none";
+    document.body.classList.remove("locked");
+    let bar=document.getElementById("user-bar");
+    if(!bar){bar=document.createElement("div");bar.id="user-bar";bar.innerHTML='<img src="'+(user.photoURL||"")+'" alt=""><span>'+user.email+'</span><button onclick="doLogout()">Sair</button>';document.body.prepend(bar);}
+  }catch(e){showAuthError("Erro ao verificar acesso.");}
+});
+</script>
 <script>
 /* ============================================================
    1.  CONFIG / MOCK DATA
