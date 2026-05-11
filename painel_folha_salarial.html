@@ -2085,6 +2085,19 @@ function excluirAviso(id) {
   if (!confirm('Excluir este aviso?')) return;
   firebase.database().ref('folha/avisos/' + id).remove();
 }
+// Patch showView to render dashboard when aviso tab is clicked
+(function(){
+  var _orig = showView;
+  showView = function(id, btn) {
+    _orig(id, btn);
+    if (id === 'avisos') {
+      setTimeout(function() {
+        if (typeof renderAvisoDashboard === 'function') renderAvisoDashboard();
+        if (typeof renderAvisos === 'function') renderAvisos();
+      }, 50);
+    }
+  };
+})();
 (function() { var m = document.getElementById('modal-aviso'); if (m && m.parentElement !== document.body) document.body.appendChild(m); })();
 </script>
 
