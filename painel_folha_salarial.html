@@ -2056,7 +2056,7 @@ function calcAvisoDataFim() {
     else if (tipo.value === 'contratExperiencia') dias = 0;
   }
   var d = new Date(ini + 'T00:00:00');
-  d.setDate(d.getDate() + dias);
+  d.setDate(d.getDate() + dias - 1);
   document.getElementById('avisoDataFim').value = d.toISOString().split('T')[0];
 }
 function salvarAviso() {
