@@ -681,7 +681,8 @@ firebase.auth().onAuthStateChanged(async user=>{
     <h2 style="font-size:20px;font-weight:700;color:#2c1a0e">📋 Aviso Trabalhado</h2>
     <button onclick="abrirModalAviso()" style="background:#C0392B;color:#fff;border:none;padding:8px 18px;border-radius:7px;cursor:pointer;font-weight:600;font-family:inherit">+ Novo Aviso</button>
   </div>
-  <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+  <div id="avisoDashboard" style="margin-bottom:20px"></div>
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
     <select id="aFiltroStatus" onchange="renderAvisos()" style="padding:7px 12px;border:1px solid #D9C4B0;border-radius:7px;background:#FAF4EE;font-family:inherit;font-size:13px"><option value="">Todos os status</option><option value="Em Andamento">Em Andamento</option><option value="Concluido">Concluído</option></select>
     <select id="aFiltroLoja" onchange="renderAvisos()" style="padding:7px 12px;border:1px solid #D9C4B0;border-radius:7px;background:#FAF4EE;font-family:inherit;font-size:13px"><option value="">Todas as lojas</option></select>
   </div>
@@ -707,6 +708,9 @@ firebase.auth().onAuthStateChanged(async user=>{
       <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer"><input type="radio" name="avisoTipo" value="30diasReducao" onchange="calcAvisoDataFim()" checked> 30 dias com 2h redução diária</label>
       <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer"><input type="radio" name="avisoTipo" value="23dias" onchange="calcAvisoDataFim()"> 23 dias</label>
       <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer"><input type="radio" name="avisoTipo" value="horarioNormal" onchange="calcAvisoDataFim()"> Desligamento / horário normal</label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px"><input type="radio" name="avisoTipo" value="contratExperiencia" onchange="calcAvisoDataFim()"> Desligamento - Contrato de Experiência</label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px"><input type="radio" name="avisoTipo" value="empresaDesliga" onchange="calcAvisoDataFim()"> Desligamento pela Empresa</label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px"><input type="radio" name="avisoTipo" value="colaboradorPede" onchange="calcAvisoDataFim()"> Desligamento a Pedido do Colaborador</label>
     </div></div>
     <div style="display:flex;gap:10px;justify-content:flex-end">
       <button onclick="fecharModalAviso()" style="padding:8px 18px;border-radius:7px;border:1px solid #D9C4B0;background:#fff;color:#2C1A0E;cursor:pointer;font-weight:600;font-family:inherit">Cancelar</button>
@@ -1886,6 +1890,7 @@ var avisosList = {};
 firebase.database().ref('folha/avisos').on('value', function(snap) {
   avisosList = snap.val() || {};
   if (document.getElementById('avisosTbody')) renderAvisos();
+  if (document.getElementById('avisoDashboard')) renderAvisoDashboard();
   populateAvisoLojas();
 });
 function populateAvisoLojas() {
@@ -1898,6 +1903,86 @@ function populateAvisoLojas() {
   Array.from(lojas).sort().forEach(function(l) { sel.innerHTML += '<option value="' + l + '">' + l + '</option>'; });
   sel.value = prev;
 }
+var AVISO_MOD = {
+  '30diasReducao':     '30 dias + 2h redução',
+  '23dias':            '23 dias',
+  'horarioNormal':     'Horário normal (30d)',
+  'contratExperiencia':'Contrato de Experiência',
+  'empresaDesliga':    'Desligamento pela Empresa',
+  'colaboradorPede':   'Pedido do Colaborador'
+};
+function renderAvisoDashboard() {
+  var dash = document.getElementById('avisoDashboard');
+  if (!dash) return;
+  var fLj = (document.getElementById('aFiltroLoja') || {}).value || '';
+  var fSt = (document.getElementById('aFiltroStatus') || {}).value || '';
+  var all = Object.values(avisosList);
+  var filtered = all.filter(function(a) {
+    if (fLj && a.loja !== fLj) return false;
+    if (fSt && a.status !== fSt) return false;
+    return true;
+  });
+  var hoje = new Date(); hoje.setHours(0,0,0,0);
+  var total = filtered.length;
+  var emAndamento = 0, concluidos = 0, vencidos = 0;
+  var byTipo = {}, byLoja = {};
+  filtered.forEach(function(a) {
+    var fim = new Date((a.dataFim || '') + 'T00:00:00');
+    var diff = Math.ceil((fim - hoje) / (1000 * 60 * 60 * 24));
+    if (a.status === 'Concluido') concluidos++;
+    else if (diff <= 0) vencidos++;
+    else emAndamento++;
+    byTipo[a.tipo] = (byTipo[a.tipo] || 0) + 1;
+    if (a.loja && a.loja !== '-') byLoja[a.loja] = (byLoja[a.loja] || 0) + 1;
+  });
+  function card(label, val, bg, color) {
+    return '<div style="background:' + bg + ';border-radius:8px;padding:14px 18px;flex:1;min-width:110px;box-shadow:0 1px 4px rgba(0,0,0,.06)">' +
+      '<div style="font-size:26px;font-weight:700;color:' + color + '">' + val + '</div>' +
+      '<div style="font-size:12px;color:' + color + ';opacity:.75;margin-top:3px">' + label + '</div></div>';
+  }
+  function bar(label, val, tot, color) {
+    var pct = tot > 0 ? Math.round(val / tot * 100) : 0;
+    return '<div style="margin-bottom:10px">' +
+      '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">' +
+      '<span style="color:#5C3D2E">' + label + '</span>' +
+      '<span style="font-weight:600;color:#2C1A0E">' + val + ' <span style="color:#aaa;font-weight:400">(' + pct + '%)</span></span></div>' +
+      '<div style="background:#f5ede6;border-radius:4px;height:8px">' +
+      '<div style="background:' + color + ';width:' + pct + '%;height:8px;border-radius:4px;transition:width .4s"></div></div></div>';
+  }
+  var tipoColors = {
+    '30diasReducao':'#C0392B','23dias':'#e67e22','horarioNormal':'#8e44ad',
+    'contratExperiencia':'#2980b9','empresaDesliga':'#c0392b','colaboradorPede':'#27ae60'
+  };
+  var html = '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">';
+  html += card('Total', total, '#EDD9C7', '#2C1A0E');
+  html += card('Em Andamento', emAndamento, '#fff3cd', '#856404');
+  html += card('Concluídos', concluidos, '#dcfce7', '#15803d');
+  html += card('Vencidos', vencidos, '#fee2e2', '#991b1b');
+  html += '</div>';
+  if (total > 0) {
+    var tipos = Object.entries(byTipo).sort(function(a,b){return b[1]-a[1];});
+    html += '<div style="display:flex;gap:12px;flex-wrap:wrap">';
+    html += '<div style="flex:1;min-width:260px;background:#fff;border:1px solid #EDD9C7;border-radius:8px;padding:16px">';
+    html += '<div style="font-size:12px;font-weight:600;color:#5C3D2E;text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Motivos de Desligamento</div>';
+    tipos.forEach(function(t) {
+      html += bar(AVISO_MOD[t[0]] || t[0], t[1], total, tipoColors[t[0]] || '#C0392B');
+    });
+    html += '</div>';
+    var topLojas = Object.entries(byLoja).sort(function(a,b){return b[1]-a[1];}).slice(0,6);
+    if (topLojas.length > 0) {
+      html += '<div style="flex:1;min-width:220px;background:#fff;border:1px solid #EDD9C7;border-radius:8px;padding:16px">';
+      html += '<div style="font-size:12px;font-weight:600;color:#5C3D2E;text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Por Loja</div>';
+      topLojas.forEach(function(l) {
+        html += bar(l[0], l[1], total, '#7A5C48');
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+  } else {
+    html += '<div style="background:#fff;border:1px solid #EDD9C7;border-radius:8px;padding:28px;text-align:center;color:#bbb;font-size:14px">Nenhum aviso registrado ainda</div>';
+  }
+  dash.innerHTML = html;
+}
 function renderAvisos() {
   var tbody = document.getElementById('avisosTbody');
   if (!tbody) return;
@@ -1909,30 +1994,29 @@ function renderAvisos() {
       if (fLj && a.loja !== fLj) return false;
       return true;
     }).sort(function(a, b) { return (a.dataInicio || '').localeCompare(b.dataInicio || ''); });
+  renderAvisoDashboard();
   if (!lista.length) {
     tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#aaa;padding:32px">Nenhum aviso registrado</td></tr>';
     return;
   }
-  var mod = { '30diasReducao': '30 dias + 2h', '23dias': '23 dias', 'horarioNormal': 'Hor. normal' };
   tbody.innerHTML = lista.map(function(a) {
     var hoje = new Date(); hoje.setHours(0, 0, 0, 0);
     var fim = new Date((a.dataFim || '') + 'T00:00:00');
     var diff = Math.ceil((fim - hoje) / (1000 * 60 * 60 * 24));
     var diasStr = a.status === 'Concluido' ? '-' : (diff > 0 ? diff + ' dias' : (diff === 0 ? 'Hoje' : 'Vencido'));
     var stBg = a.status === 'Concluido' ? 'background:#dcfce7;color:#15803d' : (diff <= 0 ? 'background:#fee2e2;color:#991b1b' : 'background:#fff3cd;color:#856404');
-    return '<tr style="border-bottom:1px solid #EDL0D4">' +
+    return '<tr style="border-bottom:1px solid #EDE0D4">' +
       '<td style="padding:10px 12px;font-weight:500">' + a.nome + '</td>' +
       '<td style="padding:10px 12px;color:#7A5C48">' + (a.loja || '-') + '</td>' +
       '<td style="padding:10px 12px">' + fmtAv(a.dataInicio) + '</td>' +
       '<td style="padding:10px 12px">' + fmtAv(a.dataFim) + '</td>' +
       '<td style="padding:10px 12px">' + diasStr + '</td>' +
-      '<td style="padding:10px 12px;font-size:12px">' + (mod[a.tipo] || a.tipo || '-') + '</td>' +
+      '<td style="padding:10px 12px;font-size:12px">' + (AVISO_MOD[a.tipo] || a.tipo || '-') + '</td>' +
       '<td style="padding:10px 12px"><span style="' + stBg + ';padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600">' + a.status + '</span></td>' +
       '<td style="padding:10px 12px">' +
         (a.status !== 'Concluido' ? '<button onclick="concluirAviso(\'' + a._id + '\')" style="background:none;border:1px solid #16a34a;color:#16a34a;padding:3px 9px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600;margin-right:4px">Concluir</button>' : '') +
         '<button onclick="excluirAviso(\'' + a._id + '\')" style="background:none;border:1px solid #dc2626;color:#dc2626;padding:3px 7px;border-radius:5px;cursor:pointer;font-size:12px">X</button>' +
-      '</td>' +
-    '</tr>';
+      '</td></tr>';
   }).join('');
 }
 function fmtAv(s) { if (!s) return '-'; var p = s.split('-'); return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : s; }
@@ -1966,7 +2050,11 @@ function calcAvisoDataFim() {
   var ini = document.getElementById('avisoDataInicio').value;
   if (!ini) { document.getElementById('avisoDataFim').value = ''; return; }
   var tipo = document.querySelector('input[name="avisoTipo"]:checked');
-  var dias = tipo && tipo.value === '23dias' ? 23 : 30;
+  var dias = 30;
+  if (tipo) {
+    if (tipo.value === '23dias') dias = 23;
+    else if (tipo.value === 'contratExperiencia') dias = 0;
+  }
   var d = new Date(ini + 'T00:00:00');
   d.setDate(d.getDate() + dias);
   document.getElementById('avisoDataFim').value = d.toISOString().split('T')[0];
@@ -1978,13 +2066,13 @@ function salvarAviso() {
   var fim = document.getElementById('avisoDataFim').value;
   var tipo = document.querySelector('input[name="avisoTipo"]:checked');
   if (!nome) { alert('Informe o nome do colaborador.'); return; }
-  if (!ini || !fim) { alert('Informe a data de inicio.'); return; }
+  if (!ini) { alert('Informe a data de inicio.'); return; }
   if (!tipo) { alert('Selecione a modalidade.'); return; }
   firebase.database().ref('folha/avisos').push({
     funcId: document.getElementById('avisoFuncIdHidden').value || null,
-    nome: nome, loja: loja || '-', dataInicio: ini, dataFim: fim,
+    nome: nome, loja: loja || '-', dataInicio: ini, dataFim: fim || ini,
     tipo: tipo.value, status: 'Em Andamento', criadoEm: Date.now()
-  }).then(function() { fecharModalAviso(); renderAvisos(); });
+  }).then(function() { fecharModalAviso(); var avisoNavBtn = document.querySelector('.nav-btn[onclick*="avisos"]'); if (avisoNavBtn) avisoNavBtn.click(); else renderAvisos(); });
 }
 function concluirAviso(id) {
   if (!confirm('Marcar aviso como concluido?')) return;
