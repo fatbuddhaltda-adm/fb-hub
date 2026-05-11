@@ -969,6 +969,7 @@ function showView(id, btn) {
   if (id === 'porloja') renderPorLoja();
   if (id === 'provisionamento') renderProvisionamento();
   if (id === 'valetransporte') renderValeTransporte();
+  if (id === 'avisos') { if(typeof renderAvisoDashboard==='function') renderAvisoDashboard(); if(typeof renderAvisos==='function') renderAvisos(); }
 }
 
 // ─── LOJA HELPERS ────────────────────────────────────────────────────────────
@@ -2084,21 +2085,7 @@ function concluirAviso(id) {
 function excluirAviso(id) {
   if (!confirm('Excluir este aviso?')) return;
   firebase.database().ref('folha/avisos/' + id).remove();
-}
-// Patch showView to render dashboard when aviso tab is clicked
-(function(){
-  var _orig = showView;
-  showView = function(id, btn) {
-    _orig(id, btn);
-    if (id === 'avisos') {
-      setTimeout(function() {
-        if (typeof renderAvisoDashboard === 'function') renderAvisoDashboard();
-        if (typeof renderAvisos === 'function') renderAvisos();
-      }, 50);
-    }
-  };
-})();
-(function() { var m = document.getElementById('modal-aviso'); if (m && m.parentElement !== document.body) document.body.appendChild(m); })();
+}(function() { var m = document.getElementById('modal-aviso'); if (m && m.parentElement !== document.body) document.body.appendChild(m); })();
 </script>
 
 <div class="save-bar-bottom">
