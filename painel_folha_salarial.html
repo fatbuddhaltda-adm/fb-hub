@@ -543,6 +543,7 @@ firebase.auth().onAuthStateChanged(async user=>{
   <button class="nav-btn" onclick="showView('porloja',this)">🏪 Por Loja</button>
   <button class="nav-btn" onclick="showView('provisionamento',this)">📋 Provisionamento</button>
   <button class="nav-btn" onclick="showView('valetransporte',this)">🚌 Vale Transporte</button>
+  <button class="nav-btn" onclick="showView('avisos',this)">&#128203; Aviso Trabalhado</button>
 </nav>
 
 <!-- ═══════════════ DASHBOARD ═══════════════ -->
@@ -674,7 +675,46 @@ firebase.auth().onAuthStateChanged(async user=>{
 <!-- ═══════════════ MODAL FUNCIONÁRIO ═══════════════ -->
 <div class="overlay" id="modal-overlay">
   <div class="modal">
-    <div class="modal-header">
+    <!-- AVISO TRABALHADO -->
+<div id="view-avisos" class="view">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+    <h2 style="font-size:20px;font-weight:700;color:#2c1a0e">📋 Aviso Trabalhado</h2>
+    <button onclick="abrirModalAviso()" style="background:#C0392B;color:#fff;border:none;padding:8px 18px;border-radius:7px;cursor:pointer;font-weight:600;font-family:inherit">+ Novo Aviso</button>
+  </div>
+  <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+    <select id="aFiltroStatus" onchange="renderAvisos()" style="padding:7px 12px;border:1px solid #D9C4B0;border-radius:7px;background:#FAF4EE;font-family:inherit;font-size:13px"><option value="">Todos os status</option><option value="Em Andamento">Em Andamento</option><option value="Concluido">Concluído</option></select>
+    <select id="aFiltroLoja" onchange="renderAvisos()" style="padding:7px 12px;border:1px solid #D9C4B0;border-radius:7px;background:#FAF4EE;font-family:inherit;font-size:13px"><option value="">Todas as lojas</option></select>
+  </div>
+  <div style="overflow-x:auto;background:#fff;border-radius:10px;border:1px solid #D9C4B0">
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr style="background:#E8D0BA"><th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:600;color:#7A5C48;text-transform:uppercase;white-space:nowrap">Colaborador</th><th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:600;color:#7A5C48;text-transform:uppercase;white-space:nowrap">Loja</th><th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:600;color:#7A5C48;text-transform:uppercase;white-space:nowrap">Data Início</th><th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:600;color:#7A5C48;text-transform:uppercase;white-space:nowrap">Data Fim</th><th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:600;color:#7A5C48;text-transform:uppercase;white-space:nowrap">Dias Rest.</th><th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:600;color:#7A5C48;text-transform:uppercase;white-space:nowrap">Modalidade</th><th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:600;color:#7A5C48;text-transform:uppercase;white-space:nowrap">Status</th><th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:600;color:#7A5C48;text-transform:uppercase;white-space:nowrap">Ações</th></tr></thead>
+      <tbody id="avisosTbody"><tr><td colspan="8" style="text-align:center;color:#aaa;padding:32px;font-size:14px">Nenhum aviso registrado</td></tr></tbody>
+    </table>
+  </div>
+</div>
+<!-- MODAL AVISO TRABALHADO -->
+<div id="modal-aviso" style="display:none;position:fixed;inset:0;background:rgba(44,26,14,.45);z-index:2000;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:12px;padding:28px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto">
+    <h3 style="font-size:17px;font-weight:700;color:#2c1a0e;margin-bottom:4px">Iniciar Aviso Trabalhado</h3>
+    <p id="avisoFuncNomeDisplay" style="font-size:14px;color:#7A5C48;margin-bottom:20px;font-weight:600"></p>
+    <input type="hidden" id="avisoFuncIdHidden"><input type="hidden" id="avisoFuncLojaHidden"><input type="hidden" id="avisoFuncNomeHidden">
+    <div style="margin-bottom:14px"><label style="display:block;font-size:12px;font-weight:600;color:#7A5C48;margin-bottom:5px;text-transform:uppercase">Colaborador</label><input type="text" id="avisoNomeManual" placeholder="Nome do colaborador..." style="width:100%;padding:8px 10px;border:1px solid #C9AA90;border-radius:7px;font-size:13px;font-family:inherit;background:#FAF4EE;outline:none;box-sizing:border-box"></div>
+    <div style="margin-bottom:14px"><label style="display:block;font-size:12px;font-weight:600;color:#7A5C48;margin-bottom:5px;text-transform:uppercase">Loja</label><input type="text" id="avisoLojaManual" placeholder="Loja..." style="width:100%;padding:8px 10px;border:1px solid #C9AA90;border-radius:7px;font-size:13px;font-family:inherit;background:#FAF4EE;outline:none;box-sizing:border-box"></div>
+    <div style="margin-bottom:14px"><label style="display:block;font-size:12px;font-weight:600;color:#7A5C48;margin-bottom:5px;text-transform:uppercase">Data de Início</label><input type="date" id="avisoDataInicio" onchange="calcAvisoDataFim()" style="width:100%;padding:8px 10px;border:1px solid #C9AA90;border-radius:7px;font-size:13px;font-family:inherit;background:#FAF4EE;outline:none;box-sizing:border-box"></div>
+    <div style="margin-bottom:14px"><label style="display:block;font-size:12px;font-weight:600;color:#7A5C48;margin-bottom:5px;text-transform:uppercase">Data de Fim (calculada)</label><input type="date" id="avisoDataFim" readonly style="width:100%;padding:8px 10px;border:1px solid #D9C4B0;border-radius:7px;font-size:13px;font-family:inherit;background:#f5f0eb;outline:none;box-sizing:border-box"></div>
+    <div style="margin-bottom:22px"><label style="display:block;font-size:12px;font-weight:600;color:#7A5C48;margin-bottom:10px;text-transform:uppercase">Modalidade</label>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer"><input type="radio" name="avisoTipo" value="30diasReducao" onchange="calcAvisoDataFim()" checked> 30 dias com 2h redução diária</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer"><input type="radio" name="avisoTipo" value="23dias" onchange="calcAvisoDataFim()"> 23 dias</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer"><input type="radio" name="avisoTipo" value="horarioNormal" onchange="calcAvisoDataFim()"> Desligamento / horário normal</label>
+    </div></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button onclick="fecharModalAviso()" style="padding:8px 18px;border-radius:7px;border:1px solid #D9C4B0;background:#fff;color:#2C1A0E;cursor:pointer;font-weight:600;font-family:inherit">Cancelar</button>
+      <button onclick="salvarAviso()" style="padding:8px 18px;border-radius:7px;border:none;background:#C0392B;color:#fff;cursor:pointer;font-weight:600;font-family:inherit">Salvar Aviso</button>
+    </div>
+  </div>
+</div>
+<div class="modal-header">
       <span class="modal-title" id="modal-title">Novo Funcionário</span>
       <button class="modal-close" onclick="closeModal()">×</button>
     </div>
@@ -1101,7 +1141,7 @@ function renderFuncionarios() {
       <td style="white-space:nowrap;font-family:'JetBrains Mono',monospace;color:${e.fimExp&&e.fimExp<new Date().toISOString().slice(0,10)?'var(--red)':'var(--ink-2)'}">${fmtDate(e.fimExp)}</td>
       <td style="display:flex;gap:6px;align-items:center">
         <button class="btn btn-sm btn-edit" onclick="openModal(${e.id})">✏️</button>
-        <button class="btn btn-sm btn-del" onclick="delEmployee(${e.id})">🗑️</button>
+        <button class="btn btn-sm btn-del" onclick="delEmployee(${e.id})">🗑️</button><button onclick="abrirAviso(${e.id},String(e.nome||e.name||''),String(e.loja||''))" title="Iniciar Aviso Trabalhado" style="background:none;border:1px solid #e67e22;color:#e67e22;padding:2px 7px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:700;margin-left:4px">&#128203;</button>
       </td>
     </tr>`;
   }
@@ -1839,6 +1879,22 @@ folhaRef.on('value', snapshot=>{
   renderDashboard();
 });
 });
+
+
+// ─── AVISO TRABALHADO ─────────────────────────────────────────────────────
+var avisosList={};
+firebase.database().ref('folha/avisos').on('value',function(snap){avisosList=snap.val()||{};if(document.getElementById('avisosTbody'))renderAvisos();populateAvisoLojas();});
+function populateAvisoLojas(){var sel=document.getElementById('aFiltroLoja');if(!sel)return;var lojas=new Set();Object.values(avisosList).forEach(function(a){if(a.loja&&a.loja!=='-')lojas.add(a.loja);});var prev=sel.value;sel.innerHTML='<option value="">Todas as lojas</option>';Array.from(lojas).sort().forEach(function(l){sel.innerHTML+='<option value="'+l+'">'+l+'</option>';});sel.value=prev;}
+function renderAvisos(){var tbody=document.getElementById('avisosTbody');if(!tbody)return;var fSt=(document.getElementById('aFiltroStatus')||{}).value||'';var fLj=(document.getElementById('aFiltroLoja')||{}).value||'';var lista=Object.entries(avisosList).map(function(e){return Object.assign({_id:e[0]},e[1]);}).filter(function(a){if(fSt&&a.status!==fSt)return false;if(fLj&&a.loja!==fLj)return false;return true;}).sort(function(a,b){return (a.dataInicio||'').localeCompare(b.dataInicio||'');});if(!lista.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:#aaa;padding:32px;font-size:14px">Nenhum aviso trabalhado registrado</td></tr>';return;}var mod={'30diasReducao':'30 dias + 2h','23dias':'23 dias','horarioNormal':'Hor. normal'};tbody.innerHTML=lista.map(function(a){var hoje=new Date();hoje.setHours(0,0,0,0);var fim=new Date((a.dataFim||'')+'T00:00:00');var diff=Math.ceil((fim-hoje)/(1000*60*60*24));var dias=a.status==='Concluido'?'-':(diff>0?diff+' dias':(diff===0?'Hoje':'<span style="color:#dc2626;font-weight:700">Vencido</span>'));var stC=a.status==='Concluido'?'background:#dcfce7;color:#15803d':(diff<=3&&diff>=0?'background:#fee2e2;color:#991b1b':diff<0?'background:#fee2e2;color:#991b1b':'background:#fff3cd;color:#856404');return'<tr style="border-bottom:1px solid #EDE0D4"><td style="padding:10px 12px;font-weight:500">'+a.nome+'</td><td style="padding:10px 12px;color:#7A5C48">'+(a.loja||'-')+'</td><td style="padding:10px 12px">'+fmtAvDate(a.dataInicio)+'</td><td style="padding:10px 12px">'+fmtAvDate(a.dataFim)+'</td><td style="padding:10px 12px">'+dias+'</td><td style="padding:10px 12px;font-size:12px">'+(mod[a.tipo]||a.tipo||'-')+'</td><td style="padding:10px 12px"><span style="'+stC+';padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600">'+a.status+'</span></td><td style="padding:10px 12px;white-space:nowrap">'+(a.status!=='Concluido'?'<button onclick="concluirAviso(\''+ a._id+'\')" style="background:none;border:1px solid #16a34a;color:#16a34a;padding:3px 9px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600;margin-right:4px">Concluir</button>':'')+'<button onclick="excluirAviso(\''+ a._id+'\')" style="background:none;border:1px solid #dc2626;color:#dc2626;padding:3px 7px;border-radius:5px;cursor:pointer;font-size:12px">🗑</button></td></tr>';}).join('');}
+function fmtAvDate(s){if(!s)return'-';var p=s.split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:s;}
+function abrirAviso(funcId,nome,loja){document.getElementById('avisoFuncIdHidden').value=String(funcId||'');document.getElementById('avisoFuncNomeHidden').value=String(nome||'');document.getElementById('avisoFuncLojaHidden').value=String(loja||'');document.getElementById('avisoFuncNomeDisplay').textContent=String(nome||'');document.getElementById('avisoNomeManual').value=String(nome||'');document.getElementById('avisoLojaManual').value=String(loja||'');var today=new Date().toISOString().split('T')[0];document.getElementById('avisoDataInicio').value=today;var radios=document.querySelectorAll('input[name="avisoTipo"]');if(radios.length)radios[0].checked=true;calcAvisoDataFim();document.getElementById('modal-aviso').style.display='flex';var btn=document.querySelector('.nav-btn[onclick*="avisos"]');if(btn)showView('avisos',btn);}
+function abrirModalAviso(){document.getElementById('avisoFuncIdHidden').value='';document.getElementById('avisoFuncNomeHidden').value='';document.getElementById('avisoFuncLojaHidden').value='';document.getElementById('avisoFuncNomeDisplay').textContent='Novo aviso manual';document.getElementById('avisoNomeManual').value='';document.getElementById('avisoLojaManual').value='';var today=new Date().toISOString().split('T')[0];document.getElementById('avisoDataInicio').value=today;var radios=document.querySelectorAll('input[name="avisoTipo"]');if(radios.length)radios[0].checked=true;calcAvisoDataFim();document.getElementById('modal-aviso').style.display='flex';}
+function fecharModalAviso(){document.getElementById('modal-aviso').style.display='none';}
+function calcAvisoDataFim(){var ini=document.getElementById('avisoDataInicio').value;if(!ini){document.getElementById('avisoDataFim').value='';return;}var tipo=document.querySelector('input[name="avisoTipo"]:checked');var dias=tipo&&tipo.value==='23dias'?23:30;var d=new Date(ini+'T00:00:00');d.setDate(d.getDate()+dias);document.getElementById('avisoDataFim').value=d.toISOString().split('T')[0];}
+function salvarAviso(){var nome=(document.getElementById('avisoNomeManual').value||document.getElementById('avisoFuncNomeHidden').value||'').trim();var loja=(document.getElementById('avisoLojaManual').value||document.getElementById('avisoFuncLojaHidden').value||'').trim();var ini=document.getElementById('avisoDataInicio').value;var fim=document.getElementById('avisoDataFim').value;var tipo=document.querySelector('input[name="avisoTipo"]:checked');if(!nome){alert('Informe o nome do colaborador.');return;}if(!ini||!fim){alert('Informe a data de início.');return;}if(!tipo){alert('Selecione a modalidade.');return;}firebase.database().ref('folha/avisos').push({funcId:document.getElementById('avisoFuncIdHidden').value||null,nome:nome,loja:loja||'-',dataInicio:ini,dataFim:fim,tipo:tipo.value,status:'Em Andamento',criadoEm:Date.now()}).then(function(){fecharModalAviso();renderAvisos();});}
+function concluirAviso(id){if(!confirm('Marcar aviso como concluído?'))return;firebase.database().ref('folha/avisos/'+id).update({status:'Concluido'});}
+function excluirAviso(id){if(!confirm('Excluir este aviso permanentemente?'))return;firebase.database().ref('folha/avisos/'+id).remove();}
+// ─── FIM AVISO TRABALHADO ──────────────────────────────────────────────────
 </script>
 
 <div class="save-bar-bottom">
