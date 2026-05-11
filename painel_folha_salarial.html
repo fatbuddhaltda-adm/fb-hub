@@ -2028,20 +2028,20 @@ function abrirAvisoBtn(btn) {
   document.getElementById('avisoFuncNomeDisplay').textContent = nome;
   document.getElementById('avisoNomeManual').value = nome;
   document.getElementById('avisoLojaManual').value = loja;
-  document.getElementById('avisoDataInicio').value = new Date().toISOString().split('T')[0];
+  document.getElementById('avisoDataInicio').value = '';
+  document.getElementById('avisoDataFim').value = '';
   var radios = document.querySelectorAll('input[name="avisoTipo"]');
   if (radios.length) radios[0].checked = true;
-  calcAvisoDataFim();
   var m = document.getElementById('modal-aviso');
   if (m) m.style.display = 'flex';
 }
 function abrirModalAviso() {
   ['avisoFuncIdHidden','avisoFuncNomeHidden','avisoFuncLojaHidden','avisoNomeManual','avisoLojaManual'].forEach(function(id) { document.getElementById(id).value = ''; });
   document.getElementById('avisoFuncNomeDisplay').textContent = 'Novo aviso';
-  document.getElementById('avisoDataInicio').value = new Date().toISOString().split('T')[0];
+  document.getElementById('avisoDataInicio').value = '';
+  document.getElementById('avisoDataFim').value = '';
   var radios = document.querySelectorAll('input[name="avisoTipo"]');
   if (radios.length) radios[0].checked = true;
-  calcAvisoDataFim();
   var m = document.getElementById('modal-aviso');
   if (m) m.style.display = 'flex';
 }
