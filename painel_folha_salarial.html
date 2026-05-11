@@ -1,3 +1,26 @@
+
+<!-- MODAL AVISO TRABALHADO -->
+<div id="modal-aviso" style="display:none;position:fixed;inset:0;background:rgba(44,26,14,.45);z-index:9999;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:12px;padding:28px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto">
+    <h3 style="font-size:17px;font-weight:700;color:#2c1a0e;margin-bottom:4px">Iniciar Aviso Trabalhado</h3>
+    <p id="avisoFuncNomeDisplay" style="font-size:14px;color:#7A5C48;margin-bottom:20px;font-weight:600"></p>
+    <input type="hidden" id="avisoFuncIdHidden"><input type="hidden" id="avisoFuncLojaHidden"><input type="hidden" id="avisoFuncNomeHidden">
+    <div style="margin-bottom:14px"><label style="display:block;font-size:12px;font-weight:600;color:#7A5C48;margin-bottom:5px;text-transform:uppercase">Colaborador</label><input type="text" id="avisoNomeManual" placeholder="Nome..." style="width:100%;padding:8px 10px;border:1px solid #C9AA90;border-radius:7px;font-size:13px;font-family:inherit;background:#FAF4EE;outline:none;box-sizing:border-box"></div>
+    <div style="margin-bottom:14px"><label style="display:block;font-size:12px;font-weight:600;color:#7A5C48;margin-bottom:5px;text-transform:uppercase">Loja</label><input type="text" id="avisoLojaManual" placeholder="Loja..." style="width:100%;padding:8px 10px;border:1px solid #C9AA90;border-radius:7px;font-size:13px;font-family:inherit;background:#FAF4EE;outline:none;box-sizing:border-box"></div>
+    <div style="margin-bottom:14px"><label style="display:block;font-size:12px;font-weight:600;color:#7A5C48;margin-bottom:5px;text-transform:uppercase">Data de Início</label><input type="date" id="avisoDataInicio" onchange="calcAvisoDataFim()" style="width:100%;padding:8px 10px;border:1px solid #C9AA90;border-radius:7px;font-size:13px;font-family:inherit;background:#FAF4EE;outline:none;box-sizing:border-box"></div>
+    <div style="margin-bottom:14px"><label style="display:block;font-size:12px;font-weight:600;color:#7A5C48;margin-bottom:5px;text-transform:uppercase">Data Fim (calculada)</label><input type="date" id="avisoDataFim" readonly style="width:100%;padding:8px 10px;border:1px solid #D9C4B0;border-radius:7px;font-size:13px;font-family:inherit;background:#f5f0eb;outline:none;box-sizing:border-box"></div>
+    <div style="margin-bottom:22px"><label style="display:block;font-size:12px;font-weight:600;color:#7A5C48;margin-bottom:10px;text-transform:uppercase">Modalidade</label>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer"><input type="radio" name="avisoTipo" value="30diasReducao" onchange="calcAvisoDataFim()" checked> 30 dias com 2h redução diária</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer"><input type="radio" name="avisoTipo" value="23dias" onchange="calcAvisoDataFim()"> 23 dias</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer"><input type="radio" name="avisoTipo" value="horarioNormal" onchange="calcAvisoDataFim()"> Desligamento / horário normal</label>
+    </div></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button onclick="fecharModalAviso()" style="padding:8px 18px;border-radius:7px;border:1px solid #D9C4B0;background:#fff;color:#2C1A0E;cursor:pointer;font-weight:600;font-family:inherit">Cancelar</button>
+      <button onclick="salvarAviso()" style="padding:8px 18px;border-radius:7px;border:none;background:#C0392B;color:#fff;cursor:pointer;font-weight:600;font-family:inherit">Salvar Aviso</button>
+    </div>
+  </div>
+</div>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -692,7 +715,6 @@ firebase.auth().onAuthStateChanged(async user=>{
     </table>
   </div>
 </div>
-
 <div class="modal-header">
       <span class="modal-title" id="modal-title">Novo Funcionário</span>
       <button class="modal-close" onclick="closeModal()">×</button>
@@ -1885,28 +1907,6 @@ function excluirAviso(id){if(!confirm('Excluir este aviso permanentemente?'))ret
     <button class="btn btn-secondary" onclick="openImport()" style="background:var(--panel);color:var(--ink);border:1px solid var(--line);padding:9px 16px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;font-family:'Manrope',sans-serif">⬆️ Importar CSV</button>
     <button class="btn btn-secondary" onclick="exportCSV()" style="background:var(--panel);color:var(--ink);border:1px solid var(--line);padding:9px 16px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;font-family:'Manrope',sans-serif">⬇️ Exportar CSV</button>
     <button class="btn btn-primary" onclick="save();const m=document.getElementById('save-msg');m.style.display='inline';setTimeout(()=>m.style.display='none',2500)">💾 Salvar</button>
-  </div>
-</div>
-<!-- MODAL AVISO TRABALHADO -->
-<div id="modal-aviso" style="display:none;position:fixed;inset:0;background:rgba(44,26,14,.45);z-index:9999;align-items:center;justify-content:center;padding:20px">
-  <div style="background:#fff;border-radius:12px;padding:28px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto">
-    <h3 style="font-size:17px;font-weight:700;color:#2c1a0e;margin-bottom:4px">Iniciar Aviso Trabalhado</h3>
-    <p id="avisoFuncNomeDisplay" style="font-size:14px;color:#7A5C48;margin-bottom:20px;font-weight:600"></p>
-    <input type="hidden" id="avisoFuncIdHidden"><input type="hidden" id="avisoFuncLojaHidden"><input type="hidden" id="avisoFuncNomeHidden">
-    <div style="margin-bottom:14px"><label style="display:block;font-size:12px;font-weight:600;color:#7A5C48;margin-bottom:5px;text-transform:uppercase">Colaborador</label><input type="text" id="avisoNomeManual" placeholder="Nome do colaborador..." style="width:100%;padding:8px 10px;border:1px solid #C9AA90;border-radius:7px;font-size:13px;font-family:inherit;background:#FAF4EE;outline:none;box-sizing:border-box"></div>
-    <div style="margin-bottom:14px"><label style="display:block;font-size:12px;font-weight:600;color:#7A5C48;margin-bottom:5px;text-transform:uppercase">Loja</label><input type="text" id="avisoLojaManual" placeholder="Loja..." style="width:100%;padding:8px 10px;border:1px solid #C9AA90;border-radius:7px;font-size:13px;font-family:inherit;background:#FAF4EE;outline:none;box-sizing:border-box"></div>
-    <div style="margin-bottom:14px"><label style="display:block;font-size:12px;font-weight:600;color:#7A5C48;margin-bottom:5px;text-transform:uppercase">Data de Início</label><input type="date" id="avisoDataInicio" onchange="calcAvisoDataFim()" style="width:100%;padding:8px 10px;border:1px solid #C9AA90;border-radius:7px;font-size:13px;font-family:inherit;background:#FAF4EE;outline:none;box-sizing:border-box"></div>
-    <div style="margin-bottom:14px"><label style="display:block;font-size:12px;font-weight:600;color:#7A5C48;margin-bottom:5px;text-transform:uppercase">Data de Fim (calculada)</label><input type="date" id="avisoDataFim" readonly style="width:100%;padding:8px 10px;border:1px solid #D9C4B0;border-radius:7px;font-size:13px;font-family:inherit;background:#f5f0eb;outline:none;box-sizing:border-box"></div>
-    <div style="margin-bottom:22px"><label style="display:block;font-size:12px;font-weight:600;color:#7A5C48;margin-bottom:10px;text-transform:uppercase">Modalidade</label>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer"><input type="radio" name="avisoTipo" value="30diasReducao" onchange="calcAvisoDataFim()" checked> 30 dias com 2h redução diária</label>
-      <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer"><input type="radio" name="avisoTipo" value="23dias" onchange="calcAvisoDataFim()"> 23 dias</label>
-      <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer"><input type="radio" name="avisoTipo" value="horarioNormal" onchange="calcAvisoDataFim()"> Desligamento / horário normal</label>
-    </div></div>
-    <div style="display:flex;gap:10px;justify-content:flex-end">
-      <button onclick="fecharModalAviso()" style="padding:8px 18px;border-radius:7px;border:1px solid #D9C4B0;background:#fff;color:#2C1A0E;cursor:pointer;font-weight:600;font-family:inherit">Cancelar</button>
-      <button onclick="salvarAviso()" style="padding:8px 18px;border-radius:7px;border:none;background:#C0392B;color:#fff;cursor:pointer;font-weight:600;font-family:inherit">Salvar Aviso</button>
-    </div>
   </div>
 </div>
 </body>
