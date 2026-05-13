@@ -1064,10 +1064,9 @@ function renderFuncionarios() {
 
   function turnoRank(cargo) {
     const c = (cargo||'').toUpperCase();
-    if (/GERENTE DE LOJA/.test(c)) return 0;
-    if (c.includes('DIURNO'))  return 1;
-    if (c.includes('NOTURNO')) return 2;
-    return 3;
+    if (c.includes('DIURNO'))  return 0;
+    if (c.includes('NOTURNO')) return 1;
+    return 2;
   }
 
   function sortEmps(arr) {
