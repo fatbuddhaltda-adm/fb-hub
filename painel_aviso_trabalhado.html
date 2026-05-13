@@ -103,7 +103,7 @@ body{font-family:Inter,sans-serif;background:var(--l);color:var(--d)}
     <select id="fl" onchange="rD()" style="padding:5px 10px;border:1px solid var(--c);border-radius:5px;font-size:13px"><option value="">Todas</option></select>
    </div>
    <div class="krow" id="kr"></div>
-   <div class="cc"><h3>Motivos de Desligamento</h3><table class="mt" id="mtt"><thead><tr><th>Motivo</th><th>Qtd</th><th>%</th><th style="min-width:100px">Barra</th><th>Concluídos</th><th>Andamento</th></tr></thead><tbody></tbody></table></div>
+   <div class="cc"><h3>Motivos de Desligamento</h3><table class="mt" id="mtt"><thead><tr><th>Motivo</th><th>Qtd</th><th>%</th><th style="min-width:100px">Barra</th><th>Concluídos</th><th>Andamento</th></tr></thead><tbody></tbody></table></div><div class="cc"><h3>Resultados por Loja</h3><table class="mt" id="mtl"><thead><tr><th>Loja</th><th>Total</th><th>Em Andamento</th><th>Concluídos</th><th>Vencidos</th></tr></thead><tbody></tbody></table></div>
   </div>
   <div id="vr" class="vi">
    <div class="sh"><h2>📋 Registros de Aviso Trabalhado</h2><button class="btn bp" onclick="oM()">+ Novo</button></div>
@@ -123,7 +123,7 @@ body{font-family:Inter,sans-serif;background:var(--l);color:var(--d)}
   <input type="hidden" id="ei">
   <div class="fr">
    <div class="fg2"><label>Nome *</label><input type="text" id="fn" placeholder="Nome completo"></div>
-   <div class="fg2"><label>Loja</label><select id="flo"><option value="">Selecione</option><option>MATRIZ</option><option>BROOKLIN</option><option>PERDIZES</option><option>VILA MARIANA</option><option>HIGIENÓPOLIS</option><option>PINHEIROS</option><option>ITAIM</option></select></div>
+   <div class="fg2"><label>Loja</label><select id="flo"><option value="">Selecione</option><option>MATRIZ</option><option>BROOKLIN</option><option>PERDIZES</option><option>VILA MARIANA</option></select></div>
   </div>
   <div class="fg2"><label>Motivo *</label><div class="rg">
    <label class="ro"><input type="radio" name="mot" value="empresa23dias" onchange="cDF()"><div><div class="rl">🏢 Empresa — 23 dias</div><div class="rd">Colaborador reduz 7 dias</div></div></label>
@@ -191,6 +191,11 @@ function rD(){
  });
  const kp=[{v:tot,l:'Total no Ano',c:'#2C1A0E'},{v:and,l:'Em Andamento',c:'#856404',b:'#fff3cd'},{v:con,l:'Concluídos',c:'#15803d',b:'#dcfce7'},{v:ven,l:'Vencidos',c:'#991b1b',b:'#fee2e2'}];
  document.getElementById('kr').innerHTML=kp.map(k=>`<div class="kpi" style="background:${k.b||'#fff'}"><div class="kv" style="color:${k.c}">${k.v}</div><div class="kl" style="color:${k.c}">${k.l}</div></div>`).join('');
+ const LOJAS_OFICIAIS=['MATRIZ','BROOKLIN','PERDIZES','VILA MARIANA'];
+ const byLj={};LOJAS_OFICIAIS.forEach(l=>byLj[l]={tot:0,and:0,con:0,ven:0});
+ f.forEach(r=>{const l=(r.loja||'').toUpperCase().trim();if(!l||l==='-')return;if(!byLj[l])byLj[l]={tot:0,and:0,con:0,ven:0};byLj[l].tot++;const fim=r.dataFim?new Date(r.dataFim+'T00:00:00'):null;const d=fim?Math.ceil((fim-h)/86400000):99;if(r.status==='Concluido')byLj[l].con++;else if(d<=0)byLj[l].ven++;else byLj[l].and++;});
+ const ordemLj=[...LOJAS_OFICIAIS,...Object.keys(byLj).filter(l=>!LOJAS_OFICIAIS.includes(l)).sort()];
+ document.querySelector('#mtl tbody').innerHTML=ordemLj.map(l=>{const s=byLj[l];return `<tr><td>${l}</td><td><b>${s.tot}</b></td><td style="color:#856404;font-weight:600">${s.and}</td><td style="color:#15803d;font-weight:600">${s.con}</td><td style="color:#991b1b;font-weight:600">${s.ven}</td></tr>`;}).join('');
  const mc={},ma={};
  f.forEach(r=>{if(r.motivo){if(r.status==='Concluido')mc[r.motivo]=(mc[r.motivo]||0)+1;else ma[r.motivo]=(ma[r.motivo]||0)+1;}});
  document.querySelector('#mtt tbody').innerHTML=['empresa23dias','empresaReducao2h','colaborador','contratExperiencia'].map(k=>{
