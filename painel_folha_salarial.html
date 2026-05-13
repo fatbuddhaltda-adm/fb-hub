@@ -492,7 +492,7 @@ function doLogout(){firebase.auth().signOut().then(()=>{location.reload();});}
 firebase.auth().onAuthStateChanged(async user=>{
   if(!user){document.getElementById('auth-overlay').style.display='flex';document.body.classList.add('locked');hideAuthLoading();return;}
   try{
-    const snap=await firebase.database().ref('authorized/admins').once('value');
+    const snap=await firebase.database().ref('authorized/folha').once('value');
     const admins=snap.val()||[];
     const list=Array.isArray(admins)?admins:Object.values(admins);
     if(!list.includes(user.email)){
