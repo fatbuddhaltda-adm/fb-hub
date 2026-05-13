@@ -1031,7 +1031,7 @@ function renderFuncionarios() {
   // ── Area classification ───────────────────────────────────────────────────
   function getArea(cargo) {
     const c = (cargo||'').toUpperCase();
-    if (/SUPERVISOR|SUPERVISORA|ATENDENTE|EMPACOTADOR|AUXILIAR.*(GERAL|LINHA|LIMPEZA)|AUXILIAR GERAL|AUXILIAR DE LINHA|AUXILIAR DE LIMPEZA/.test(c)) return 'expedicao';
+    if (/GERENTE DE LOJA|SUPERVISOR|SUPERVISORA|ATENDENTE|EMPACOTADOR|AUXILIAR.*(GERAL|LINHA|LIMPEZA)|AUXILIAR GERAL|AUXILIAR DE LINHA|AUXILIAR DE LIMPEZA/.test(c)) return 'expedicao';
     if (/CHEF|LIDER|LÍDER|COZINHEIRO|AUXILIAR.*(COZINHA|PROD)|AUXILIAR COZINHA|CHEFE/.test(c)) return 'cozinha';
     return 'outros';
   }
@@ -1041,11 +1041,12 @@ function renderFuncionarios() {
     const c = (cargo||'').toUpperCase();
     const area = getArea(cargo);
     if (area === 'expedicao') {
-      if (/SUPERVISOR|SUPERVISORA/.test(c)) return 0;
-      if (/ATENDENTE/.test(c))              return 1;
-      if (/EMPACOTADOR/.test(c))            return 2;
-      if (/AUXILIAR/.test(c))               return 3;
-      return 4;
+      if (/GERENTE DE LOJA/.test(c))        return 0;
+      if (/SUPERVISOR|SUPERVISORA/.test(c)) return 1;
+      if (/ATENDENTE/.test(c))              return 2;
+      if (/EMPACOTADOR/.test(c))            return 3;
+      if (/AUXILIAR/.test(c))               return 4;
+      return 5;
     }
     if (area === 'cozinha') {
       if (/CHEFE DE COZINHA/.test(c))                            return 0;  // inclui DIURNO e NOTURNO
@@ -1063,9 +1064,10 @@ function renderFuncionarios() {
 
   function turnoRank(cargo) {
     const c = (cargo||'').toUpperCase();
-    if (c.includes('DIURNO'))  return 0;
-    if (c.includes('NOTURNO')) return 1;
-    return 2;
+    if (/GERENTE DE LOJA/.test(c)) return 0;
+    if (c.includes('DIURNO'))  return 1;
+    if (c.includes('NOTURNO')) return 2;
+    return 3;
   }
 
   function sortEmps(arr) {
