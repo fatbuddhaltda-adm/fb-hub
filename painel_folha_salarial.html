@@ -729,17 +729,21 @@ firebase.auth().onAuthStateChanged(async user=>{
               <option>COZINHEIRO I PRODUÇÃO</option>
               <option>COZINHEIRO II PRODUÇÃO</option>
               <option>AUXILIAR DE PRODUÇÃO</option>
-              <option>AUXILIAR DE ESTOQUE</option>
             </optgroup>
             <optgroup label="Administrativo / Matriz">
+              <option>GERENTE GERAL</option>
               <option>ANALISTA DE RECURSOS HUMANOS JR</option>
-              <option>ANALISTA DE ESTOQUE JR</option>
-              <option>ESTOQUISTA</option>
+              <option>ANALISTA FINANCEIRO JR</option>
               <option>ANALISTA FOODTECH</option>
               <option>COMPRAS/ESTOQUE</option>
               <option>MARKETING</option>
               <option>GESTOR DE TRÁFEGO</option>
               <option>SUPERVISOR</option>
+            </optgroup>
+            <optgroup label="Estoque">
+              <option>ANALISTA DE ESTOQUE JR</option>
+              <option>ESTOQUISTA</option>
+              <option>AUXILIAR DE ESTOQUE</option>
             </optgroup>
           </select>
         </div>
@@ -1031,7 +1035,8 @@ function renderFuncionarios() {
   // ── Area classification ───────────────────────────────────────────────────
   function getArea(cargo) {
     const c = (cargo||'').toUpperCase();
-    if (/GERENTE DE LOJA|SUPERVISOR|SUPERVISORA|ATENDENTE|EMPACOTADOR|AUXILIAR.*(GERAL|LINHA|LIMPEZA)|AUXILIAR GERAL|AUXILIAR DE LINHA|AUXILIAR DE LIMPEZA/.test(c)) return 'expedicao';
+    if (/ANALISTA DE ESTOQUE|ESTOQUISTA|AUXILIAR DE ESTOQUE/.test(c)) return 'estoque';
+    if (/GERENTE DE LOJA|SUPERVISOR\/A|^SUPERVISORA?$|ATENDENTE|EMPACOTADOR|AUXILIAR.*(GERAL|LINHA|LIMPEZA)|AUXILIAR GERAL|AUXILIAR DE LINHA|AUXILIAR DE LIMPEZA/.test(c)) return 'expedicao';
     if (/CHEF|LIDER|LÍDER|COZINHEIRO|AUXILIAR.*(COZINHA|PROD)|AUXILIAR COZINHA|CHEFE/.test(c)) return 'cozinha';
     return 'outros';
   }
@@ -1042,7 +1047,7 @@ function renderFuncionarios() {
     const area = getArea(cargo);
     if (area === 'expedicao') {
       if (/GERENTE DE LOJA/.test(c))        return 0;
-      if (/SUPERVISOR|SUPERVISORA/.test(c)) return 1;
+      if (/SUPERVISOR/.test(c))             return 1;
       if (/ATENDENTE/.test(c))              return 2;
       if (/EMPACOTADOR/.test(c))            return 3;
       if (/AUXILIAR/.test(c))               return 4;
@@ -1056,10 +1061,17 @@ function renderFuncionarios() {
       if (/AUXILIAR/.test(c))                                    return 4;
       return 5;
     }
+    if (area === 'estoque') {
+      if (/ANALISTA DE ESTOQUE/.test(c)) return 0;
+      if (/ESTOQUISTA/.test(c))          return 1;
+      if (/AUXILIAR DE ESTOQUE/.test(c)) return 2;
+      return 3;
+    }
     // outros
-    if (/GERENTE|CEO|COO|CMO|CFO|CHEF EXEC/.test(c)) return 0;
-    if (/ANALISTA|COMPRAS|OPERACIONAL|FINANCEIRO|MARKETING|TRAFEGO|RH/.test(c)) return 1;
-    return 2;
+    if (/GERENTE GERAL/.test(c)) return 0;
+    if (/GERENTE|CEO|COO|CMO|CFO|CHEF EXEC/.test(c)) return 1;
+    if (/ANALISTA|COMPRAS|OPERACIONAL|FINANCEIRO|MARKETING|TRAFEGO|RH/.test(c)) return 2;
+    return 3;
   }
 
   function turnoRank(cargo) {
@@ -1138,6 +1150,7 @@ function renderFuncionarios() {
   const AREA_CFG = {
     expedicao: { label: '🏪 Expedição', bg: 'var(--blue-soft)', border: 'var(--blue)', color: '#1e40af' },
     cozinha:   { label: '🍳 Cozinha',   bg: 'var(--amber-soft)', border: 'var(--amber)', color: '#9a3412' },
+    estoque:   { label: '📦 Estoque',   bg: 'var(--purple-soft)', border: 'var(--purple)', color: '#6b21a8' },
     outros:    { label: '🏢 Administrativo / Outros', bg: 'var(--nude)', border: 'var(--ink-3)', color: 'var(--ink-2)' },
   };
 
@@ -1153,7 +1166,7 @@ function renderFuncionarios() {
 
   // ── Build rows: loja → área → todos juntos por hierarquia + turno ──────────
   const lojaOrder = [...LOJAS, ...([...new Set(emps.map(e=>e.loja))].filter(l=>!LOJAS.includes(l)))];
-  const AREA_ORDER = ['expedicao','cozinha','outros'];
+  const AREA_ORDER = ['expedicao','cozinha','estoque','outros'];
   const rows = [];
   let n = 1;
 
@@ -1171,10 +1184,11 @@ function renderFuncionarios() {
 
       const diurnos  = areaGroup.filter(e => turnoRank(e.cargo) === 0);
       const noturnos = areaGroup.filter(e => turnoRank(e.cargo) === 1);
-      const semTurno = areaGroup.filter(e => turnoRank(e.cargo) === 2);
+      const semTurnoTopo = areaGroup.filter(e => turnoRank(e.cargo) === 2 && !/AUXILIAR GERAL/.test((e.cargo||'').toUpperCase()));
+      const semTurnoFim  = areaGroup.filter(e => turnoRank(e.cargo) === 2 &&  /AUXILIAR GERAL/.test((e.cargo||'').toUpperCase()));
 
-      // Sem turno (ex: CHEFE DE COZINHA) sempre vem primeiro
-      semTurno.forEach(e => rows.push(empRow(e, n++)));
+      // Sem turno (gerente, supervisor, admin) vem primeiro, sem header
+      semTurnoTopo.forEach(e => rows.push(empRow(e, n++)));
 
       if (diurnos.length && noturnos.length) {
         rows.push(`<tr><td colspan="12" style="padding:4px 14px 4px 18px;background:var(--blue-soft);border-top:1px solid #bae6fd"><span style="font-size:10px;font-weight:700;color:#0369a1;letter-spacing:.1em;text-transform:uppercase;font-family:'JetBrains Mono',monospace">☀️ Diurno</span></td></tr>`);
@@ -1185,6 +1199,9 @@ function renderFuncionarios() {
         diurnos.forEach(e => rows.push(empRow(e, n++)));
         noturnos.forEach(e => rows.push(empRow(e, n++)));
       }
+
+      // Aux Geral (sem turno, baixo na hierarquia) vai no fim, sem header
+      semTurnoFim.forEach(e => rows.push(empRow(e, n++)));
     });
   });
 
