@@ -1734,6 +1734,17 @@ function exportCSV() {
 }
 
 // ─── VALE TRANSPORTE ─────────────────────────────────────────────────────────
+const VTTIPO_ORDER = [
+  'Bilhete único mensal integrado',
+  'Bilhete único mensal comum ônibus',
+  'Bilhete único mensal comum metrô',
+  'Intermunicipal',
+  'VEM ANDANDO',
+  'Carro',
+  'ALUGUEL BIKE',
+  'Outro'
+];
+function vttipoRank(t){const i=VTTIPO_ORDER.indexOf(t||'');return i>=0?i:999;}
 function renderValeTransporte() {
   const emps = data.employees;
   if (!emps.length) {
@@ -1762,7 +1773,11 @@ function renderValeTransporte() {
   `;
 
   function vtRows(list, tbodyId, metaId) {
-    const comVT = list.filter(e => (e.vt||0) > 0).sort((a,b) => (b.vt||0)-(a.vt||0));
+    const comVT = list.filter(e => (e.vt||0) > 0).sort((a,b) => {
+      const dr = vttipoRank(a.vttipo) - vttipoRank(b.vttipo);
+      if (dr !== 0) return dr;
+      return (a.nome||'').localeCompare(b.nome||'');
+    });
     const semVT = list.filter(e => !(e.vt||0));
     const totalLista = comVT.reduce((s,e)=>s+(e.vt||0),0);
     document.getElementById(metaId).textContent = `${comVT.length} com VT · ${semVT.length} sem VT · Total: ${fmt(totalLista)}/mês`;
@@ -1770,14 +1785,23 @@ function renderValeTransporte() {
       document.getElementById(tbodyId).innerHTML = `<tr><td colspan="6" class="empty-state">Sem funcionários nesta categoria.</td></tr>`;
       return;
     }
-    let rows = comVT.map(e => `<tr>
-      <td><b>${e.nome}</b></td>
-      <td><span class="loja-tag ${lojaClass(e.loja)}">${e.loja}</span></td>
-      <td style="font-size:12px">${e.cargo||'—'}</td>
-      <td style="font-size:12px">${e.vttipo||'<span style="color:var(--ink-3)">—</span>'}</td>
-      <td class="money" style="font-weight:700;color:var(--red)">${fmt(e.vt)}</td>
-      <td class="money">${fmt((e.vt||0)*12)}</td>
-    </tr>`).join('');
+    let rows = '';
+    let lastTipo = null;
+    comVT.forEach(e => {
+      const t = e.vttipo || 'Sem tipo informado';
+      if (t !== lastTipo) {
+        rows += `<tr><td colspan="6" style="padding:5px 12px;background:var(--panel-2);font-size:10px;font-weight:700;color:var(--ink-2);letter-spacing:.08em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;border-top:1px solid var(--line)">🚌 ${t}</td></tr>`;
+        lastTipo = t;
+      }
+      rows += `<tr>
+        <td><b>${e.nome}</b></td>
+        <td><span class="loja-tag ${lojaClass(e.loja)}">${e.loja}</span></td>
+        <td style="font-size:12px">${e.cargo||'—'}</td>
+        <td style="font-size:12px">${e.vttipo||'<span style="color:var(--ink-3)">—</span>'}</td>
+        <td class="money" style="font-weight:700;color:var(--red)">${fmt(e.vt)}</td>
+        <td class="money">${fmt((e.vt||0)*12)}</td>
+      </tr>`;
+    });
     if (semVT.length) {
       rows += `<tr><td colspan="6" style="padding:6px 12px;background:var(--panel-2);font-size:11px;color:var(--ink-3);font-style:italic">
         Sem VT (${semVT.length}): ${semVT.map(e=>e.nome).join(', ')}
