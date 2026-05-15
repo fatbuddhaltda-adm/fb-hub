@@ -918,7 +918,7 @@ function copyToNextMonth(){
   if(data.months[n]&&!confirm('Mês já existe. Sobrescrever?'))return;
   const c=getM();
   const el=c.employees.map(e=>({...e,obs:'',status:'ELEGÍVEL'}));
-  const fi=(c.proximoMes||[]).map((nm,i)=>({id:getNextId()+i,nome:nm.toUpperCase(),loja:'BROOKLIN',tipo:'CLT',status:'ELEGÍVEL',obs:'',pix:''}));
+  const fi=(c.proximoMes||[]).map((nm,i)=>{const nome=(typeof nm==='string'?nm:(nm.nome||'')).toUpperCase();const loja=(typeof nm==='string'?'BROOKLIN':(nm.loja||'BROOKLIN'));return {id:getNextId()+i,nome:nome,loja:loja,tipo:'CLT',status:'ELEGÍVEL',obs:'',pix:''};});
   data.months[n]={bonusValue:c.bonusValue,numPedidos:c.numPedidos||0,employees:[...el,...fi],proximoMes:[]};
   currentMonth=n;data.currentMonth=n;autoSave();renderAll();
   alert('✅ Copiado para '+n+'!\n'+el.length+' funcionários + '+fi.length+' da fila adicionados.');
@@ -1053,18 +1053,34 @@ function renderLojas(){
     grid.appendChild(d);
   });
 }
+function _getProxNome(it){if(!it)return'';if(typeof it==='string')return it;return it.nome||'';}
+function _getProxLoja(it){if(!it||typeof it==='string')return'';return it.loja||'';}
 function renderProximo(){
   const list=getM().proximoMes||[],div=document.getElementById('proximoList');div.innerHTML='';
-  list.forEach((n,i)=>{
-    const item=document.createElement('div');item.className='proximo-item';
-    item.innerHTML=`<span>👤 ${n}</span><button onclick="removeProximo(${i})" title="Remover">✕</button>`;div.appendChild(item);
+  const LOJAS_OFICIAIS=['BROOKLIN','PERDIZES','VILA MARIANA','MATRIZ PRODUÇÃO'];
+  const LOJA_COL={'BROOKLIN':{bg:'var(--blue-soft)',fg:'#0369a1',bd:'#7dd3fc'},'PERDIZES':{bg:'#fce7f3',fg:'#9d174d',bd:'#f9a8d4'},'VILA MARIANA':{bg:'var(--purple-soft)',fg:'#5b21b6',bd:'#c4b5fd'},'MATRIZ PRODUÇÃO':{bg:'var(--amber-soft)',fg:'#92400e',bd:'#fcd34d'}};
+  const byLj={};list.forEach((item,i)=>{const lj=_getProxLoja(item)||'Sem loja';(byLj[lj]=byLj[lj]||[]).push({item,idx:i});});
+  const presentes=Object.keys(byLj);
+  const lojaOrder=[...LOJAS_OFICIAIS.filter(l=>presentes.includes(l)),...presentes.filter(l=>!LOJAS_OFICIAIS.includes(l)).sort()];
+  lojaOrder.forEach(loja=>{
+    const col=LOJA_COL[loja]||{bg:'var(--nude)',fg:'var(--ink-2)',bd:'var(--line-2)'};
+    const lojaHdr=document.createElement('div');
+    lojaHdr.style.cssText=`flex-basis:100%;background:${col.bg};border-left:3px solid ${col.bd};padding:6px 12px;font-size:10px;font-weight:700;color:${col.fg};letter-spacing:.12em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;border-radius:4px;margin-top:6px`;
+    lojaHdr.textContent=`📍 ${loja} — ${byLj[loja].length}`;
+    div.appendChild(lojaHdr);
+    byLj[loja].forEach(({item,idx})=>{
+      const nome=_getProxNome(item);
+      const it=document.createElement('div');it.className='proximo-item';
+      it.innerHTML=`<span>👤 ${nome}</span><button onclick="removeProximo(${idx})" title="Remover">✕</button>`;
+      div.appendChild(it);
+    });
   });
-  const add=document.createElement('div');add.className='add-proximo';
-  add.innerHTML=`<span>＋</span><input type="text" id="proximoInput" placeholder="Digite o nome e clique em Adicionar..." onkeydown="if(event.key==='Enter')addProximo()" onblur="addProximo()" style="width:240px"><button onclick="addProximo()" style="background:var(--red);color:#fff;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;margin-left:4px;font-family:'Manrope',sans-serif">Adicionar</button>`;
+  const add=document.createElement('div');add.className='add-proximo';add.style.flexBasis='100%';
+  add.innerHTML=`<span>＋</span><input type="text" id="proximoInput" placeholder="Digite o nome..." onkeydown="if(event.key==='Enter')addProximo()" style="width:180px"><select id="proximoLoja" style="border:1px solid var(--line-2);outline:none;font-size:11px;background:#fff;color:var(--ink);padding:3px 6px;border-radius:5px;font-family:'Manrope',sans-serif;margin-left:4px"><option value="">Loja...</option><option>BROOKLIN</option><option>PERDIZES</option><option>VILA MARIANA</option><option>MATRIZ PRODUÇÃO</option></select><button onclick="addProximo()" style="background:var(--red);color:#fff;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;margin-left:4px;font-family:'Manrope',sans-serif">Adicionar</button>`;
   div.appendChild(add);
   document.getElementById('proximo-count').textContent=list.length+' na fila';
 }
-function addProximo(){const v=document.getElementById('proximoInput').value.trim();if(!v)return;if(!data.months[currentMonth].proximoMes)data.months[currentMonth].proximoMes=[];data.months[currentMonth].proximoMes.push(v);autoSave();renderProximo();}
+function addProximo(){const v=(document.getElementById('proximoInput').value||'').trim();const lj=((document.getElementById('proximoLoja')||{}).value||'').trim();if(!v)return;if(!data.months[currentMonth].proximoMes)data.months[currentMonth].proximoMes=[];data.months[currentMonth].proximoMes.push({nome:v,loja:lj});autoSave();renderProximo();}
 function removeProximo(i){data.months[currentMonth].proximoMes.splice(i,1);autoSave();renderProximo();}
 
 function openStatusMenu(e,id){
