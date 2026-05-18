@@ -193,7 +193,7 @@ let dataAll={},currentYear=new Date().getFullYear().toString();
 let charts={};
 
 function fmt(v){return 'R$ '+(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
-function parseV(s){if(!s)return 0;return parseFloat(String(s).replace(/[^\d.-]/g,'').replace(',','.'))||0;}
+function parseV(s){if(!s)return 0;var c=String(s).replace(/[^\d,.-]/g,'');if(c.indexOf(',')>=0){c=c.replace(/\./g,'').replace(',','.');}return parseFloat(c)||0;}
 
 function init(){
  db.ref('freelas_testes').on('value',sn=>{
