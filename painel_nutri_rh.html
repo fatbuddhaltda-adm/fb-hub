@@ -472,7 +472,7 @@ function renderAnual(){
   const innerW=svgW-padL-padR,innerH=svgH-padT-padB;
   const minVal=6,maxVal=10;
   const svgEl=document.createElementNS('http://www.w3.org/2000/svg','svg');
-  svgEl.setAttribute('viewBox',`0 0 ${svgW} ${svgH}`);svgEl.style.width='100%';svgEl.style.height='auto';
+  svgEl.setAttribute('viewBox',`0 0 ${svgW} ${svgH}`);svgEl.style.width='100%';svgEl.style.height='auto';svgEl.style.maxHeight='240px';svgEl.style.display='block';
   // Grade
   [6,7,8,9,10].forEach(v=>{const y=padT+innerH-((v-minVal)/(maxVal-minVal))*innerH;const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1',padL);line.setAttribute('x2',padL+innerW);line.setAttribute('y1',y);line.setAttribute('y2',y);line.setAttribute('stroke',v===8?'#ef4444':'#f3f4f6');line.setAttribute('stroke-width',v===8?'1.5':'1');line.setAttribute('stroke-dasharray',v===8?'4,3':'0');svgEl.appendChild(line);const t=document.createElementNS('http://www.w3.org/2000/svg','text');t.setAttribute('x',padL-6);t.setAttribute('y',y+4);t.setAttribute('text-anchor','end');t.setAttribute('font-size','9');t.setAttribute('fill','#9ca3af');t.textContent=v;svgEl.appendChild(t);});
   // Linha meta 8
