@@ -168,6 +168,7 @@ body{font-family:Inter,sans-serif;background:var(--l);color:var(--d)}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -300,6 +301,7 @@ function renderTabResumo(){
 
 function renderCharts(){
  if(typeof Chart==='undefined')return;
+ if(typeof ChartDataLabels!=='undefined'&&!window._datalabelsReg){Chart.register(ChartDataLabels);window._datalabelsReg=true;}
  const labels=MESES.map(m=>m.substring(0,3));
  const datasets=LOJAS.map(lj=>({label:lj.l,data:MK.map(mk=>getVal(lj.k,mk)),borderColor:lj.c,backgroundColor:lj.c+'22',borderWidth:2,tension:.25,pointRadius:3,pointBackgroundColor:lj.c,fill:false}));
  // Adicionar total grupo
@@ -307,20 +309,20 @@ function renderCharts(){
  datasets.push({label:'Total Grupo',data:totGrupoMes,borderColor:'#C0392B',backgroundColor:'rgba(192,57,43,0.08)',borderWidth:3,borderDash:[6,4],tension:.25,pointRadius:4,pointBackgroundColor:'#C0392B',fill:false});
  const cvEvo=document.getElementById('chartEvo');
  if(charts.evo)charts.evo.destroy();
- charts.evo=new Chart(cvEvo,{type:'line',data:{labels:labels,datasets:datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+fmt(ctx.parsed.y)}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'R$ '+(v/1000).toFixed(0)+'k',font:{size:10}},grid:{color:'#EFE4D7'}},x:{ticks:{font:{size:11,weight:'600'}},grid:{display:false}}}}});
+ charts.evo=new Chart(cvEvo,{type:'line',data:{labels:labels,datasets:datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{display:false},tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+fmt(ctx.parsed.y)}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'R$ '+(v/1000).toFixed(0)+'k',font:{size:10}},grid:{color:'#EFE4D7'}},x:{ticks:{font:{size:11,weight:'600'}},grid:{display:false}}}}});
 
  // Bar chart - total anual por loja
  const totLoja=LOJAS.map(lj=>{let t=0;MK.forEach(mk=>t+=getVal(lj.k,mk));return t;});
  const cvLoja=document.getElementById('chartLoja');
  if(charts.loja)charts.loja.destroy();
- charts.loja=new Chart(cvLoja,{type:'bar',data:{labels:LOJAS.map(lj=>lj.l),datasets:[{data:totLoja,backgroundColor:LOJAS.map(lj=>lj.c),borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>fmt(ctx.parsed.y)}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'R$ '+(v/1000).toFixed(0)+'k',font:{size:10}},grid:{color:'#EFE4D7'}},x:{ticks:{font:{size:11,weight:'600'}},grid:{display:false}}}}});
+ charts.loja=new Chart(cvLoja,{type:'bar',data:{labels:LOJAS.map(lj=>lj.l),datasets:[{data:totLoja,backgroundColor:LOJAS.map(lj=>lj.c),borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>fmt(ctx.parsed.y)}},datalabels:{anchor:'end',align:'top',offset:4,formatter:(v,ctx)=>{const tot=ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);const pct=tot>0?Math.round(v/tot*100):0;return v>0?pct+'%':'';},font:{size:12,weight:'700'},color:'#7A5C48'}},layout:{padding:{top:18}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'R$ '+(v/1000).toFixed(0)+'k',font:{size:10}},grid:{color:'#EFE4D7'}},x:{ticks:{font:{size:11,weight:'600'}},grid:{display:false}}}}});
 
  // Pie chart - participacao
  const cvPie=document.getElementById('chartPie');
  if(charts.pie)charts.pie.destroy();
  const hasData=totLoja.some(v=>v>0);
  if(hasData){
-  charts.pie=new Chart(cvPie,{type:'doughnut',data:{labels:LOJAS.map(lj=>lj.l),datasets:[{data:totLoja,backgroundColor:LOJAS.map(lj=>lj.c),borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:8}},tooltip:{callbacks:{label:ctx=>{const tot=ctx.dataset.data.reduce((a,b)=>a+b,0);const pct=tot>0?Math.round(ctx.parsed/tot*100):0;return ctx.label+': '+fmt(ctx.parsed)+' ('+pct+'%)';}}}}}});
+  charts.pie=new Chart(cvPie,{type:'doughnut',data:{labels:LOJAS.map(lj=>lj.l),datasets:[{data:totLoja,backgroundColor:LOJAS.map(lj=>lj.c),borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:8}},tooltip:{callbacks:{label:ctx=>{const tot=ctx.dataset.data.reduce((a,b)=>a+b,0);const pct=tot>0?Math.round(ctx.parsed/tot*100):0;return ctx.label+': '+fmt(ctx.parsed)+' ('+pct+'%)';}}},datalabels:{formatter:(v,ctx)=>{const tot=ctx.dataset.data.reduce((a,b)=>a+b,0);const pct=tot>0?Math.round(v/tot*100):0;return pct>=4?pct+'%':'';},color:'#fff',font:{size:13,weight:'700'},textStrokeColor:'rgba(0,0,0,0.3)',textStrokeWidth:2}}}});
  }else{
   const ctx=cvPie.getContext('2d');ctx.clearRect(0,0,cvPie.width,cvPie.height);ctx.font='13px Inter';ctx.fillStyle='#aaa';ctx.textAlign='center';ctx.fillText('Sem dados para exibir',cvPie.width/2,cvPie.height/2);
  }
