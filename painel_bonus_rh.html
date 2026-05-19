@@ -462,8 +462,8 @@ tr:hover td{background:rgba(247,165,165,.06)}
   font-family:'JetBrains Mono',monospace;
 }
 .bar-val{font-size:8px;color:var(--ink);font-weight:700;text-align:center;margin-bottom:2px}
-.line-chart{position:relative;height:140px;margin-bottom:6px}
-.line-chart svg{width:100%;height:100%}
+.line-chart{position:relative;margin-bottom:6px;max-height:200px;overflow:hidden}
+.line-chart svg{width:100%;height:auto;max-height:200px}
 .motivo-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .motivo-bar-bg{flex:1;background:var(--nude);border-radius:6px;height:10px;overflow:hidden}
 .motivo-bar-fill{height:100%;border-radius:6px;transition:width .4s}
@@ -693,7 +693,7 @@ firebase.auth().onAuthStateChanged(async user=>{
   <div class="an-charts">
     <div class="an-card">
       <h3>📊 % Elegíveis por Mês</h3>
-      <div class="line-chart"><svg id="an-line-pct" viewBox="0 0 300 140" preserveAspectRatio="none"></svg></div>
+      <div class="line-chart"><svg id="an-line-pct" viewBox="0 0 600 200" style="display:block"></svg></div>
       <div id="an-line-labels" style="display:flex;gap:0;margin-top:4px"></div>
     </div>
     <div class="an-card">
@@ -1346,7 +1346,7 @@ function renderAnalytics(){
   const labEl=document.getElementById('an-line-labels');
   if(svgEl&&labEl&&stats.length>0){
     svgEl.innerHTML='';labEl.innerHTML='';
-    const W=300,H=140,pad=10;
+    const W=600,H=200,pad=18;
     const pts=stats.map((s,i)=>{
       const x=stats.length===1?W/2:pad+(i/(stats.length-1))*(W-2*pad);
       const y=H-pad-(s.pct/100)*(H-2*pad);
@@ -1361,17 +1361,17 @@ function renderAnalytics(){
     // linha
     const line=document.createElementNS('http://www.w3.org/2000/svg','polyline');
     line.setAttribute('points',pts.map(p=>p.x+','+p.y).join(' '));
-    line.setAttribute('fill','none');line.setAttribute('stroke','#e51b24');line.setAttribute('stroke-width','2');
+    line.setAttribute('fill','none');line.setAttribute('stroke','#e51b24');line.setAttribute('stroke-width','3');
     svgEl.appendChild(line);
     // pontos
     pts.forEach(p=>{
       const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
-      c.setAttribute('cx',p.x);c.setAttribute('cy',p.y);c.setAttribute('r','4');
+      c.setAttribute('cx',p.x);c.setAttribute('cy',p.y);c.setAttribute('r','6');
       c.setAttribute('fill','#e51b24');c.setAttribute('stroke','white');c.setAttribute('stroke-width','2');
       svgEl.appendChild(c);
       const t=document.createElementNS('http://www.w3.org/2000/svg','text');
-      t.setAttribute('x',p.x);t.setAttribute('y',p.y-8);t.setAttribute('text-anchor','middle');
-      t.setAttribute('font-size','9');t.setAttribute('fill','#2a1f17');t.setAttribute('font-weight','700');
+      t.setAttribute('x',p.x);t.setAttribute('y',p.y-12);t.setAttribute('text-anchor','middle');
+      t.setAttribute('font-size','14');t.setAttribute('fill','#2a1f17');t.setAttribute('font-weight','700');
       t.textContent=p.pct+'%';svgEl.appendChild(t);
     });
     // labels
