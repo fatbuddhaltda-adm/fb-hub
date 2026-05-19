@@ -448,8 +448,8 @@ tr:hover td{background:rgba(247,165,165,.06)}
 #btn-login svg{width:18px;height:18px;}
 #auth-error{color:#e51b24;font-size:13px;margin-top:16px;font-weight:500;display:none;}
 #auth-loading{color:#8a7563;font-size:13px;margin-top:16px;font-weight:500;}
-#user-bar{position:fixed;top:12px;right:16px;z-index:9999;background:#fff;border:1px solid #e8d9c8;border-radius:10px;padding:6px 12px;display:flex;align-items:center;gap:10px;font-family:'Manrope',sans-serif;font-size:12px;color:#5e4b3c;box-shadow:0 4px 12px rgba(180,120,80,.08);}
-#user-bar img{width:24px;height:24px;border-radius:50%;}
+#user-bar{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid #e8d9c8;border-radius:8px;padding:4px 10px;font-family:'Manrope',sans-serif;font-size:11px;color:#5e4b3c;}#user-bar span{max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#user-bar img{width:22px;height:22px;border-radius:50%;flex-shrink:0;}
 #btn-logout{background:none;border:none;color:#e51b24;font-weight:600;cursor:pointer;font-size:12px;padding:4px 8px;border-radius:6px;font-family:inherit;}
 #btn-logout:hover{background:#f4c8c8;}
 body.locked{overflow:hidden;}
@@ -507,7 +507,8 @@ firebase.auth().onAuthStateChanged(async user=>{
       bar=document.createElement('div');
       bar.id='user-bar';
       bar.innerHTML='<img src="'+(user.photoURL||'')+'" alt=""><span>'+user.email+'</span><button id="btn-logout" onclick="doLogout()">Sair</button>';
-      document.body.appendChild(bar);
+      const tbr=document.querySelector('.topbar-right');
+      if(tbr){tbr.insertBefore(bar,tbr.firstChild);}else{document.body.appendChild(bar);}
     }
     window._authReady=true;
     if(window._authReadyResolve)window._authReadyResolve(user);
