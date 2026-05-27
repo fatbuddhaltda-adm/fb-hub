@@ -132,6 +132,7 @@ body{font-family:Inter,sans-serif;background:var(--l);color:var(--d)}
     <p style="font-size:11px;color:var(--m);margin-bottom:10px">Desligamentos mês a mês — visualiza tendência de aumento ou queda. <span style="color:#C0392B;font-weight:600">Total</span> · <span style="color:#0369a1;font-weight:600">Empresa</span> · <span style="color:#27ae60;font-weight:600">Colaborador</span>.</p>
     <div id="evoMesNote" style="display:none;font-size:11px;color:#991b1b;background:#fef2f2;border-left:3px solid #fca5a5;padding:5px 10px;border-radius:3px;margin-bottom:10px"></div>
     <div style="position:relative;height:240px"><canvas id="chartEvoMes"></canvas></div>
+    <div id="evoMesDiag" style="margin-top:10px"></div>
    </div>
    <div class="cc"><h3>🏢 Quem Iniciou o Desligamento</h3>
 <p style="font-size:11px;color:var(--m);margin-bottom:12px">Quem tomou a decisão — empresa decidiu ou foi pedido do colaborador. Independente da categoria final (acordo, pedido, etc).</p>
@@ -147,10 +148,12 @@ body{font-family:Inter,sans-serif;background:var(--l);color:var(--d)}
   <div style="font-size:11px;color:var(--m);margin-top:2px"><span id="kpiInitColPct">0</span>% das demissões</div>
  </div>
 </div>
+<div id="quemIniciouDiag" style="margin-top:10px"></div>
 </div>
 <div class="cc"><h3>Resumo por Loja</h3>
 <p style="font-size:11px;color:var(--m);margin-bottom:12px">Total, quem iniciou e status dos desligamentos por unidade.</p>
 <div id="lojaCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px"></div>
+<div id="resumoLojaDiag" style="margin-top:12px"></div>
 </div><div class="cc"><h3>📍 Motivos por Loja</h3>
 <p style="font-size:11px;color:var(--m);margin-bottom:12px">Volume e tipos de motivo por unidade — ordenadas por volume. Identifica onde os problemas estão concentrados e qual o padrão dominante de cada loja.</p>
 <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:10px;color:var(--m);margin-bottom:10px;border-bottom:1px solid var(--c);padding-bottom:8px">
@@ -163,7 +166,7 @@ body{font-family:Inter,sans-serif;background:var(--l);color:var(--d)}
  <span style="margin-left:auto;font-size:10px;color:var(--m);font-style:italic">Sem categoria definida em cinza</span>
 </div>
 <div id="motivosByLoja"></div>
-</div><div class="cc"><h3>Demissões por Categoria do Motivo</h3><table class="mt" id="mtcat"><thead><tr><th>Categoria</th><th>Qtd</th><th>%</th><th style="min-width:120px">Barra</th></tr></thead><tbody></tbody></table></div><div class="cc"><h3>Demissões por Gestor Responsável</h3><table class="mt" id="mtg"><thead><tr><th>Gestor</th><th>Total</th><th>% do total</th><th>Concentração no maior motivo</th><th>Alerta</th></tr></thead><tbody></tbody></table><div style="font-size:11px;color:var(--m);margin-top:8px">⚠️ Alerta dispara quando o gestor tem volume acima de 1,5× a média do grupo ou quando 60%+ dos seus desligamentos estão concentrados em uma única categoria.<br>👤 Registros iniciados pelo colaborador são contabilizados nos totais gerais mas <b>não pesam contra os gestores</b> (apareceriam aqui como "<span id="initColabHint">0</span>" desligamentos iniciados pelo colaborador).</div></div><div class="cc" id="alertbox" style="display:none;border-left:3px solid #C0392B"><h3 style="color:#C0392B">⚠️ Alertas de Liderança</h3><div id="alertlist" style="font-size:13px;color:var(--d)"></div></div><div class="cc" id="avalrecbox"><h3>📊 Avaliação × Recontratação</h3><p style="font-size:11px;color:var(--m);margin-bottom:10px">Matriz cruzada — linhas: avaliação do colaborador, colunas: recontrataria. Padrões interessantes: <b>com problema mas recontrataria</b> (talvez seja prob. de gestão), <b>com problema E não recontrataria</b> (decisão consistente).</p><div style="overflow-x:auto"><table class="mt" id="mtavalrec"><thead></thead><tbody></tbody></table></div></div>
+</div><div class="cc"><h3>Demissões por Categoria do Motivo</h3><table class="mt" id="mtcat"><thead><tr><th>Categoria</th><th>Qtd</th><th>%</th><th style="min-width:120px">Barra</th></tr></thead><tbody></tbody></table><div id="categoriaDiag" style="margin-top:10px"></div></div><div class="cc"><h3>Demissões por Gestor Responsável</h3><table class="mt" id="mtg"><thead><tr><th>Gestor</th><th>Total</th><th>% do total</th><th>Concentração no maior motivo</th><th>Alerta</th></tr></thead><tbody></tbody></table><div style="font-size:11px;color:var(--m);margin-top:8px">⚠️ Alerta dispara quando o gestor tem volume acima de 1,5× a média do grupo ou quando 60%+ dos seus desligamentos estão concentrados em uma única categoria.<br>👤 Registros iniciados pelo colaborador são contabilizados nos totais gerais mas <b>não pesam contra os gestores</b> (apareceriam aqui como "<span id="initColabHint">0</span>" desligamentos iniciados pelo colaborador).</div></div><div class="cc" id="alertbox" style="display:none;border-left:3px solid #C0392B"><h3 style="color:#C0392B">⚠️ Alertas de Liderança</h3><div id="alertlist" style="font-size:13px;color:var(--d)"></div></div><div class="cc" id="avalrecbox"><h3>📊 Avaliação × Recontratação</h3><p style="font-size:11px;color:var(--m);margin-bottom:10px">Matriz cruzada — linhas: avaliação do colaborador, colunas: recontrataria. Padrões interessantes: <b>com problema mas recontrataria</b> (talvez seja prob. de gestão), <b>com problema E não recontrataria</b> (decisão consistente).</p><div style="overflow-x:auto"><table class="mt" id="mtavalrec"><thead></thead><tbody></tbody></table></div><div id="avalRecDiag" style="margin-top:10px"></div></div>
   </div>
   <div id="vr" class="vi">
    <div class="sh"><h2>📋 Registros de Aviso Trabalhado</h2><button class="btn bp" onclick="oM()">+ Novo</button></div>
@@ -272,6 +275,8 @@ function rD(){
   if(lj&&r.loja!==lj)return false;return true;
  });
  function effInit(r){return r.iniciadoPor||((r.categoria||(r.motivo==='colaborador'?'pedidoColaborador':r.motivo==='contratExperiencia'?'fimContrato':''))==='pedidoColaborador'?'Colaborador':'Empresa');}
+ function _diagBox(sev,text){const bg=sev==='crit'?'rgba(239,68,68,.10)':sev==='aten'?'rgba(251,191,36,.12)':sev==='ok'?'rgba(39,174,96,.10)':'rgba(122,92,72,.08)';const bd=sev==='crit'?'#fca5a5':sev==='aten'?'#fde047':sev==='ok'?'#86efac':'#cbb499';const fg=sev==='crit'?'#7f1d1d':sev==='aten'?'#78350f':sev==='ok'?'#14532d':'#5b4332';return `<div style="background:${bg};border-left:3px solid ${bd};color:${fg};padding:6px 10px;border-radius:3px;font-size:12px;line-height:1.4;margin-top:4px">${text}</div>`;}
+ function _renderDiag(elId,arr){const el=document.getElementById(elId);if(!el)return;if(!arr||!arr.length){el.innerHTML='';return;}el.innerHTML='<div style="font-size:10px;font-weight:700;color:var(--m);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">🔍 Diagnóstico</div>'+arr.map(i=>_diagBox(i.sev,i.text)).join('');}
  let tot=0,and=0,con=0,ven=0;const bt={},bl={};
  f.forEach(r=>{
   tot++;const fim=r.dataFim?new Date(r.dataFim+'T00:00:00'):null;
@@ -337,6 +342,10 @@ function rD(){
  document.getElementById('kpiInitCol').textContent=initCol;
  document.getElementById('kpiInitEmpPct').textContent=totI>0?Math.round(initEmp/totI*100):0;
  document.getElementById('kpiInitColPct').textContent=totI>0?Math.round(initCol/totI*100):0;
+ // Diagnostico Quem Iniciou
+ const qiIns=[];
+ if(totI>=4){const eP=Math.round(initEmp/totI*100);const cP=100-eP;if(eP>=75)qiIns.push({sev:'aten',text:`<b>Empresa iniciou ${eP}%</b> — critérios podem estar rigorosos. Confirmar feedback documentado antes de demitir`});else if(eP<=30)qiIns.push({sev:'aten',text:`<b>Colaborador iniciou ${cP}%</b> — possível problema de retenção. Avaliar clima, salário, oportunidades de crescimento`});else qiIns.push({sev:'ok',text:`Balanço saudável entre iniciativas (${eP}% empresa, ${cP}% colaborador)`});}
+ _renderDiag('quemIniciouDiag',qiIns);
  const ordemInit=[...LOJAS_OFICIAIS.filter(l=>byInitLj[l]&&(byInitLj[l].Empresa+byInitLj[l].Colaborador)>0),...Object.keys(byInitLj).filter(l=>!LOJAS_OFICIAIS.includes(l)).sort()];
 
  const byLj={};LOJAS_OFICIAIS.forEach(l=>byLj[l]={tot:0,and:0,con:0,ven:0});
@@ -381,6 +390,16 @@ function rD(){
        <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:10px">${stsItems.join('')}</div>
      </div>
    </div>`;}).join('');
+ // Diagnostico Resumo por Loja - foca em alertas operacionais
+ const rlIns=[];
+ const lojasVen=ordemLj.filter(l=>byLj[l]&&byLj[l].ven>0).map(l=>`${l} (${byLj[l].ven})`);
+ if(lojasVen.length>0)rlIns.push({sev:'crit',text:`⏰ <b>Aviso(s) vencido(s):</b> ${lojasVen.join(', ')} — atualizar status imediatamente`});
+ const lojaTopV=ordemLj.filter(l=>byLj[l]&&byLj[l].tot>0).sort((a,b)=>byLj[b].tot-byLj[a].tot)[0];
+ if(lojaTopV){const totL=byLj[lojaTopV].tot;const sumAll=ordemLj.reduce((a,l)=>a+(byLj[l]?byLj[l].tot:0),0)||1;const pctL=Math.round(totL/sumAll*100);if(pctL>=50&&totL>=3)rlIns.push({sev:'aten',text:`🏪 <b>${lojaTopV}</b> lidera com <b>${pctL}%</b> do volume (${totL} casos) — foco de investigação`});}
+ const lojasAtivas=ordemLj.filter(l=>byLj[l]&&byLj[l].and>0);
+ if(lojasAtivas.length>=2){const totAnd=lojasAtivas.reduce((a,l)=>a+byLj[l].and,0);rlIns.push({sev:'info',text:`📋 <b>${totAnd}</b> aviso${totAnd>1?'s':''} em andamento distribuído${totAnd>1?'s':''} em ${lojasAtivas.length} lojas — acompanhar prazos`});}
+ if(rlIns.length===0&&ordemLj.some(l=>byLj[l]&&byLj[l].tot>0))rlIns.push({sev:'ok',text:'Situação operacional saudável — sem alertas de prazo'});
+ _renderDiag('resumoLojaDiag',rlIns);
  const CAT_KEYS=['desempenho','comportamento','reducao','fimContrato','justaCausa','acordo'];
  const CAT_EMOJI={desempenho:'🎯',comportamento:'⚠️',reducao:'📉',fimContrato:'📄',justaCausa:'🚫',acordo:'🤝'};
  const mtxCL={};ordemLj.forEach(l=>{mtxCL[l]={sem:0};CAT_KEYS.forEach(c=>mtxCL[l][c]=0);});
@@ -451,6 +470,18 @@ function rD(){
      if(_chartEvoMes){_chartEvoMes.destroy();}
      _chartEvoMes=new Chart(cv,{type:'line',data:{labels:monthLabels,datasets:[{label:'Total de desligamentos',data:totalsByMonth,borderColor:'#C0392B',backgroundColor:'rgba(192,57,43,0.08)',borderWidth:3,tension:.25,pointRadius:4,pointBackgroundColor:'#C0392B',fill:true,order:3},{label:'Iniciado pela empresa',data:empByMonth,borderColor:'#0369a1',backgroundColor:'#0369a1',borderWidth:2,borderDash:[],tension:.25,pointRadius:3,pointBackgroundColor:'#0369a1',fill:false,order:2},{label:'Iniciado pelo colaborador',data:colabByMonth,borderColor:'#27ae60',backgroundColor:'#27ae60',borderWidth:2,borderDash:[6,4],tension:.25,pointRadius:3,pointBackgroundColor:'#27ae60',fill:false,order:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:14}},tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+ctx.parsed.y}}},scales:{y:{beginAtZero:true,ticks:{precision:0,font:{size:10}},grid:{color:'#EFE4D7'}},x:{ticks:{font:{size:11,weight:'600'}},grid:{display:false}}}}});
    }
+   // Diagnostico Evolucao Mensal
+   const evoIns=[];const totEvo=totalsByMonth.reduce((a,b)=>a+b,0);
+   if(totEvo>0){
+     const monthsActive=totalsByMonth.filter(v=>v>0).length||1;
+     const avg=totEvo/monthsActive;
+     const lastNonZero=[];for(let i=11;i>=0&&lastNonZero.length<3;i--){if(totalsByMonth[i]>0)lastNonZero.unshift(totalsByMonth[i]);}
+     if(lastNonZero.length>=2){const lastAvg=lastNonZero.reduce((a,b)=>a+b,0)/lastNonZero.length;if(lastAvg>=avg*1.4&&lastAvg>=1.5)evoIns.push({sev:'aten',text:`📈 <b>Tendência de alta</b> nos últimos meses (${(lastAvg/avg*100/100).toFixed(1)}× a média do período) — investigar causas`});else if(lastAvg<avg*0.5&&avg>=1.5)evoIns.push({sev:'ok',text:`📉 <b>Tendência de queda</b> nos últimos meses — bom sinal de retenção`});}
+     const maxV=Math.max(...totalsByMonth);
+     if(maxV>=avg*2&&maxV>=3){const peakIdx=totalsByMonth.indexOf(maxV);evoIns.push({sev:'aten',text:`⚠️ <b>Pico em ${monthLabels[peakIdx]}</b> (${maxV} desligamento${maxV>1?'s':''}, ${(maxV/avg).toFixed(1)}× a média) — analisar o que aconteceu nesse mês`});}
+     if(evoIns.length===0)evoIns.push({sev:'ok',text:'✅ Variação mensal estável no período'});
+   }
+   _renderDiag('evoMesDiag',evoIns);
  }
  const CATS=_CATS_GLOBAL;
  const catCount={};Object.keys(CATS).forEach(k=>catCount[k]=0);
@@ -458,6 +489,11 @@ function rD(){
  f.forEach(r=>{const ec=effCat(r);if(ec&&CATS[ec])catCount[ec]++;});
  const totFiltrado=f.length;
  document.querySelector('#mtcat tbody').innerHTML=Object.keys(CATS).map(k=>{const q=catCount[k],p=totFiltrado>0?Math.round(q/totFiltrado*100):0,col=CATS[k].c;return `<tr><td><span style="display:inline-block;width:9px;height:9px;background:${col};border-radius:50%;margin-right:6px;vertical-align:middle"></span>${CATS[k].l}</td><td><b>${q}</b></td><td>${p}%</td><td><div style="background:#f5ede6;border-radius:3px;height:7px;width:100%;max-width:120px"><div style="width:${p}%;background:${col};height:7px;border-radius:3px"></div></div></td></tr>`;}).join('');
+ // Diagnostico Demissoes por Categoria
+ const catIns=[];const sortedCats=Object.entries(catCount).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]);
+ if(sortedCats.length>0&&totFiltrado>=4){const top=sortedCats[0];const topP=Math.round(top[1]/totFiltrado*100);if(top[0]==='justaCausa')catIns.push({sev:'crit',text:`🚫 <b>Justa causa</b> registrada (${top[1]} caso${top[1]>1?'s':''}) — situação grave, revisar processo disciplinar`});else if(topP>=50)catIns.push({sev:'aten',text:`<b>${CATS[top[0]].l}</b> concentra ${topP}% das demissões — categoria muito dominante, investigar causa raiz`});else if(topP>=35)catIns.push({sev:'aten',text:`<b>${CATS[top[0]].l}</b> é a categoria principal (${topP}%) — atenção a esse padrão`});else if(sortedCats.length>=4)catIns.push({sev:'ok',text:`Distribuição equilibrada entre ${sortedCats.length} categorias — sem padrão preocupante`});}
+ if(catIns.length===0&&totFiltrado>0)catIns.push({sev:'info',text:'Sem categoria dominante no período'});
+ _renderDiag('categoriaDiag',catIns);
 
  const byGestor={};let countIniciadoColab=0;f.forEach(r=>{const init=r.iniciadoPor||(effCat(r)==='pedidoColaborador'?'Colaborador':'Empresa');if(init==='Colaborador'){countIniciadoColab++;return;}const g=(r.gestor||'').trim();if(!g)return;if(!byGestor[g]){byGestor[g]={total:0,porCat:{}};}byGestor[g].total++;const c=effCat(r)||'sem';byGestor[g].porCat[c]=(byGestor[g].porCat[c]||0)+1;});
  const gestores=Object.keys(byGestor);
@@ -481,6 +517,26 @@ function rD(){
  const grand=totals.reduce((a,b)=>a+b,0);
  const totRow=`<tr style="background:var(--d);color:#fff"><td style="font-weight:700;color:#fff">Total</td>${totals.map(t=>`<td style="text-align:center;font-weight:700;color:#fff">${t||'—'}</td>`).join('')}<td style="text-align:center;font-weight:700;color:#fff">${grand||'—'}</td></tr>`;
  document.querySelector('#mtavalrec tbody').innerHTML=rows2+totRow;
+ // Diagnostico Avaliacao x Recontratacao
+ const arIns=[];const totAR=grand;
+ if(totAR>=4){
+   // Inconsistencia: avaliacao Boa mas nao recontrataria
+   const bomNao=(matrix.bom||{}).nao||0;
+   if(bomNao>0)arIns.push({sev:'aten',text:`🤔 <b>${bomNao}</b> colaborador${bomNao>1?'es':''} avaliado${bomNao>1?'s':''} como Bom mas <b>não seriam recontratados</b> — investigar inconsistência`});
+   // Inconsistencia: problemas mas recontrataria
+   const probSim=((matrix.probDesemp||{}).sim||0)+((matrix.probComport||{}).sim||0)+((matrix.probMisto||{}).sim||0);
+   if(probSim>0)arIns.push({sev:'aten',text:`⚠️ <b>${probSim}</b> com problemas mas <b>seriam recontratados</b> — talvez sejam casos de gestão fraca ou contexto específico (vale investigar)`});
+   // Consistencia critica: problemas mistos e nao recontrataria
+   const mistoNao=(matrix.probMisto||{}).nao||0;
+   if(mistoNao>=Math.max(2,totAR*0.20))arIns.push({sev:'crit',text:`🚨 <b>${mistoNao}</b> com <b>problemas mistos</b> e não seriam recontratados — concentração de casos críticos, investigar perfil de contratação`});
+   // Falta de avaliacao
+   const semAval=Object.values(matrix['']||{}).reduce((a,b)=>a+b,0);
+   const semRec=AVAL_KEYS.reduce((a,k)=>a+((matrix[k]||{})['']||0),0);
+   const semPct=Math.round((semAval+semRec)/(totAR*2)*100);
+   if(semPct>=40)arIns.push({sev:'info',text:`📋 <b>${semPct}%</b> dos registros sem avaliação ou recontratação preenchidas — completar para melhor análise`});
+   if(arIns.length===0)arIns.push({sev:'ok',text:'Avaliação e decisão de recontratação consistentes — sem padrões preocupantes'});
+ }
+ _renderDiag('avalRecDiag',arIns);
  const mc={},ma={};
  f.forEach(r=>{if(r.motivo){if(r.status==='Concluido')mc[r.motivo]=(mc[r.motivo]||0)+1;else ma[r.motivo]=(ma[r.motivo]||0)+1;}});
  
