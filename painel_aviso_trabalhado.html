@@ -127,10 +127,15 @@ body{font-family:Inter,sans-serif;background:var(--l);color:var(--d)}
      <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">🔍 Diagnóstico & Plano de Ação</div>
      <div id="planoLista" style="font-size:13px;line-height:1.6;color:#fff"></div>
     </div>
+    <div id="diagLojasSumario" style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.2)">
+     <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">📍 Diagnóstico por Loja</div>
+     <div id="diagLojasLista" style="font-size:13px;line-height:1.7;color:#fff"></div>
+    </div>
    </div>
    <div class="cc"><h3>📈 Evolução Mensal</h3>
     <p style="font-size:11px;color:var(--m);margin-bottom:10px">Desligamentos mês a mês — visualiza tendência de aumento ou queda. <span style="color:#C0392B;font-weight:600">Total</span> · <span style="color:#0369a1;font-weight:600">Empresa</span> · <span style="color:#27ae60;font-weight:600">Colaborador</span>.</p>
-    <div id="evoMesNote" style="display:none;font-size:11px;color:#991b1b;background:#fef2f2;border-left:3px solid #fca5a5;padding:5px 10px;border-radius:3px;margin-bottom:10px"></div>
+    <div id="evoMesNote" style="display:none;font-size:12px;color:#991b1b;background:#fef2f2;border:1px solid #fca5a5;border-left:4px solid #dc2626;padding:8px 12px;border-radius:4px;margin-bottom:10px;font-weight:600"></div>
+    <div id="evoMesTotais" style="display:flex;gap:14px;font-size:11px;color:var(--m);margin-bottom:8px;padding:6px 10px;background:var(--l);border-radius:4px;font-family:'JetBrains Mono',monospace"></div>
     <div style="position:relative;height:240px"><canvas id="chartEvoMes"></canvas></div>
     <div id="evoMesDiag" style="margin-top:10px"></div>
    </div>
@@ -330,6 +335,30 @@ function rD(){
        if(acoes.length===0){pl.innerHTML='<div style="background:rgba(39,174,96,.2);border-left:3px solid #27ae60;padding:8px 12px;border-radius:4px">✅ <b>Indicadores saudáveis</b> — sem ações específicas recomendadas para este período.</div>';}
        else{pl.innerHTML=acoes.map(a=>`<div style="background:${a.sev==='crit'?'rgba(239,68,68,.18)':'rgba(251,191,36,.18)'};border-left:3px solid ${a.sev==='crit'?'#fca5a5':'#fde047'};padding:8px 12px;border-radius:4px;margin-bottom:6px">${a.icon} ${a.text}</div>`).join('');}
      }
+     // Diagnostico POR LOJA no sumario
+     const LOJAS_OFI=['BROOKLIN','PERDIZES','VILA MARIANA','MATRIZ'];
+     const lojasMap={};
+     f.forEach(r=>{const l=(r.loja||'').toUpperCase().trim();if(!l||l==='-')return;if(!lojasMap[l]){lojasMap[l]={total:0,counts:{}};}lojasMap[l].total++;const ec=r.categoria&&r.categoria!=='pedidoColaborador'?r.categoria:(r.motivo==='contratExperiencia'?'fimContrato':'');if(ec)lojasMap[l].counts[ec]=(lojasMap[l].counts[ec]||0)+1;});
+     const presentesLj=new Set([...LOJAS_OFI,...Object.keys(lojasMap)]);
+     const ordLj=[...LOJAS_OFI.filter(l=>presentesLj.has(l)),...[...presentesLj].filter(l=>!LOJAS_OFI.includes(l)).sort()];
+     function diagShortLoja(name,d,totGroup){
+       if(!d||d.total===0)return {sev:'ok',text:`🏪 <b>${name}</b> — Sem desligamentos no período ✅`};
+       const pctGroup=Math.round(d.total/totGroup*100);
+       const sorted=Object.entries(d.counts||{}).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]);
+       const top=sorted[0];const topName=top&&_CATS_GLOBAL[top[0]]?_CATS_GLOBAL[top[0]].l.replace(/^[^a-zA-Z]+\s*/,''):'-';
+       const topPct=top?Math.round(top[1]/d.total*100):0;
+       const dp=(d.counts||{}).desempenho||0;const co=(d.counts||{}).comportamento||0;
+       let sev='ok',msg='';
+       if((d.counts||{}).justaCausa>0){sev='crit';msg=`🚫 Justa causa registrada (${d.counts.justaCausa}) — situação grave`;}
+       else if(d.total>=4&&pctGroup>=40){sev='aten';msg=`Concentra <b>${pctGroup}%</b> do grupo · Top: <b>${topName}</b> · Foco prioritário`;}
+       else if(dp>0&&co>0&&(dp+co)/d.total>=0.5){sev='aten';msg=`Mistura <b>Desempenho + Comportamento</b> (${dp+co}/${d.total}) — possível problema de liderança`;}
+       else if(top&&topPct>=50){sev='aten';msg=`<b>${topName}</b> domina (${topPct}%) — investigar causa raiz`;}
+       else if(d.total<=3){sev='ok';msg=`Volume baixo (${d.total}) · Saudável ✅`;}
+       else{sev='ok';msg=`Distribuição equilibrada · Top: <b>${topName}</b> (${topPct}%) ✅`;}
+       return {sev:sev,text:`🏪 <b>${name}</b> (${d.total}) — ${msg}`};
+     }
+     const dlEl=document.getElementById('diagLojasLista');
+     if(dlEl){const diags=ordLj.map(l=>diagShortLoja(l,lojasMap[l],tot));dlEl.innerHTML=diags.map(d=>{const bg=d.sev==='crit'?'rgba(239,68,68,.18)':d.sev==='aten'?'rgba(251,191,36,.18)':'rgba(39,174,96,.18)';const bd=d.sev==='crit'?'#fca5a5':d.sev==='aten'?'#fde047':'#86efac';return `<div style="background:${bg};border-left:3px solid ${bd};padding:6px 12px;border-radius:4px;margin-bottom:5px">${d.text}</div>`;}).join('');}
    }
  }
  const LOJAS_OFICIAIS=['MATRIZ','BROOKLIN','PERDIZES','VILA MARIANA'];
@@ -460,11 +489,16 @@ function rD(){
    const totalsByMonth=Array(12).fill(0);
    const colabByMonth=Array(12).fill(0);
    const empByMonth=Array(12).fill(0);
-   let semDataCount=0;
-   f.forEach(r=>{if(!r.dataInicio){semDataCount++;return;}const mm=parseInt(r.dataInicio.substring(5,7),10);if(isNaN(mm)||mm<1||mm>12){semDataCount++;return;}totalsByMonth[mm-1]++;const init=effInit(r);if(init==='Colaborador')colabByMonth[mm-1]++;else empByMonth[mm-1]++;});
+   let semDataCount=0;const semDataRegs=[];
+   f.forEach(r=>{if(!r.dataInicio){semDataCount++;semDataRegs.push(r.nome||'(sem nome)');return;}const mm=parseInt(r.dataInicio.substring(5,7),10);if(isNaN(mm)||mm<1||mm>12){semDataCount++;semDataRegs.push((r.nome||'(sem nome)')+' [data inválida]');return;}totalsByMonth[mm-1]++;const init=effInit(r);if(init==='Colaborador')colabByMonth[mm-1]++;else empByMonth[mm-1]++;});
+   const totChart=totalsByMonth.reduce((a,b)=>a+b,0);
+   const totFiltrado_evo=f.length;
+   // Linha de totais (sempre visivel)
+   const totEl=document.getElementById('evoMesTotais');
+   if(totEl){totEl.innerHTML=`📊 No gráfico: <b>${totChart}</b> · Total filtrado: <b>${totFiltrado_evo}</b>${semDataCount>0?` · <span style="color:#991b1b">Sem data: <b>${semDataCount}</b></span>`:''}`;}
    // Sinalizar se houver registros sem data
    const evoNote=document.getElementById('evoMesNote');
-   if(evoNote){evoNote.textContent=semDataCount>0?`⚠️ ${semDataCount} registro${semDataCount>1?'s':''} sem data válida — não aparece${semDataCount>1?'m':''} no gráfico mas contam${semDataCount===1?'':''} no total geral`:'';evoNote.style.display=semDataCount>0?'block':'none';}
+   if(evoNote){if(semDataCount>0){const nomesPreview=semDataRegs.slice(0,5).join(', ')+(semDataRegs.length>5?` e mais ${semDataRegs.length-5}`:'');evoNote.innerHTML=`⚠️ <b>${semDataCount} registro${semDataCount>1?'s':''} sem data válida</b> não aparece${semDataCount>1?'m':''} no gráfico mensal (mas contam no total geral).<br><span style="font-weight:400;color:var(--m)">Colaboradores: ${nomesPreview}. Edite o registro para incluir a Data Início.</span>`;evoNote.style.display='block';}else{evoNote.style.display='none';}}
    const cv=document.getElementById('chartEvoMes');
    if(cv){
      if(_chartEvoMes){_chartEvoMes.destroy();}
