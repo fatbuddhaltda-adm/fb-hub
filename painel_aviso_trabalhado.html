@@ -491,8 +491,30 @@ function rD(){
  document.querySelector('#mtcat tbody').innerHTML=Object.keys(CATS).map(k=>{const q=catCount[k],p=totFiltrado>0?Math.round(q/totFiltrado*100):0,col=CATS[k].c;return `<tr><td><span style="display:inline-block;width:9px;height:9px;background:${col};border-radius:50%;margin-right:6px;vertical-align:middle"></span>${CATS[k].l}</td><td><b>${q}</b></td><td>${p}%</td><td><div style="background:#f5ede6;border-radius:3px;height:7px;width:100%;max-width:120px"><div style="width:${p}%;background:${col};height:7px;border-radius:3px"></div></div></td></tr>`;}).join('');
  // Diagnostico Demissoes por Categoria
  const catIns=[];const sortedCats=Object.entries(catCount).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]);
- if(sortedCats.length>0&&totFiltrado>=4){const top=sortedCats[0];const topP=Math.round(top[1]/totFiltrado*100);if(top[0]==='justaCausa')catIns.push({sev:'crit',text:`🚫 <b>Justa causa</b> registrada (${top[1]} caso${top[1]>1?'s':''}) — situação grave, revisar processo disciplinar`});else if(topP>=50)catIns.push({sev:'aten',text:`<b>${CATS[top[0]].l}</b> concentra ${topP}% das demissões — categoria muito dominante, investigar causa raiz`});else if(topP>=35)catIns.push({sev:'aten',text:`<b>${CATS[top[0]].l}</b> é a categoria principal (${topP}%) — atenção a esse padrão`});else if(sortedCats.length>=4)catIns.push({sev:'ok',text:`Distribuição equilibrada entre ${sortedCats.length} categorias — sem padrão preocupante`});}
- if(catIns.length===0&&totFiltrado>0)catIns.push({sev:'info',text:'Sem categoria dominante no período'});
+ if(sortedCats.length>0&&totFiltrado>=3){
+   // 1) Justa causa sempre dispara
+   if((catCount.justaCausa||0)>0)catIns.push({sev:'crit',text:`🚫 <b>Justa causa</b> registrada (${catCount.justaCausa} caso${catCount.justaCausa>1?'s':''}) — situação grave, revisar processo disciplinar e documentação`});
+   // 2) Empate no topo (2+ categorias com mesmo volume)
+   const top=sortedCats[0];const topP=Math.round(top[1]/totFiltrado*100);
+   const empatadas=sortedCats.filter(e=>e[1]===top[1]);
+   if(empatadas.length>=2&&top[1]>=2){const nomes=empatadas.map(e=>CATS[e[0]].l).join(', ');catIns.push({sev:'aten',text:`⚖️ <b>${empatadas.length} categorias em empate</b> no topo (${top[1]} casos cada): ${nomes} — múltiplos padrões coexistindo`});}
+   // 3) Concentração extrema
+   else if(topP>=50)catIns.push({sev:'crit',text:`📌 <b>${CATS[top[0]].l}</b> concentra <b>${topP}%</b> das demissões — categoria muito dominante, investigar causa raiz`});
+   else if(topP>=35)catIns.push({sev:'aten',text:`📌 <b>${CATS[top[0]].l}</b> é a categoria principal (${topP}%) — atenção a esse padrão`});
+   // 4) Analises por categoria com volume relevante (>=20%)
+   const dPct=Math.round((catCount.desempenho||0)/totFiltrado*100);
+   const cPct=Math.round((catCount.comportamento||0)/totFiltrado*100);
+   const fPct=Math.round((catCount.fimContrato||0)/totFiltrado*100);
+   const aPct=Math.round((catCount.acordo||0)/totFiltrado*100);
+   if(dPct>=25)catIns.push({sev:'aten',text:`🎯 <b>Desempenho em ${dPct}%</b> — revisar processo de seleção, onboarding e feedbacks estruturados antes de demitir`});
+   if(cPct>=25)catIns.push({sev:'aten',text:`⚠️ <b>Comportamento em ${cPct}%</b> — investigar cultura, alinhamento de valores e qualidade da liderança`});
+   if(fPct>=25)catIns.push({sev:'aten',text:`📄 <b>Fim de experiência em ${fPct}%</b> — sinal de seleção pouco assertiva; reavaliar critérios de contratação`});
+   if(aPct>=25)catIns.push({sev:'aten',text:`🤝 <b>Acordos em ${aPct}%</b> — pode indicar insatisfação interna ou conflitos não resolvidos`});
+   // 5) Distribuicao
+   if(sortedCats.length>=4&&topP<35)catIns.push({sev:'ok',text:`✅ Distribuição equilibrada entre <b>${sortedCats.length} categorias</b> — sem motivo único dominante`});
+   else if(sortedCats.length<=2&&totFiltrado>=5)catIns.push({sev:'info',text:`📊 Apenas <b>${sortedCats.length} categoria${sortedCats.length>1?'s':''}</b> usada${sortedCats.length>1?'s':''} — verifique se está classificando corretamente`});
+ }
+ if(catIns.length===0&&totFiltrado>0)catIns.push({sev:'info',text:'Volume muito baixo para análise estatística (mínimo 3 desligamentos)'});
  _renderDiag('categoriaDiag',catIns);
 
  const byGestor={};let countIniciadoColab=0;f.forEach(r=>{const init=r.iniciadoPor||(effCat(r)==='pedidoColaborador'?'Colaborador':'Empresa');if(init==='Colaborador'){countIniciadoColab++;return;}const g=(r.gestor||'').trim();if(!g)return;if(!byGestor[g]){byGestor[g]={total:0,porCat:{}};}byGestor[g].total++;const c=effCat(r)||'sem';byGestor[g].porCat[c]=(byGestor[g].porCat[c]||0)+1;});
