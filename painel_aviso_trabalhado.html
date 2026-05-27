@@ -308,23 +308,42 @@ function rD(){
  document.getElementById('lojaCards').innerHTML=ordemLj.map(l=>{
    const s=byLj[l]||{tot:0,and:0,con:0,ven:0};
    const i=byInitLj[l]||{Empresa:0,Colaborador:0};
-   if(s.tot===0&&i.Empresa===0&&i.Colaborador===0)return `<div style="background:var(--l);border:1px dashed var(--c);border-radius:8px;padding:12px;opacity:.55"><div style="font-size:12px;font-weight:700;color:var(--m);text-transform:uppercase;letter-spacing:.05em">${l}</div><div style="font-size:11px;color:var(--m);margin-top:6px">Sem registros</div></div>`;
+   if(s.tot===0&&i.Empresa===0&&i.Colaborador===0)return `<div style="background:var(--l);border:1px dashed var(--c);border-radius:10px;padding:14px;opacity:.55;display:flex;flex-direction:column;justify-content:space-between;min-height:170px"><div style="font-size:12px;font-weight:700;color:var(--m);text-transform:uppercase;letter-spacing:.05em">${l}</div><div style="font-size:11px;color:var(--m);margin-top:6px">Sem registros no per\u00edodo</div></div>`;
+   const totI=i.Empresa+i.Colaborador||1;
+   const empPct=Math.round(i.Empresa/totI*100);
+   const colPct=100-empPct;
+   const totS=s.and+s.con+s.ven||1;
+   const segs=[];
+   if(s.con>0)segs.push(`<div title="${s.con} Conclu\u00eddo${s.con>1?'s':''}" style="width:${s.con/totS*100}%;background:#15803d"></div>`);
+   if(s.and>0)segs.push(`<div title="${s.and} Em Andamento" style="width:${s.and/totS*100}%;background:#fbbf24"></div>`);
+   if(s.ven>0)segs.push(`<div title="${s.ven} Vencido${s.ven>1?'s':''}" style="width:${s.ven/totS*100}%;background:#dc2626"></div>`);
    const stsItems=[];
-   if(s.and>0)stsItems.push(`<span style="color:#856404"><b>${s.and}</b> Em Andam.</span>`);
-   if(s.con>0)stsItems.push(`<span style="color:#15803d"><b>${s.con}</b> Concluído${s.con>1?'s':''}</span>`);
-   if(s.ven>0)stsItems.push(`<span style="color:#991b1b"><b>${s.ven}</b> Vencido${s.ven>1?'s':''}</span>`);
+   if(s.con>0)stsItems.push(`<span style="color:#15803d;display:flex;align-items:center;gap:3px"><span style="display:inline-block;width:8px;height:8px;background:#15803d;border-radius:2px"></span><b>${s.con}</b> Conclu\u00edd${s.con>1?'os':'o'}</span>`);
+   if(s.and>0)stsItems.push(`<span style="color:#92400e;display:flex;align-items:center;gap:3px"><span style="display:inline-block;width:8px;height:8px;background:#fbbf24;border-radius:2px"></span><b>${s.and}</b> Em Andam.</span>`);
+   if(s.ven>0)stsItems.push(`<span style="color:#991b1b;display:flex;align-items:center;gap:3px"><span style="display:inline-block;width:8px;height:8px;background:#dc2626;border-radius:2px"></span><b>${s.ven}</b> Vencid${s.ven>1?'os':'o'}</span>`);
    if(stsItems.length===0)stsItems.push('<span style="color:var(--m)">—</span>');
-   return `<div style="background:#fff;border:1px solid var(--c);border-radius:8px;padding:12px;border-left:3px solid var(--r)">
-   <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
-     <div style="font-size:12px;font-weight:700;color:var(--d);text-transform:uppercase;letter-spacing:.05em">${l}</div>
-     <div style="font-size:20px;font-weight:700;color:var(--d);line-height:1">${s.tot}</div>
-   </div>
-   <div style="display:flex;gap:6px;margin-bottom:8px;font-size:11px">
-     <span title="Iniciado pela empresa" style="background:#e0f2fe;color:#0369a1;padding:2px 6px;border-radius:4px;font-weight:600">🏢 ${i.Empresa}</span>
-     <span title="Iniciado pelo colaborador" style="background:#dcfce7;color:#166534;padding:2px 6px;border-radius:4px;font-weight:600">👤 ${i.Colaborador}</span>
-   </div>
-   <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:11px;border-top:1px solid var(--c);padding-top:6px">${stsItems.join('')}</div>
- </div>`;}).join('');
+   return `<div style="background:#fff;border:1px solid var(--c);border-radius:10px;padding:14px;border-left:3px solid var(--r);box-shadow:0 1px 3px rgba(0,0,0,.04);display:flex;flex-direction:column;gap:10px">
+     <div style="display:flex;justify-content:space-between;align-items:baseline">
+       <div style="font-size:12px;font-weight:700;color:var(--d);text-transform:uppercase;letter-spacing:.05em">${l}</div>
+       <div style="font-size:26px;font-weight:800;color:var(--d);line-height:1">${s.tot}</div>
+     </div>
+     <div>
+       <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--m);margin-bottom:3px;font-weight:600;text-transform:uppercase;letter-spacing:.04em"><span>Iniciativa</span><span>${empPct}% \u00b7 ${colPct}%</span></div>
+       <div style="display:flex;height:10px;border-radius:5px;overflow:hidden;background:#f0e5d5">
+         ${i.Empresa>0?`<div title="Empresa ${i.Empresa}" style="width:${empPct}%;background:#0369a1"></div>`:''}
+         ${i.Colaborador>0?`<div title="Colaborador ${i.Colaborador}" style="width:${colPct}%;background:#27ae60"></div>`:''}
+       </div>
+       <div style="display:flex;justify-content:space-between;font-size:11px;margin-top:4px;font-weight:600">
+         <span style="color:#0369a1">🏢 ${i.Empresa}</span>
+         <span style="color:#166534">${i.Colaborador} 👤</span>
+       </div>
+     </div>
+     <div style="border-top:1px solid var(--c);padding-top:8px">
+       <div style="font-size:10px;color:var(--m);margin-bottom:3px;font-weight:600;text-transform:uppercase;letter-spacing:.04em">Status</div>
+       <div style="display:flex;height:6px;border-radius:3px;overflow:hidden;background:#f0e5d5;margin-bottom:6px">${segs.join('')}</div>
+       <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:10px">${stsItems.join('')}</div>
+     </div>
+   </div>`;}).join('');
  const CAT_KEYS=['desempenho','comportamento','reducao','fimContrato','justaCausa','acordo'];
  const mtxCL={};ordemLj.forEach(l=>{mtxCL[l]={};CAT_KEYS.forEach(c=>mtxCL[l][c]=0);});
  f.forEach(r=>{const l=(r.loja||'').toUpperCase().trim();if(!l||l==='-')return;if(!mtxCL[l]){mtxCL[l]={};CAT_KEYS.forEach(c=>mtxCL[l][c]=0);}const ec=effCat(r);if(ec&&CAT_KEYS.includes(ec))mtxCL[l][ec]++;});
