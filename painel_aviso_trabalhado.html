@@ -146,7 +146,19 @@ body{font-family:Inter,sans-serif;background:var(--l);color:var(--d)}
 <div class="cc"><h3>Resumo por Loja</h3>
 <p style="font-size:11px;color:var(--m);margin-bottom:12px">Total, quem iniciou e status dos desligamentos por unidade.</p>
 <div id="lojaCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px"></div>
-</div><div class="cc"><h3>Categoria × Loja</h3><p style="font-size:11px;color:var(--m);margin-bottom:10px">Cruzamento dos motivos da política com cada loja — revela onde os problemas estão concentrados.</p><div style="overflow-x:auto"><table class="mt" id="mtcatloja"><thead><tr><th>Loja</th><th style="text-align:center"><span style="display:inline-block;width:9px;height:9px;background:#9d174d;border-radius:50%;margin-right:4px;vertical-align:middle"></span>🎯 Desempenho</th><th style="text-align:center"><span style="display:inline-block;width:9px;height:9px;background:#e67e22;border-radius:50%;margin-right:4px;vertical-align:middle"></span>⚠️ Comportamento</th><th style="text-align:center"><span style="display:inline-block;width:9px;height:9px;background:#0369a1;border-radius:50%;margin-right:4px;vertical-align:middle"></span>📉 Redução</th><th style="text-align:center"><span style="display:inline-block;width:9px;height:9px;background:#5b21b6;border-radius:50%;margin-right:4px;vertical-align:middle"></span>📄 Fim Exp.</th><th style="text-align:center"><span style="display:inline-block;width:9px;height:9px;background:#C0392B;border-radius:50%;margin-right:4px;vertical-align:middle"></span>🚫 Justa Causa</th><th style="text-align:center"><span style="display:inline-block;width:9px;height:9px;background:#92400e;border-radius:50%;margin-right:4px;vertical-align:middle"></span>🤝 Acordo</th><th style="text-align:center">Total</th></tr></thead><tbody></tbody></table></div></div><div class="cc"><h3>Demissões por Categoria do Motivo</h3><table class="mt" id="mtcat"><thead><tr><th>Categoria</th><th>Qtd</th><th>%</th><th style="min-width:120px">Barra</th></tr></thead><tbody></tbody></table></div><div class="cc"><h3>Demissões por Gestor Responsável</h3><table class="mt" id="mtg"><thead><tr><th>Gestor</th><th>Total</th><th>% do total</th><th>Concentração no maior motivo</th><th>Alerta</th></tr></thead><tbody></tbody></table><div style="font-size:11px;color:var(--m);margin-top:8px">⚠️ Alerta dispara quando o gestor tem volume acima de 1,5× a média do grupo ou quando 60%+ dos seus desligamentos estão concentrados em uma única categoria.<br>👤 Registros iniciados pelo colaborador são contabilizados nos totais gerais mas <b>não pesam contra os gestores</b> (apareceriam aqui como "<span id="initColabHint">0</span>" desligamentos iniciados pelo colaborador).</div></div><div class="cc" id="alertbox" style="display:none;border-left:3px solid #C0392B"><h3 style="color:#C0392B">⚠️ Alertas de Liderança</h3><div id="alertlist" style="font-size:13px;color:var(--d)"></div></div><div class="cc" id="avalrecbox"><h3>📊 Avaliação × Recontratação</h3><p style="font-size:11px;color:var(--m);margin-bottom:10px">Matriz cruzada — linhas: avaliação do colaborador, colunas: recontrataria. Padrões interessantes: <b>com problema mas recontrataria</b> (talvez seja prob. de gestão), <b>com problema E não recontrataria</b> (decisão consistente).</p><div style="overflow-x:auto"><table class="mt" id="mtavalrec"><thead></thead><tbody></tbody></table></div></div>
+</div><div class="cc"><h3>📍 Motivos por Loja</h3>
+<p style="font-size:11px;color:var(--m);margin-bottom:12px">Volume e tipos de motivo por unidade — ordenadas por volume. Identifica onde os problemas estão concentrados e qual o padrão dominante de cada loja.</p>
+<div style="display:flex;gap:14px;flex-wrap:wrap;font-size:10px;color:var(--m);margin-bottom:10px;border-bottom:1px solid var(--c);padding-bottom:8px">
+ <span><span style="display:inline-block;width:10px;height:10px;background:#9d174d;border-radius:2px;vertical-align:middle;margin-right:4px"></span>🎯 Desempenho</span>
+ <span><span style="display:inline-block;width:10px;height:10px;background:#e67e22;border-radius:2px;vertical-align:middle;margin-right:4px"></span>⚠️ Comportamento</span>
+ <span><span style="display:inline-block;width:10px;height:10px;background:#0369a1;border-radius:2px;vertical-align:middle;margin-right:4px"></span>📉 Redução</span>
+ <span><span style="display:inline-block;width:10px;height:10px;background:#5b21b6;border-radius:2px;vertical-align:middle;margin-right:4px"></span>📄 Fim Exp.</span>
+ <span><span style="display:inline-block;width:10px;height:10px;background:#C0392B;border-radius:2px;vertical-align:middle;margin-right:4px"></span>🚫 Justa Causa</span>
+ <span><span style="display:inline-block;width:10px;height:10px;background:#92400e;border-radius:2px;vertical-align:middle;margin-right:4px"></span>🤝 Acordo</span>
+ <span style="margin-left:auto;font-size:10px;color:var(--m);font-style:italic">Sem categoria definida em cinza</span>
+</div>
+<div id="motivosByLoja"></div>
+</div><div class="cc"><h3>Demissões por Categoria do Motivo</h3><table class="mt" id="mtcat"><thead><tr><th>Categoria</th><th>Qtd</th><th>%</th><th style="min-width:120px">Barra</th></tr></thead><tbody></tbody></table></div><div class="cc"><h3>Demissões por Gestor Responsável</h3><table class="mt" id="mtg"><thead><tr><th>Gestor</th><th>Total</th><th>% do total</th><th>Concentração no maior motivo</th><th>Alerta</th></tr></thead><tbody></tbody></table><div style="font-size:11px;color:var(--m);margin-top:8px">⚠️ Alerta dispara quando o gestor tem volume acima de 1,5× a média do grupo ou quando 60%+ dos seus desligamentos estão concentrados em uma única categoria.<br>👤 Registros iniciados pelo colaborador são contabilizados nos totais gerais mas <b>não pesam contra os gestores</b> (apareceriam aqui como "<span id="initColabHint">0</span>" desligamentos iniciados pelo colaborador).</div></div><div class="cc" id="alertbox" style="display:none;border-left:3px solid #C0392B"><h3 style="color:#C0392B">⚠️ Alertas de Liderança</h3><div id="alertlist" style="font-size:13px;color:var(--d)"></div></div><div class="cc" id="avalrecbox"><h3>📊 Avaliação × Recontratação</h3><p style="font-size:11px;color:var(--m);margin-bottom:10px">Matriz cruzada — linhas: avaliação do colaborador, colunas: recontrataria. Padrões interessantes: <b>com problema mas recontrataria</b> (talvez seja prob. de gestão), <b>com problema E não recontrataria</b> (decisão consistente).</p><div style="overflow-x:auto"><table class="mt" id="mtavalrec"><thead></thead><tbody></tbody></table></div></div>
   </div>
   <div id="vr" class="vi">
    <div class="sh"><h2>📋 Registros de Aviso Trabalhado</h2><button class="btn bp" onclick="oM()">+ Novo</button></div>
@@ -345,10 +357,31 @@ function rD(){
      </div>
    </div>`;}).join('');
  const CAT_KEYS=['desempenho','comportamento','reducao','fimContrato','justaCausa','acordo'];
- const mtxCL={};ordemLj.forEach(l=>{mtxCL[l]={};CAT_KEYS.forEach(c=>mtxCL[l][c]=0);});
- f.forEach(r=>{const l=(r.loja||'').toUpperCase().trim();if(!l||l==='-')return;if(!mtxCL[l]){mtxCL[l]={};CAT_KEYS.forEach(c=>mtxCL[l][c]=0);}const ec=effCat(r);if(ec&&CAT_KEYS.includes(ec))mtxCL[l][ec]++;});
- const cellStyle=q=>q>0?`background:rgba(192,57,43,${Math.min(0.05+q*0.06,0.35)});font-weight:700`:'color:#aaa';
- document.querySelector('#mtcatloja tbody').innerHTML=Object.keys(mtxCL).map(l=>{const c=mtxCL[l],tot=CAT_KEYS.reduce((a,ck)=>a+c[ck],0);return `<tr><td style="font-weight:600">${l}</td>${CAT_KEYS.map(ck=>`<td style="text-align:center;${cellStyle(c[ck])}">${c[ck]||'-'}</td>`).join('')}<td style="text-align:center;font-weight:700;background:#f5ede6">${tot||'-'}</td></tr>`;}).join('');
+ const CAT_EMOJI={desempenho:'🎯',comportamento:'⚠️',reducao:'📉',fimContrato:'📄',justaCausa:'🚫',acordo:'🤝'};
+ const mtxCL={};ordemLj.forEach(l=>{mtxCL[l]={sem:0};CAT_KEYS.forEach(c=>mtxCL[l][c]=0);});
+ f.forEach(r=>{const l=(r.loja||'').toUpperCase().trim();if(!l||l==='-')return;if(!mtxCL[l]){mtxCL[l]={sem:0};CAT_KEYS.forEach(c=>mtxCL[l][c]=0);}const ec=effCat(r);if(ec&&CAT_KEYS.includes(ec))mtxCL[l][ec]++;else mtxCL[l].sem++;});
+ // Calcular totais e ordenar lojas por volume decrescente
+ const lojasOrd=Object.keys(mtxCL).map(l=>{const c=mtxCL[l];const tot=CAT_KEYS.reduce((a,ck)=>a+c[ck],0)+c.sem;return{loja:l,counts:c,total:tot};}).sort((a,b)=>b.total-a.total);
+ const maxTot=Math.max(1,...lojasOrd.map(x=>x.total));
+ document.getElementById('motivosByLoja').innerHTML=lojasOrd.map(x=>{
+   if(x.total===0)return `<div style="display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid var(--c);opacity:.45"><div style="min-width:130px;font-size:12px;font-weight:700;color:var(--m);text-transform:uppercase;letter-spacing:.04em">${x.loja}</div><div style="flex:1;font-size:11px;color:var(--m);font-style:italic">Sem desligamentos no per\u00edodo</div></div>`;
+   const barPct=Math.round(x.total/maxTot*100);
+   // Segmentos da barra stacked
+   const segs=CAT_KEYS.filter(ck=>x.counts[ck]>0).map(ck=>`<div title="${CAT_EMOJI[ck]} ${ck}: ${x.counts[ck]}" style="width:${x.counts[ck]/x.total*100}%;background:${_CATS_GLOBAL[ck].c}"></div>`).join('');
+   if(x.counts.sem>0)segs.push;
+   const segsHtml=CAT_KEYS.filter(ck=>x.counts[ck]>0).map(ck=>`<div title="${CAT_EMOJI[ck]} ${(_CATS_GLOBAL[ck].l||ck).replace(/^[^a-zA-Z]+/,'')}: ${x.counts[ck]}" style="width:${x.counts[ck]/x.total*100}%;background:${_CATS_GLOBAL[ck].c}"></div>`).join('')+(x.counts.sem>0?`<div title="Sem categoria: ${x.counts.sem}" style="width:${x.counts.sem/x.total*100}%;background:#cbb499"></div>`:'');
+   // Badges ordenados por count desc
+   const badges=CAT_KEYS.map(ck=>({k:ck,n:x.counts[ck]})).filter(b=>b.n>0).sort((a,b)=>b.n-a.n).map(b=>`<span style="display:inline-flex;align-items:center;gap:3px;background:${_CATS_GLOBAL[b.k].c}15;color:${_CATS_GLOBAL[b.k].c};padding:3px 8px;border-radius:12px;font-size:11px;font-weight:700;border:1px solid ${_CATS_GLOBAL[b.k].c}30">${CAT_EMOJI[b.k]} ${b.n}</span>`).join('');
+   const semBadge=x.counts.sem>0?`<span style="display:inline-flex;align-items:center;gap:3px;background:#cbb49915;color:#7A5C48;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:700;border:1px solid #cbb49930">— ${x.counts.sem}</span>`:'';
+   return `<div style="padding:12px 0;border-bottom:1px solid var(--c)">
+   <div style="display:flex;align-items:center;gap:14px;margin-bottom:6px">
+     <div style="min-width:130px;font-size:13px;font-weight:700;color:var(--d);text-transform:uppercase;letter-spacing:.04em">${x.loja}</div>
+     <div style="flex:1;height:14px;background:#f5ede6;border-radius:7px;overflow:hidden;display:flex">${segsHtml}</div>
+     <div style="min-width:90px;text-align:right;font-size:14px;font-weight:700;color:var(--d)">${x.total} <span style="font-size:11px;color:var(--m);font-weight:500">desl.</span></div>
+   </div>
+   <div style="margin-left:144px;display:flex;flex-wrap:wrap;gap:6px">${badges}${semBadge}</div>
+ </div>`;
+ }).join('');
  // Grafico evolucao mensal
  if(typeof Chart!=='undefined'){
    const yrTarget=yr||String(new Date().getFullYear());
