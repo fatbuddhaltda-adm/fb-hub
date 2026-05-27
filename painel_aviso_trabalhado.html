@@ -130,6 +130,7 @@ body{font-family:Inter,sans-serif;background:var(--l);color:var(--d)}
    </div>
    <div class="cc"><h3>📈 Evolução Mensal</h3>
     <p style="font-size:11px;color:var(--m);margin-bottom:10px">Desligamentos mês a mês — visualiza tendência de aumento ou queda. <span style="color:#C0392B;font-weight:600">Total</span> · <span style="color:#0369a1;font-weight:600">Empresa</span> · <span style="color:#27ae60;font-weight:600">Colaborador</span>.</p>
+    <div id="evoMesNote" style="display:none;font-size:11px;color:#991b1b;background:#fef2f2;border-left:3px solid #fca5a5;padding:5px 10px;border-radius:3px;margin-bottom:10px"></div>
     <div style="position:relative;height:240px"><canvas id="chartEvoMes"></canvas></div>
    </div>
    <div class="cc"><h3>🏢 Quem Iniciou o Desligamento</h3>
@@ -270,6 +271,7 @@ function rD(){
   if(yr&&(!r.dataInicio||!r.dataInicio.startsWith(yr)))return false;
   if(lj&&r.loja!==lj)return false;return true;
  });
+ function effInit(r){return r.iniciadoPor||((r.categoria||(r.motivo==='colaborador'?'pedidoColaborador':r.motivo==='contratExperiencia'?'fimContrato':''))==='pedidoColaborador'?'Colaborador':'Empresa');}
  let tot=0,and=0,con=0,ven=0;const bt={},bl={};
  f.forEach(r=>{
   tot++;const fim=r.dataFim?new Date(r.dataFim+'T00:00:00'):null;
@@ -327,7 +329,6 @@ function rD(){
  }
  const LOJAS_OFICIAIS=['MATRIZ','BROOKLIN','PERDIZES','VILA MARIANA'];
  // Quem iniciou (Empresa vs Colaborador) - calcular antes do byLj
- function effInit(r){return r.iniciadoPor||((r.categoria||(r.motivo==='colaborador'?'pedidoColaborador':r.motivo==='contratExperiencia'?'fimContrato':''))==='pedidoColaborador'?'Colaborador':'Empresa');}
  let initEmp=0,initCol=0;
  const byInitLj={};LOJAS_OFICIAIS.forEach(l=>byInitLj[l]={Empresa:0,Colaborador:0});
  f.forEach(r=>{const e=effInit(r);if(e==='Colaborador')initCol++;else initEmp++;const l=(r.loja||'').toUpperCase().trim();if(!l||l==='-')return;if(!byInitLj[l])byInitLj[l]={Empresa:0,Colaborador:0};byInitLj[l][e]++;});
@@ -440,7 +441,11 @@ function rD(){
    const totalsByMonth=Array(12).fill(0);
    const colabByMonth=Array(12).fill(0);
    const empByMonth=Array(12).fill(0);
-   f.forEach(r=>{if(!r.dataInicio)return;if(yr&&!r.dataInicio.startsWith(yr))return;const mm=parseInt(r.dataInicio.substring(5,7),10);if(isNaN(mm)||mm<1||mm>12)return;totalsByMonth[mm-1]++;const init=r.iniciadoPor||(r.categoria==='pedidoColaborador'?'Colaborador':'Empresa');if(init==='Colaborador')colabByMonth[mm-1]++;else empByMonth[mm-1]++;});
+   let semDataCount=0;
+   f.forEach(r=>{if(!r.dataInicio){semDataCount++;return;}const mm=parseInt(r.dataInicio.substring(5,7),10);if(isNaN(mm)||mm<1||mm>12){semDataCount++;return;}totalsByMonth[mm-1]++;const init=effInit(r);if(init==='Colaborador')colabByMonth[mm-1]++;else empByMonth[mm-1]++;});
+   // Sinalizar se houver registros sem data
+   const evoNote=document.getElementById('evoMesNote');
+   if(evoNote){evoNote.textContent=semDataCount>0?`⚠️ ${semDataCount} registro${semDataCount>1?'s':''} sem data válida — não aparece${semDataCount>1?'m':''} no gráfico mas contam${semDataCount===1?'':''} no total geral`:'';evoNote.style.display=semDataCount>0?'block':'none';}
    const cv=document.getElementById('chartEvoMes');
    if(cv){
      if(_chartEvoMes){_chartEvoMes.destroy();}
