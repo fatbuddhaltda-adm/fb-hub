@@ -123,6 +123,10 @@ body{font-family:Inter,sans-serif;background:var(--l);color:var(--d)}
    <div class="cc" id="sumarioExec" style="background:linear-gradient(135deg,#2C1A0E,#7A5C48);color:#fff;border:none">
     <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">📝 Sumário Executivo</div>
     <div id="sumarioTexto" style="font-size:14px;line-height:1.7;color:#fff"></div>
+    <div id="planoAcao" style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.2)">
+     <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">🔍 Diagnóstico & Plano de Ação</div>
+     <div id="planoLista" style="font-size:13px;line-height:1.6;color:#fff"></div>
+    </div>
    </div>
    <div class="cc"><h3>📈 Evolução Mensal</h3>
     <p style="font-size:11px;color:var(--m);margin-bottom:10px">Desligamentos mês a mês — visualiza tendência de aumento ou queda. <span style="color:#C0392B;font-weight:600">Total</span> · <span style="color:#0369a1;font-weight:600">Empresa</span> · <span style="color:#27ae60;font-weight:600">Colaborador</span>.</p>
@@ -299,6 +303,26 @@ function rD(){
      const yrTxt=yr||'todos os anos';
      const ljTxt=lj?` na loja ${lj}`:' (todas as lojas)';
      sumEl.innerHTML=`<b>${tot}</b> desligamento${tot!==1?'s':''} em ${yrTxt}${ljTxt}, sendo <b>${empPct}%</b> iniciado${empCnt!==1?'s':''} pela empresa e <b>${100-empPct}%</b> pelo colaborador. Categoria principal: <b>${topCatLbl}</b> com <b>${topCatPct}%</b> dos casos. Loja com maior volume: <b>${topLojaTxt}</b>. Status: ${stsTxt}.`;
+     // Plano de Ação
+     const acoes=[];
+     // 1) Concentração em uma loja
+     if(topLoja&&tot>=4&&topLoja[1]/tot>=0.40){const lpct=Math.round(topLoja[1]/tot*100);acoes.push({icon:'🏪',sev:'aten',text:`<b>${topLoja[0]}</b> concentra <b>${lpct}%</b> das demissões — investigar gestão local, perfil de contratação e ambiente da unidade.`});}
+     // 2) Categoria principal alta
+     if(topCat&&topCat[1]>0){const ck=topCat[0];if(ck==='desempenho'&&topCatPct>=25)acoes.push({icon:'🎯',sev:'aten',text:`<b>Desempenho</b> como motivo principal (${topCatPct}%) — revisar processo de seleção, onboarding e estruturar feedbacks documentados antes de demitir.`});else if(ck==='comportamento'&&topCatPct>=25)acoes.push({icon:'⚠️',sev:'aten',text:`<b>Comportamento</b> em alta (${topCatPct}%) — investigar cultura local, alinhamento de valores e qualidade da liderança.`});else if(ck==='fimContrato'&&topCatPct>=30)acoes.push({icon:'📄',sev:'aten',text:`<b>Fim de experiência</b> elevado (${topCatPct}%) — sinal de seleção pouco assertiva. Reavaliar critérios de contratação e treinamento inicial.`});else if(ck==='acordo'&&topCatPct>=30)acoes.push({icon:'🤝',sev:'aten',text:`<b>Acordos</b> em volume alto (${topCatPct}%) — pode indicar insatisfação interna ou conflitos. Considerar pesquisa de clima.`});else if(ck==='justaCausa'&&topCat[1]>0)acoes.push({icon:'🚫',sev:'crit',text:`<b>Justa causa</b> registrada (${topCat[1]} caso${topCat[1]>1?'s':''}) — situação séria. Garantir documentação rigorosa e revisar processo disciplinar.`});}
+     // 3) % iniciativa extremo
+     if(tot>=5){if(empPct>=75)acoes.push({icon:'⚖️',sev:'aten',text:`<b>${empPct}%</b> dos desligamentos foram iniciados pela empresa — critérios podem estar rigorosos. Confirmar que houve feedback documentado antes das decisões.`});else if(empPct<=30)acoes.push({icon:'🚪',sev:'aten',text:`<b>${100-empPct}%</b> iniciados pelo colaborador — sinal de retenção fraca. Aprofundar pesquisa de satisfação e revisar pacote/cultura.`});}
+     // 4) Vencidos
+     if(ven>0)acoes.push({icon:'⏰',sev:'crit',text:`<b>${ven}</b> aviso${ven>1?'s':''} vencido${ven>1?'s':''} — risco operacional/jurídico. Atualizar status no sistema imediatamente.`});
+     // 5) Volume alto
+     if(tot>=20)acoes.push({icon:'📊',sev:'aten',text:`Volume alto: <b>${tot}</b> desligamentos no período — revisar políticas de retenção e turnover estrutural.`});
+     // Renderizar
+     const sevColor=s=>s==='crit'?'#fef2f2':s==='aten'?'#fef3c7':'#dcfce7';
+     const sevText=s=>s==='crit'?'#7f1d1d':s==='aten'?'#78350f':'#14532d';
+     const pl=document.getElementById('planoLista');
+     if(pl){
+       if(acoes.length===0){pl.innerHTML='<div style="background:rgba(39,174,96,.2);border-left:3px solid #27ae60;padding:8px 12px;border-radius:4px">✅ <b>Indicadores saudáveis</b> — sem ações específicas recomendadas para este período.</div>';}
+       else{pl.innerHTML=acoes.map(a=>`<div style="background:${a.sev==='crit'?'rgba(239,68,68,.18)':'rgba(251,191,36,.18)'};border-left:3px solid ${a.sev==='crit'?'#fca5a5':'#fde047'};padding:8px 12px;border-radius:4px;margin-bottom:6px">${a.icon} ${a.text}</div>`).join('');}
+     }
    }
  }
  const LOJAS_OFICIAIS=['MATRIZ','BROOKLIN','PERDIZES','VILA MARIANA'];
