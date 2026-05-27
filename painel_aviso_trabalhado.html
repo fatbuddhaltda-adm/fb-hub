@@ -170,7 +170,7 @@ body{font-family:Inter,sans-serif;background:var(--l);color:var(--d)}
  <span><span style="display:inline-block;width:10px;height:10px;background:#92400e;border-radius:2px;vertical-align:middle;margin-right:4px"></span>🤝 Acordo</span>
  <span style="margin-left:auto;font-size:10px;color:var(--m);font-style:italic">Sem categoria definida em cinza</span>
 </div>
-<div id="motivosByLoja"></div>
+<div id="motivosByLoja" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px"></div>
 </div><div class="cc"><h3>Demissões por Categoria do Motivo</h3><table class="mt" id="mtcat"><thead><tr><th>Categoria</th><th>Qtd</th><th>%</th><th style="min-width:120px">Barra</th></tr></thead><tbody></tbody></table><div id="categoriaDiag" style="margin-top:10px"></div></div><div class="cc"><h3>Demissões por Gestor Responsável</h3><table class="mt" id="mtg"><thead><tr><th>Gestor</th><th>Total</th><th>% do total</th><th>Concentração no maior motivo</th><th>Alerta</th></tr></thead><tbody></tbody></table><div style="font-size:11px;color:var(--m);margin-top:8px">⚠️ Alerta dispara quando o gestor tem volume acima de 1,5× a média do grupo ou quando 60%+ dos seus desligamentos estão concentrados em uma única categoria.<br>👤 Registros iniciados pelo colaborador são contabilizados nos totais gerais mas <b>não pesam contra os gestores</b> (apareceriam aqui como "<span id="initColabHint">0</span>" desligamentos iniciados pelo colaborador).</div></div><div class="cc" id="alertbox" style="display:none;border-left:3px solid #C0392B"><h3 style="color:#C0392B">⚠️ Alertas de Liderança</h3><div id="alertlist" style="font-size:13px;color:var(--d)"></div></div><div class="cc" id="avalrecbox"><h3>📊 Avaliação × Recontratação</h3><p style="font-size:11px;color:var(--m);margin-bottom:10px">Matriz cruzada — linhas: avaliação do colaborador, colunas: recontrataria. Padrões interessantes: <b>com problema mas recontrataria</b> (talvez seja prob. de gestão), <b>com problema E não recontrataria</b> (decisão consistente).</p><div style="overflow-x:auto"><table class="mt" id="mtavalrec"><thead></thead><tbody></tbody></table></div><div id="avalRecDiag" style="margin-top:10px"></div></div>
   </div>
   <div id="vr" class="vi">
@@ -466,20 +466,35 @@ function rD(){
  const sevBd=s=>s==='crit'?'#fca5a5':s==='aten'?'#fde047':s==='ok'?'#86efac':'#cbb499';
  const sevFg=s=>s==='crit'?'#7f1d1d':s==='aten'?'#78350f':s==='ok'?'#14532d':'#5b4332';
  document.getElementById('motivosByLoja').innerHTML=lojasOrd.map(x=>{
-   if(x.total===0)return `<div style="display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid var(--c);opacity:.45"><div style="min-width:130px;font-size:12px;font-weight:700;color:var(--m);text-transform:uppercase;letter-spacing:.04em">${x.loja}</div><div style="flex:1;font-size:11px;color:var(--m);font-style:italic">Sem desligamentos no per\u00edodo</div></div>`;
-   const segsHtml=CAT_KEYS.filter(ck=>x.counts[ck]>0).map(ck=>`<div title="${CAT_EMOJI[ck]} ${(_CATS_GLOBAL[ck].l||ck).replace(/^[^a-zA-Z]+/,'')}: ${x.counts[ck]}" style="width:${x.counts[ck]/x.total*100}%;background:${_CATS_GLOBAL[ck].c}"></div>`).join('')+(x.counts.sem>0?`<div title="Sem categoria: ${x.counts.sem}" style="width:${x.counts.sem/x.total*100}%;background:#cbb499"></div>`:'');
-   const badges=CAT_KEYS.map(ck=>({k:ck,n:x.counts[ck]})).filter(b=>b.n>0).sort((a,b)=>b.n-a.n).map(b=>`<span style="display:inline-flex;align-items:center;gap:3px;background:${_CATS_GLOBAL[b.k].c}15;color:${_CATS_GLOBAL[b.k].c};padding:3px 8px;border-radius:12px;font-size:11px;font-weight:700;border:1px solid ${_CATS_GLOBAL[b.k].c}30">${CAT_EMOJI[b.k]} ${b.n}</span>`).join('');
-   const semBadge=x.counts.sem>0?`<span style="display:inline-flex;align-items:center;gap:3px;background:#cbb49915;color:#7A5C48;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:700;border:1px solid #cbb49930">— ${x.counts.sem}</span>`:'';
+   if(x.total===0)return `<div style="background:var(--l);border:1px dashed var(--c);border-radius:10px;padding:18px;opacity:.55;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:200px"><div style="font-size:13px;font-weight:700;color:var(--m);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">${x.loja}</div><div style="font-size:11px;color:var(--m);font-style:italic">Sem desligamentos no per\u00edodo</div></div>`;
+   // Construir conic-gradient pro donut CSS
+   let acc=0;const stops=[];
+   const sorted=CAT_KEYS.map(ck=>({k:ck,n:x.counts[ck]||0,c:_CATS_GLOBAL[ck].c})).filter(b=>b.n>0).sort((a,b)=>b.n-a.n);
+   sorted.forEach(b=>{const start=acc;acc+=b.n/x.total*360;stops.push(`${b.c} ${start}deg ${acc}deg`);});
+   if(x.counts.sem>0){const start=acc;acc+=x.counts.sem/x.total*360;stops.push(`#cbb499 ${start}deg ${acc}deg`);}
+   const gradient=stops.join(', ');
+   // Badges top categorias
+   const badges=sorted.map(b=>`<span title="${(_CATS_GLOBAL[b.k].l||b.k).replace(/^[^a-zA-Z]+/,'')}" style="display:inline-flex;align-items:center;gap:3px;background:${b.c}15;color:${b.c};padding:3px 8px;border-radius:12px;font-size:11px;font-weight:700;border:1px solid ${b.c}30">${CAT_EMOJI[b.k]} ${b.n}</span>`).join('');
+   const semBadge=x.counts.sem>0?`<span title="Sem categoria" style="display:inline-flex;align-items:center;gap:3px;background:#cbb49915;color:#7A5C48;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:700;border:1px solid #cbb49930">— ${x.counts.sem}</span>`:'';
    const insights=diagLoja(x);
    const diagHtml=insights.map(i=>`<div style="background:${sevBg(i.sev)};border-left:3px solid ${sevBd(i.sev)};color:${sevFg(i.sev)};padding:5px 10px;border-radius:3px;font-size:12px;line-height:1.4;margin-top:4px">${i.text}</div>`).join('');
-   return `<div style="padding:12px 0;border-bottom:1px solid var(--c)">
-   <div style="display:flex;align-items:center;gap:14px;margin-bottom:6px">
-     <div style="min-width:130px;font-size:13px;font-weight:700;color:var(--d);text-transform:uppercase;letter-spacing:.04em">${x.loja}</div>
-     <div style="flex:1;height:14px;background:#f5ede6;border-radius:7px;overflow:hidden;display:flex">${segsHtml}</div>
-     <div style="min-width:90px;text-align:right;font-size:14px;font-weight:700;color:var(--d)">${x.total} <span style="font-size:11px;color:var(--m);font-weight:500">desl.</span></div>
+   const pctGroup=Math.round(x.total/totGrupo*100);
+   return `<div style="background:#fff;border:1px solid var(--c);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
+   <div style="display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--c);padding-bottom:8px">
+     <div style="font-size:13px;font-weight:700;color:var(--d);text-transform:uppercase;letter-spacing:.04em">${x.loja}</div>
+     <div style="font-size:11px;color:var(--m);font-weight:500">${pctGroup}% do grupo</div>
    </div>
-   <div style="margin-left:144px;display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px">${badges}${semBadge}</div>
-   <div style="margin-left:144px">${diagHtml}</div>
+   <div style="display:flex;align-items:center;gap:14px">
+     <div style="position:relative;width:90px;height:90px;flex-shrink:0">
+       <div style="width:100%;height:100%;border-radius:50%;background:conic-gradient(${gradient})"></div>
+       <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:54px;height:54px;background:#fff;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px var(--c)">
+         <span style="font-size:20px;font-weight:700;color:var(--d);line-height:1">${x.total}</span>
+         <span style="font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:.05em;margin-top:2px">desl.</span>
+       </div>
+     </div>
+     <div style="flex:1;display:flex;flex-wrap:wrap;gap:5px">${badges}${semBadge}</div>
+   </div>
+   ${diagHtml}
  </div>`;
  }).join('');
  // Grafico evolucao mensal
