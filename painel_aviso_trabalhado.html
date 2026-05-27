@@ -69,6 +69,22 @@ body{font-family:Inter,sans-serif;background:var(--l);color:var(--d)}
 .sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
 .sh h2{font-size:15px;font-weight:700}
 .es{text-align:center;padding:32px;color:#aaa;font-size:14px}
+@media print{
+  body{background:#fff!important;color:#000!important}
+  .hdr,.nav,.no-print,.so,.hr,#vr,.mo,.fb,#auth{display:none!important}
+  .con{padding:0!important;max-width:100%!important}
+  .cc{box-shadow:none!important;border:1px solid #ccc!important;break-inside:avoid;page-break-inside:avoid;margin-bottom:10px!important}
+  .yb{display:none!important}
+  #sumarioExec{background:#fff!important;color:#000!important;border:2px solid #000!important;padding:14px!important}
+  #sumarioExec *{color:#000!important}
+  #sumarioTexto b{color:#C0392B!important}
+  .lojaCard,#lojaCards>div{break-inside:avoid}
+  table{break-inside:auto}
+  tr{break-inside:avoid;break-after:auto}
+  thead{display:table-header-group}
+  h3{font-size:13px!important}
+  @page{margin:1.2cm;size:A4}
+}
 </style>
 </head>
 <body>
@@ -101,8 +117,17 @@ body{font-family:Inter,sans-serif;background:var(--l);color:var(--d)}
     <select id="fy" onchange="rD()" style="padding:5px 10px;border:1px solid var(--c);border-radius:5px;font-size:13px"></select>
     <label style="font-size:13px;font-weight:600;color:var(--m);margin-left:10px">Loja:</label>
     <select id="fl" onchange="rD()" style="padding:5px 10px;border:1px solid var(--c);border-radius:5px;font-size:13px"><option value="">Todas</option></select>
+    <button onclick="window.print()" class="no-print" style="margin-left:auto;background:var(--d);color:#fff;border:none;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px">🖨️ Imprimir / Salvar PDF</button>
    </div>
    <div class="krow" id="kr"></div>
+   <div class="cc" id="sumarioExec" style="background:linear-gradient(135deg,#2C1A0E,#7A5C48);color:#fff;border:none">
+    <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">📝 Sumário Executivo</div>
+    <div id="sumarioTexto" style="font-size:14px;line-height:1.7;color:#fff"></div>
+   </div>
+   <div class="cc"><h3>📈 Evolução Mensal</h3>
+    <p style="font-size:11px;color:var(--m);margin-bottom:10px">Desligamentos mês a mês — visualiza tendência de aumento ou queda. Linha contínua = total, tracejada = iniciado pelo colaborador.</p>
+    <div style="position:relative;height:240px"><canvas id="chartEvoMes"></canvas></div>
+   </div>
    <div class="cc"><h3>🏢 Quem Iniciou o Desligamento</h3>
 <p style="font-size:11px;color:var(--m);margin-bottom:12px">Quem tomou a decisão — empresa decidiu ou foi pedido do colaborador. Independente da categoria final (acordo, pedido, etc).</p>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
@@ -188,6 +213,7 @@ body{font-family:Inter,sans-serif;background:var(--l);color:var(--d)}
   <div class="mf"><button class="btn bo" onclick="cM()">Cancelar</button><button class="btn bp" onclick="sR()">Salvar</button></div>
  </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -203,6 +229,8 @@ auth.onAuthStateChanged(u=>{
 let recs={};
 const ML={empresa23dias:'Empresa — 23 dias',empresaReducao2h:'Empresa — 2h redução',colaborador:'Colaborador (30d)',contratExperiencia:'Contrato Experiência'};
 const MC={empresa23dias:'#C0392B',empresaReducao2h:'#e67e22',colaborador:'#27ae60',contratExperiencia:'#2980b9'};
+const _CATS_GLOBAL={desempenho:{l:'🎯 Desempenho',c:'#9d174d'},comportamento:{l:'⚠️ Comportamento',c:'#e67e22'},reducao:{l:'📉 Redução de quadro',c:'#0369a1'},fimContrato:{l:'📄 Fim de contrato',c:'#5b21b6'},pedidoColaborador:{l:'👤 Pedido do colaborador',c:'#27ae60'},justaCausa:{l:'🚫 Justa causa',c:'#C0392B'},acordo:{l:'🤝 Acordo / Distrato',c:'#92400e'}};
+let _chartEvoMes=null;
 function lD(){
  db.ref('avisos_trabalhados').on('value',s=>{
   recs=s.val()||{};
@@ -237,6 +265,31 @@ function rD(){
  });
  const kp=[{v:tot,l:'Total no Ano',c:'#2C1A0E'},{v:and,l:'Em Andamento',c:'#856404',b:'#fff3cd'},{v:con,l:'Concluídos',c:'#15803d',b:'#dcfce7'},{v:ven,l:'Vencidos',c:'#991b1b',b:'#fee2e2'}];
  document.getElementById('kr').innerHTML=kp.map(k=>`<div class="kpi" style="background:${k.b||'#fff'}"><div class="kv" style="color:${k.c}">${k.v}</div><div class="kl" style="color:${k.c}">${k.l}</div></div>`).join('');
+ // Sumario Executivo auto-gerado
+ const sumEl=document.getElementById('sumarioTexto');
+ if(sumEl){
+   if(tot===0){sumEl.innerHTML='<i style="opacity:.7">Sem desligamentos registrados no per\u00edodo filtrado.</i>';}
+   else{
+     // Categoria principal (calcular)
+     const catCt={};Object.keys(_CATS_GLOBAL||{}).forEach(k=>catCt[k]=0);
+     f.forEach(r=>{const ec=r.categoria||(r.motivo==='colaborador'?'pedidoColaborador':r.motivo==='contratExperiencia'?'fimContrato':'');if(ec&&_CATS_GLOBAL[ec])catCt[ec]++;});
+     const topCat=Object.entries(catCt).sort((a,b)=>b[1]-a[1])[0];
+     const topCatLbl=topCat&&topCat[1]>0?(_CATS_GLOBAL[topCat[0]].l||topCat[0]):'—';
+     const topCatPct=topCat&&topCat[1]>0?Math.round(topCat[1]/tot*100):0;
+     // Loja com maior volume
+     const lojaCt={};f.forEach(r=>{const l=(r.loja||'').toUpperCase().trim();if(l&&l!=='-')lojaCt[l]=(lojaCt[l]||0)+1;});
+     const topLoja=Object.entries(lojaCt).sort((a,b)=>b[1]-a[1])[0];
+     const topLojaTxt=topLoja?`${topLoja[0]} (${topLoja[1]} caso${topLoja[1]>1?'s':''})`:'—';
+     // % iniciado por empresa
+     let empCnt=0,colCnt=0;f.forEach(r=>{const init=r.iniciadoPor||((r.categoria||(r.motivo==='colaborador'?'pedidoColaborador':''))==='pedidoColaborador'?'Colaborador':'Empresa');if(init==='Colaborador')colCnt++;else empCnt++;});
+     const empPct=tot>0?Math.round(empCnt/tot*100):0;
+     // Status
+     const stsTxt=con>0||and>0?`${con} conclu\u00eddo${con!==1?'s':''}${and>0?', '+and+' em andamento':''}${ven>0?', '+ven+' vencido'+(ven>1?'s':''):''}`:'—';
+     const yrTxt=yr||'todos os anos';
+     const ljTxt=lj?` na loja ${lj}`:' (todas as lojas)';
+     sumEl.innerHTML=`<b>${tot}</b> desligamento${tot!==1?'s':''} em ${yrTxt}${ljTxt}, sendo <b>${empPct}%</b> iniciado${empCnt!==1?'s':''} pela empresa e <b>${100-empPct}%</b> pelo colaborador. Categoria principal: <b>${topCatLbl}</b> com <b>${topCatPct}%</b> dos casos. Loja com maior volume: <b>${topLojaTxt}</b>. Status: ${stsTxt}.`;
+   }
+ }
  const LOJAS_OFICIAIS=['MATRIZ','BROOKLIN','PERDIZES','VILA MARIANA'];
  // Quem iniciou (Empresa vs Colaborador) - calcular antes do byLj
  function effInit(r){return r.iniciadoPor||((r.categoria||(r.motivo==='colaborador'?'pedidoColaborador':r.motivo==='contratExperiencia'?'fimContrato':''))==='pedidoColaborador'?'Colaborador':'Empresa');}
@@ -278,7 +331,20 @@ function rD(){
  f.forEach(r=>{const l=(r.loja||'').toUpperCase().trim();if(!l||l==='-')return;if(!mtxCL[l]){mtxCL[l]={};CAT_KEYS.forEach(c=>mtxCL[l][c]=0);}const ec=effCat(r);if(ec&&CAT_KEYS.includes(ec))mtxCL[l][ec]++;});
  const cellStyle=q=>q>0?`background:rgba(192,57,43,${Math.min(0.05+q*0.06,0.35)});font-weight:700`:'color:#aaa';
  document.querySelector('#mtcatloja tbody').innerHTML=Object.keys(mtxCL).map(l=>{const c=mtxCL[l],tot=CAT_KEYS.reduce((a,ck)=>a+c[ck],0);return `<tr><td style="font-weight:600">${l}</td>${CAT_KEYS.map(ck=>`<td style="text-align:center;${cellStyle(c[ck])}">${c[ck]||'-'}</td>`).join('')}<td style="text-align:center;font-weight:700;background:#f5ede6">${tot||'-'}</td></tr>`;}).join('');
- const CATS={desempenho:{l:'🎯 Desempenho',c:'#9d174d'},comportamento:{l:'⚠️ Comportamento',c:'#e67e22'},reducao:{l:'📉 Redução de quadro',c:'#0369a1'},fimContrato:{l:'📄 Fim de contrato',c:'#5b21b6'},pedidoColaborador:{l:'👤 Pedido do colaborador',c:'#27ae60'},justaCausa:{l:'🚫 Justa causa',c:'#C0392B'},acordo:{l:'🤝 Acordo / Distrato',c:'#92400e'}};
+ // Grafico evolucao mensal
+ if(typeof Chart!=='undefined'){
+   const yrTarget=yr||String(new Date().getFullYear());
+   const monthLabels=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+   const totalsByMonth=Array(12).fill(0);
+   const colabByMonth=Array(12).fill(0);
+   f.forEach(r=>{if(!r.dataInicio)return;if(yr&&!r.dataInicio.startsWith(yr))return;const mm=parseInt(r.dataInicio.substring(5,7),10);if(isNaN(mm)||mm<1||mm>12)return;totalsByMonth[mm-1]++;const init=r.iniciadoPor||(r.categoria==='pedidoColaborador'?'Colaborador':'Empresa');if(init==='Colaborador')colabByMonth[mm-1]++;});
+   const cv=document.getElementById('chartEvoMes');
+   if(cv){
+     if(_chartEvoMes){_chartEvoMes.destroy();}
+     _chartEvoMes=new Chart(cv,{type:'line',data:{labels:monthLabels,datasets:[{label:'Total de desligamentos',data:totalsByMonth,borderColor:'#C0392B',backgroundColor:'rgba(192,57,43,0.10)',borderWidth:3,tension:.25,pointRadius:4,pointBackgroundColor:'#C0392B',fill:true,order:2},{label:'Iniciado pelo colaborador',data:colabByMonth,borderColor:'#27ae60',backgroundColor:'#27ae60',borderWidth:2,borderDash:[6,4],tension:.25,pointRadius:3,pointBackgroundColor:'#27ae60',fill:false,order:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:14}},tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+ctx.parsed.y}}},scales:{y:{beginAtZero:true,ticks:{precision:0,font:{size:10}},grid:{color:'#EFE4D7'}},x:{ticks:{font:{size:11,weight:'600'}},grid:{display:false}}}}});
+   }
+ }
+ const CATS=_CATS_GLOBAL;
  const catCount={};Object.keys(CATS).forEach(k=>catCount[k]=0);
  function effCat(r){return r.categoria||(r.motivo==='colaborador'?'pedidoColaborador':r.motivo==='contratExperiencia'?'fimContrato':'');}
  f.forEach(r=>{const ec=effCat(r);if(ec&&CATS[ec])catCount[ec]++;});
