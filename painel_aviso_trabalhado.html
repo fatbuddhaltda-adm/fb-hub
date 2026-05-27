@@ -613,8 +613,8 @@ function rD(){
  const cellSt=q=>q>0?`background:rgba(192,57,43,${Math.min(0.05+q*0.06,0.30)});font-weight:700`:'color:#ccc';
  const rowsCxm=CAT_KEYS.map(c=>{const tot=MOD_KEYS.reduce((s,m)=>s+cxm[c][m],0);return `<tr><td style="font-weight:600;color:${_CATS_GLOBAL[c].c};white-space:nowrap;font-size:12px">${_CATS_GLOBAL[c].l}</td>${MOD_KEYS.map(m=>{const q=cxm[c][m];return `<td style="text-align:center;${cellSt(q)}">${q||'—'}</td>`;}).join('')}<td style="text-align:center;font-weight:700;background:var(--l)">${tot||'—'}</td></tr>`;}).join('');
  const totsCol=MOD_KEYS.map(m=>{let s=0;CAT_KEYS.forEach(c=>s+=cxm[c][m]);return s;});
- const totRow=`<tr style="background:var(--d);color:#fff"><td style="font-weight:700;color:#fff">Total</td>${totsCol.map(t=>`<td style="text-align:center;font-weight:700;color:#fff">${t||'—'}</td>`).join('')}<td style="text-align:center;font-weight:700;color:#fff">${totsCol.reduce((a,b)=>a+b,0)||'—'}</td></tr>`;
- document.querySelector('#mtcxm tbody').innerHTML=rowsCxm+totRow;
+ const totRowCxm=`<tr style="background:var(--d);color:#fff"><td style="font-weight:700;color:#fff">Total</td>${totsCol.map(t=>`<td style="text-align:center;font-weight:700;color:#fff">${t||'—'}</td>`).join('')}<td style="text-align:center;font-weight:700;color:#fff">${totsCol.reduce((a,b)=>a+b,0)||'—'}</td></tr>`;
+ document.querySelector('#mtcxm tbody').innerHTML=rowsCxm+totRowCxm;
 
  const byGestor={};let countIniciadoColab=0;f.forEach(r=>{const init=r.iniciadoPor||(effCat(r)==='pedidoColaborador'?'Colaborador':'Empresa');if(init==='Colaborador'){countIniciadoColab++;return;}const g=(r.gestor||'').trim();if(!g)return;if(!byGestor[g]){byGestor[g]={total:0,porCat:{}};}byGestor[g].total++;const c=effCat(r)||'sem';byGestor[g].porCat[c]=(byGestor[g].porCat[c]||0)+1;});
  const gestores=Object.keys(byGestor);
