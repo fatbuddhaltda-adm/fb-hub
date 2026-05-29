@@ -670,6 +670,7 @@ firebase.auth().onAuthStateChanged(async user=>{
     <div class="an-kpi"><div class="al">📈 Média elegíveis/mês</div><div class="av" id="ak-el">—</div><div class="as">funcionários</div></div>
     <div class="an-kpi"><div class="al">⚠️ Média perdem/mês</div><div class="av" id="ak-pr">—</div><div class="as">funcionários</div></div>
   </div>
+  <div class="an-card-wide" id="diagExecCardBonus" style="border-left:4px solid var(--red,#C0392B)"><h3>🎯 Diagnóstico Executivo <span style="font-size:11px;font-weight:400;color:var(--ink-3);text-transform:none">— sintese estratégica do programa de bônus</span></h3><div id="diagExecBonus" style="margin-top:12px"></div></div>
   <div class="an-card-wide">
     <h3>💰 Total a Pagar por Mês (R$)</h3>
     <div class="bar-chart" id="an-bar-pag"></div>
@@ -1414,6 +1415,90 @@ function renderAnalytics(){
       tbody.appendChild(tr);
     });
   }
+
+  // ── Diagnostico Executivo ──
+  renderDiagExecBonus(stats);
+}
+
+function renderDiagExecBonus(stats){
+ const cont=document.getElementById('diagExecBonus');if(!cont)return;
+ const _sev={crit:{bg:'#fef2f2',br:'#fecaca',fg:'#991b1b',ic:'🚨'},aten:{bg:'#fffbeb',br:'#fde68a',fg:'#92400e',ic:'⚠️'},ok:{bg:'#f0fdf4',br:'#bbf7d0',fg:'#166534',ic:'✅'},info:{bg:'#eff6ff',br:'#bfdbfe',fg:'#1e40af',ic:'ℹ️'}};
+ const ins=[];
+ if(!stats||stats.length===0){
+  cont.innerHTML=`<div style="background:${_sev.info.bg};border:1px solid ${_sev.info.br};color:${_sev.info.fg};border-radius:8px;padding:11px 14px;font-size:13px">${_sev.info.ic} Sem dados suficientes — registre meses no painel para gerar diagnostico.</div>`;
+  return;
+ }
+ const totEmpAno=stats.reduce((a,s)=>a+s.total,0);
+ const totElAno=stats.reduce((a,s)=>a+s.el,0);
+ const totPrAno=stats.reduce((a,s)=>a+s.pr,0);
+ const totPagAno=stats.reduce((a,s)=>a+s.pag,0);
+ const pctMedio=totEmpAno>0?Math.round(totElAno/totEmpAno*100):0;
+ // overview
+ ins.push({sev:'info',text:`<b>${stats.length} mês(es)</b> registrados, total pago acumulado <b>R$ ${totPagAno.toLocaleString('pt-BR',{minimumFractionDigits:2})}</b> a uma média de <b>${(totElAno/stats.length).toFixed(1)} elegíveis/mês</b>`});
+ // elegibilidade geral
+ if(pctMedio>=85)ins.push({sev:'ok',text:`<b>${pctMedio}% de elegibilidade média</b> — engajamento alto, equipe entregando consistentemente`});
+ else if(pctMedio>=70)ins.push({sev:'aten',text:`<b>${pctMedio}% de elegibilidade média</b> — saudável mas com margem, identificar onde estão as ${totPrAno} perdas para subir`});
+ else if(pctMedio>=50)ins.push({sev:'crit',text:`<b>Apenas ${pctMedio}% de elegibilidade média</b> — programa de bônus não está sendo conquistado pela maioria, revisar critérios ou processos`});
+ else if(totEmpAno>0)ins.push({sev:'crit',text:`<b>Elegibilidade crítica: ${pctMedio}%</b> — programa de bônus está virando exceção, repensar viabilidade dos critérios`});
+ // tendencia % elegiveis
+ if(stats.length>=3){
+  const meio=Math.floor(stats.length/2);
+  const pct1=stats.slice(0,meio).reduce((a,s)=>a+s.pct,0)/Math.max(1,meio);
+  const pct2=stats.slice(meio).reduce((a,s)=>a+s.pct,0)/Math.max(1,stats.length-meio);
+  const delta=Math.round(pct2-pct1);
+  if(delta>=10)ins.push({sev:'ok',text:`Tendência de <b>melhora</b>: elegibilidade subiu <b>+${delta}pp</b> comparando início vs fim do período — algo está funcionando, manter`});
+  else if(delta>=5)ins.push({sev:'ok',text:`Leve melhora na elegibilidade (+${delta}pp no período) — direção certa`});
+  else if(delta<=-10)ins.push({sev:'crit',text:`<b>Queda preocupante</b>: elegibilidade caiu <b>${delta}pp</b> comparando início vs fim — investigar o que mudou na operação`});
+  else if(delta<=-5)ins.push({sev:'aten',text:`Tendência de queda na elegibilidade (${delta}pp no período) — observar próximos meses`});
+ }
+ // motivos de perda acumulados
+ const motivosAcc={};
+ stats.forEach(s=>Object.entries(s.mot||{}).forEach(([k,v])=>{motivosAcc[k]=(motivosAcc[k]||0)+v;}));
+ const totMot=Object.values(motivosAcc).reduce((a,b)=>a+b,0);
+ if(totMot>0){
+  const top=Object.entries(motivosAcc).sort((a,b)=>b[1]-a[1])[0];
+  const topPct=Math.round(top[1]/totMot*100);
+  if(topPct>=60)ins.push({sev:'crit',text:`<b>${top[0]}</b> concentra <b>${topPct}%</b> de todas as perdas (${top[1]} casos) — ação focada nessa causa resolve a maior parte do problema`});
+  else if(topPct>=40)ins.push({sev:'aten',text:`<b>${top[0]}</b> é a principal causa de perda de bônus (<b>${topPct}%</b> = ${top[1]} casos) — priorizar no plano de ação`});
+  // motivos de comportamento (advertencia/falta)
+  const compor=(motivosAcc['ADVERTÊNCIA']||0)+(motivosAcc['ADVERTÊNCIA/PONTO']||0)+(motivosAcc['FALTA INJUSTIFICADA']||0);
+  if(compor>0&&compor/totMot>=0.5)ins.push({sev:'aten',text:`<b>${Math.round(compor/totMot*100)}% das perdas são por comportamento</b> (advertência/falta) — sinal de problema de gestão direta, alinhar com líderes`});
+  // atestado alto
+  const atest=motivosAcc['ATESTADO']||0;
+  if(atest>0&&atest/totMot>=0.4)ins.push({sev:'info',text:`<b>${Math.round(atest/totMot*100)}% das perdas por atestado</b> — investigar se há padrão de saúde/exaustão na equipe`});
+ }
+ // analise por loja (mes atual)
+ try{
+  const m=getM();const emps=m.employees||[];
+  if(emps.length>0){
+   const lojas=['BROOKLIN','PERDIZES','VILA MARIANA','MATRIZ PRODUÇÃO'];
+   const porLoja=lojas.map(l=>{const ll=emps.filter(e=>e.loja===l);const elL=ll.filter(e=>e.status==='ELEGÍVEL').length;return{l,tot:ll.length,el:elL,pct:ll.length>0?Math.round(elL/ll.length*100):0};}).filter(x=>x.tot>0);
+   if(porLoja.length>=2){
+    porLoja.sort((a,b)=>b.pct-a.pct);
+    const melhor=porLoja[0],pior=porLoja[porLoja.length-1];
+    if(pior.pct<60)ins.push({sev:'crit',text:`<b>${pior.l.replace(' PRODUÇÃO','')}</b> com apenas <b>${pior.pct}% de elegibilidade</b> no mês atual (${pior.el}/${pior.tot}) — loja em situação crítica, intervenção urgente`});
+    else if(pior.pct<melhor.pct-25)ins.push({sev:'aten',text:`Desnível entre lojas no mês: <b>${melhor.l.replace(' PRODUÇÃO','')}</b> com <b>${melhor.pct}%</b> vs <b>${pior.l.replace(' PRODUÇÃO','')}</b> com <b>${pior.pct}%</b> — investigar o que ${melhor.l.replace(' PRODUÇÃO','')} faz de diferente`});
+    if(melhor.pct>=90)ins.push({sev:'ok',text:`<b>${melhor.l.replace(' PRODUÇÃO','')}</b> com <b>${melhor.pct}%</b> de elegibilidade no mês atual — referência operacional, replicar boas práticas`});
+   }
+  }
+ }catch(e){}
+ // pico de perdas
+ if(stats.length>=2){
+  const piorMes=stats.reduce((m,s)=>s.pr>m.pr?s:m,stats[0]);
+  const mediaPr=stats.reduce((a,s)=>a+s.pr,0)/stats.length;
+  if(piorMes.pr>=mediaPr*1.5&&piorMes.pr>=3)ins.push({sev:'aten',text:`<b>${piorMes.nome}</b> teve pico de perdas (${piorMes.pr} casos, ${Math.round(piorMes.pr/mediaPr*10)/10}× a média) — investigar o que aconteceu de específico`});
+ }
+ // financeiro: variacao mes a mes
+ if(stats.length>=2){
+  const pags=stats.map(s=>s.pag).filter(v=>v>0);
+  if(pags.length>=2){
+   const maxP=Math.max(...pags),minP=Math.min(...pags);
+   if(maxP>minP*1.5)ins.push({sev:'info',text:`Variação financeira mensal: de <b>R$ ${minP.toLocaleString('pt-BR',{minimumFractionDigits:2})}</b> a <b>R$ ${maxP.toLocaleString('pt-BR',{minimumFractionDigits:2})}</b> — operação com elasticidade alta, considerar provisao média`});
+  }
+ }
+ // fechamento
+ if(!ins.some(i=>i.sev==='crit'||i.sev==='aten'))ins.push({sev:'ok',text:'Programa de bônus saudável — sem alertas críticos no comparativo executivo'});
+ cont.innerHTML=ins.map(i=>{const c=_sev[i.sev]||_sev.info;return `<div style="background:${c.bg};border:1px solid ${c.br};color:${c.fg};border-radius:8px;padding:11px 14px;font-size:13px;line-height:1.5;margin-bottom:8px"><span style="margin-right:6px">${c.ic}</span>${i.text}</div>`;}).join('');
 }
 
 // Carrega dados do Firebase em tempo real (só depois do login)
