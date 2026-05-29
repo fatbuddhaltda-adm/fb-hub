@@ -500,6 +500,60 @@ function renderAnual(){
   Object.keys(LOJAS).forEach(l=>{leg.innerHTML+=`<span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#374151"><span style="display:inline-block;width:20px;height:3px;background:${LOJA_COLORS[l]||'#6b7280'};border-radius:2px"></span>${l}</span>`;});
   chartCard1.appendChild(leg);cont.appendChild(chartCard1);
 
+  // ── Diagnóstico por Loja (Evolução da Média) ──
+  const diagCard1=document.createElement('div');
+  diagCard1.style.cssText='background:white;border-radius:12px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:18px;margin-bottom:14px';
+  diagCard1.innerHTML='<div style="font-size:11px;font-weight:700;color:#1a1a2e;text-transform:uppercase;letter-spacing:.4px;margin-bottom:14px">🔎 Diagnóstico por Loja</div>';
+  const lojaSeries={};
+  Object.keys(LOJAS).forEach(loja=>{
+    const pracas=LOJAS[loja].pracas;
+    const serie=months.map(m=>{
+      const mData=data.months[m]||{lojas:{}};
+      const meds=pracas.map(p=>{const pd=(mData.lojas&&mData.lojas[loja]&&mData.lojas[loja][p])||{visitas:[{data:'',nota:''},{data:'',nota:''},{data:'',nota:''},{data:'',nota:''}]};return calcMedia(pd.visitas);}).filter(v=>v!==null);
+      return meds.length>0?meds.reduce((a,b)=>a+b,0)/meds.length:null;
+    });
+    const valid=serie.filter(v=>v!==null);
+    lojaSeries[loja]={serie,valid,first:valid[0]||null,last:valid[valid.length-1]||null,avg:valid.length?valid.reduce((a,b)=>a+b,0)/valid.length:null,min:valid.length?Math.min(...valid):null,max:valid.length?Math.max(...valid):null,count:valid.length};
+  });
+  const allValid=Object.values(lojaSeries).map(d=>d.avg).filter(v=>v!==null);
+  const _sevColor={crit:{bg:'#fef2f2',br:'#fecaca',fg:'#991b1b',ic:'🚨'},aten:{bg:'#fffbeb',br:'#fde68a',fg:'#92400e',ic:'⚠️'},ok:{bg:'#f0fdf4',br:'#bbf7d0',fg:'#166534',ic:'✅'},info:{bg:'#eff6ff',br:'#bfdbfe',fg:'#1e40af',ic:'ℹ️'}};
+  const _ins=[];
+  const sortByAvg=Object.entries(lojaSeries).filter(e=>e[1].avg!==null).sort((a,b)=>b[1].avg-a[1].avg);
+  if(sortByAvg.length>=2){
+    const best=sortByAvg[0],worst=sortByAvg[sortByAvg.length-1];
+    _ins.push({sev:'ok',text:`<b>${best[0]}</b> é a loja com melhor média (<b>${best[1].avg.toFixed(2)}</b>) — referência para as demais`});
+    if(worst[1].avg<NOTA_MIN)_ins.push({sev:'crit',text:`<b>${worst[0]}</b> tem a pior média (<b>${worst[1].avg.toFixed(2)}</b>) e está <b>abaixo da meta ${NOTA_MIN}</b> — prioridade máxima de ação`});
+    else _ins.push({sev:'aten',text:`<b>${worst[0]}</b> tem a menor média (<b>${worst[1].avg.toFixed(2)}</b>), ainda acima da meta — monitorar para não cair`});
+    const gap=best[1].avg-worst[1].avg;
+    if(gap>=1.0)_ins.push({sev:'aten',text:`Diferença de <b>${gap.toFixed(2)} pontos</b> entre melhor e pior loja — operação heterogênea, falta padronização`});
+  }
+  Object.keys(lojaSeries).forEach(loja=>{
+    const d=lojaSeries[loja];
+    if(d.count<2)return;
+    const delta=d.last-d.first;
+    if(delta<=-0.5)_ins.push({sev:'crit',text:`<b>${loja}</b> caiu <b>${Math.abs(delta).toFixed(2)} pontos</b> no período (${d.first.toFixed(2)} → ${d.last.toFixed(2)}) — tendência de queda, investigar urgente`});
+    else if(delta<=-0.2)_ins.push({sev:'aten',text:`<b>${loja}</b> em leve queda (${d.first.toFixed(2)} → ${d.last.toFixed(2)}, -${Math.abs(delta).toFixed(2)}) — observar evolução`});
+    else if(delta>=0.5)_ins.push({sev:'ok',text:`<b>${loja}</b> em melhora consistente (${d.first.toFixed(2)} → ${d.last.toFixed(2)}, +${delta.toFixed(2)}) — manter rotina atual`});
+  });
+  const abaixoMeta=Object.entries(lojaSeries).filter(e=>e[1].avg!==null&&e[1].avg<NOTA_MIN);
+  if(abaixoMeta.length===0&&allValid.length>0)_ins.push({sev:'ok',text:`<b>Todas as lojas</b> com média acima da meta ${NOTA_MIN} — operação saudável`});
+  else if(abaixoMeta.length>=2)_ins.push({sev:'crit',text:`<b>${abaixoMeta.length} lojas abaixo da meta</b> (${abaixoMeta.map(e=>e[0]).join(', ')}) — problema sistêmico, revisar processo nutricional global`});
+  else if(abaixoMeta.length===1)_ins.push({sev:'aten',text:`<b>${abaixoMeta[0][0]}</b> abaixo da meta ${NOTA_MIN} (${abaixoMeta[0][1].avg.toFixed(2)}) — caso isolado, plano de ação focado`});
+  Object.keys(lojaSeries).forEach(loja=>{
+    const d=lojaSeries[loja];
+    if(d.count<3)return;
+    const amp=d.max-d.min;
+    if(amp>=1.5)_ins.push({sev:'aten',text:`<b>${loja}</b> tem variação alta entre meses (mín ${d.min.toFixed(2)} → máx ${d.max.toFixed(2)}, amplitude ${amp.toFixed(2)}) — inconsistência operacional`});
+  });
+  const lojasSemDados=Object.keys(lojaSeries).filter(l=>lojaSeries[l].count===0);
+  if(lojasSemDados.length>0)_ins.push({sev:'info',text:`<b>${lojasSemDados.length} loja${lojasSemDados.length>1?'s':''}</b> sem dados no período (${lojasSemDados.join(', ')}) — preencher para análise completa`});
+  if(months.length<2)_ins.push({sev:'info',text:`Apenas <b>${months.length} mês${months.length>1?'es':''}</b> com dados — análise de tendência requer 2+ meses`});
+  if(_ins.length===0)_ins.push({sev:'info',text:'Sem dados suficientes para gerar diagnóstico'});
+  const diagWrap=document.createElement('div');diagWrap.style.cssText='display:flex;flex-direction:column;gap:8px';
+  _ins.forEach(ins=>{const c=_sevColor[ins.sev]||_sevColor.info;const item=document.createElement('div');item.style.cssText=`background:${c.bg};border:1px solid ${c.br};color:${c.fg};border-radius:8px;padding:10px 13px;font-size:13px;line-height:1.5`;item.innerHTML=`<span style="margin-right:6px">${c.ic}</span>${ins.text}`;diagWrap.appendChild(item);});
+  diagCard1.appendChild(diagWrap);
+  cont.appendChild(diagCard1);
+
   // ── Gráfico: % Elegíveis por loja por mês (barras) ──
   const chartCard2=document.createElement('div');
   chartCard2.style.cssText='background:white;border-radius:12px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:18px;margin-bottom:14px';
