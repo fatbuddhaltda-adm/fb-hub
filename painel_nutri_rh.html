@@ -187,6 +187,7 @@ firebase.auth().onAuthStateChanged(async user=>{
 <div class="view-bar">
   <div class="view-tab active" id="vtab-mensal" onclick="switchView('mensal')">📋 Painel Mensal</div>
   <div class="view-tab" id="vtab-anual" onclick="switchView('anual')">📊 Acompanhamento Anual</div>
+  <div class="view-tab" id="vtab-loja" onclick="switchView('loja')">🏪 Por Loja</div>
 </div>
 <div id="view-mensal">
   <div class="month-bar" id="monthBar"></div>
@@ -201,6 +202,9 @@ firebase.auth().onAuthStateChanged(async user=>{
 </div>
 <div id="view-anual">
   <div id="anualContent"></div>
+</div>
+<div id="view-loja" style="display:none;padding:16px 28px 80px">
+  <div id="lojaContent"></div>
 </div>
 <div class="save-bar">
   <div class="save-left">💾 Dados salvos automaticamente no Firebase</div>
@@ -299,9 +303,12 @@ function getStatus(visitas){
 function switchView(v){
   document.getElementById('view-mensal').style.display=v==='mensal'?'block':'none';
   document.getElementById('view-anual').style.display=v==='anual'?'block':'none';
+  document.getElementById('view-loja').style.display=v==='loja'?'block':'none';
   document.getElementById('vtab-mensal').classList.toggle('active',v==='mensal');
   document.getElementById('vtab-anual').classList.toggle('active',v==='anual');
+  document.getElementById('vtab-loja').classList.toggle('active',v==='loja');
   if(v==='anual')renderAnual();
+  if(v==='loja')renderLoja();
 }
 
 // ── MONTHS ──
@@ -607,11 +614,227 @@ function renderAnual(){
   });
 }
 
+// ── ANALISE POR LOJA ──
+let _lojaSelecionada=null;
+function renderLoja(){
+  const cont=document.getElementById('lojaContent');cont.innerHTML='';
+  const months=sortedMK();
+  const lojasArr=Object.keys(LOJAS);
+  if(!_lojaSelecionada)_lojaSelecionada=lojasArr[0];
+
+  // ── Selector de loja (pill buttons) ──
+  const selWrap=document.createElement('div');
+  selWrap.style.cssText='display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px';
+  const LOJA_COLORS={'PERDIZES':'#9d174d','BROOKLIN':'#0369a1','VILA MARIANA':'#5b21b6','MATRIZ':'#92400e'};
+  lojasArr.forEach(loja=>{
+    const btn=document.createElement('button');
+    const ativa=loja===_lojaSelecionada;
+    btn.textContent=loja;
+    btn.style.cssText='padding:8px 18px;border-radius:22px;border:2px solid '+(LOJA_COLORS[loja]||'#6b7280')+';background:'+(ativa?(LOJA_COLORS[loja]||'#6b7280'):'#fff')+';color:'+(ativa?'#fff':(LOJA_COLORS[loja]||'#374151'))+';font-weight:700;font-size:13px;cursor:pointer;transition:all .15s';
+    btn.onclick=()=>{_lojaSelecionada=loja;renderLoja();};
+    selWrap.appendChild(btn);
+  });
+  cont.appendChild(selWrap);
+
+  const loja=_lojaSelecionada;
+  const conf=LOJAS[loja];
+  const corLoja=LOJA_COLORS[loja]||'#6b7280';
+
+  if(!months.length){
+    const empty=document.createElement('div');empty.style.cssText='padding:40px;text-align:center;color:#9ca3af;background:#fff;border-radius:10px';
+    empty.textContent='Nenhum mês com dados ainda.';
+    cont.appendChild(empty);return;
+  }
+
+  // ── Calcular série da loja ──
+  const serie=months.map(m=>{
+    const mData=data.months[m]||{lojas:{}};
+    const meds=conf.pracas.map(p=>{const pd=(mData.lojas&&mData.lojas[loja]&&mData.lojas[loja][p])||{visitas:[{data:'',nota:''},{data:'',nota:''},{data:'',nota:''},{data:'',nota:''}]};return calcMedia(pd.visitas);}).filter(v=>v!==null);
+    return meds.length>0?meds.reduce((a,b)=>a+b,0)/meds.length:null;
+  });
+  const validVals=serie.filter(v=>v!==null);
+  const mediaLoja=validVals.length?validVals.reduce((a,b)=>a+b,0)/validVals.length:null;
+  const maxVal=validVals.length?Math.max(...validVals):null;
+  const minVal=validVals.length?Math.min(...validVals):null;
+  const maxMes=validVals.length?months[serie.indexOf(maxVal)]:null;
+  const minMes=validVals.length?months[serie.indexOf(minVal)]:null;
+  const primeiraNota=validVals[0]||null;
+  const ultimaNota=validVals[validVals.length-1]||null;
+  const tendencia=(primeiraNota!==null&&ultimaNota!==null)?(ultimaNota-primeiraNota):null;
+
+  // ── KPI cards ──
+  const kpiRow=document.createElement('div');
+  kpiRow.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px';
+  const tendArrow=tendencia===null?'—':(tendencia>=0.3?'📈':(tendencia<=-0.3?'📉':'➡️'));
+  const tendCor=tendencia===null?'#9ca3af':(tendencia>=0.3?'#10b981':(tendencia<=-0.3?'#ef4444':'#6b7280'));
+  kpiRow.innerHTML=`
+    <div style="background:white;border-radius:10px;padding:14px 16px;box-shadow:0 1px 5px rgba(0,0,0,.07);border-left:4px solid ${corLoja}"><div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase">📊 Média Anual</div><div style="font-size:26px;font-weight:800;color:#111827;margin:4px 0">${mediaLoja!==null?mediaLoja.toFixed(2):'—'}</div><div style="font-size:11px;color:${mediaLoja!==null&&mediaLoja>=NOTA_MIN?'#10b981':'#ef4444'};font-weight:600">${mediaLoja!==null?(mediaLoja>=NOTA_MIN?'acima da meta '+NOTA_MIN:'abaixo da meta '+NOTA_MIN):'sem dados'}</div></div>
+    <div style="background:white;border-radius:10px;padding:14px 16px;box-shadow:0 1px 5px rgba(0,0,0,.07);border-left:4px solid #10b981"><div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase">🏆 Melhor Mês</div><div style="font-size:26px;font-weight:800;color:#111827;margin:4px 0">${maxVal!==null?maxVal.toFixed(2):'—'}</div><div style="font-size:11px;color:#9ca3af">${maxMes||''}</div></div>
+    <div style="background:white;border-radius:10px;padding:14px 16px;box-shadow:0 1px 5px rgba(0,0,0,.07);border-left:4px solid #ef4444"><div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase">📉 Pior Mês</div><div style="font-size:26px;font-weight:800;color:#111827;margin:4px 0">${minVal!==null?minVal.toFixed(2):'—'}</div><div style="font-size:11px;color:#9ca3af">${minMes||''}</div></div>
+    <div style="background:white;border-radius:10px;padding:14px 16px;box-shadow:0 1px 5px rgba(0,0,0,.07);border-left:4px solid ${tendCor}"><div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase">${tendArrow} Tendência</div><div style="font-size:26px;font-weight:800;color:${tendCor};margin:4px 0">${tendencia===null?'—':((tendencia>=0?'+':'')+tendencia.toFixed(2))}</div><div style="font-size:11px;color:#9ca3af">primeiro vs último mês</div></div>`;
+  cont.appendChild(kpiRow);
+
+  // ── Gráfico Individual de Evolução ──
+  const chartCard=document.createElement('div');
+  chartCard.style.cssText='background:white;border-radius:12px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:18px;margin-bottom:14px';
+  chartCard.innerHTML='<div style="font-size:11px;font-weight:700;color:#1a1a2e;text-transform:uppercase;letter-spacing:.4px;margin-bottom:14px">📈 Evolução da Média — '+loja+'</div>';
+  const svgW=900,svgH=280,padL=55,padR=30,padT=24,padB=44;
+  const innerW=svgW-padL-padR,innerH=svgH-padT-padB;
+  const yMin=6,yMax=10;
+  const svgEl=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svgEl.setAttribute('viewBox','0 0 '+svgW+' '+svgH);svgEl.style.width='100%';svgEl.style.height='auto';svgEl.style.maxHeight='340px';svgEl.style.display='block';
+  // grid
+  [6,7,8,9,10].forEach(v=>{
+    const y=padT+innerH-((v-yMin)/(yMax-yMin))*innerH;
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',padL);line.setAttribute('x2',padL+innerW);line.setAttribute('y1',y);line.setAttribute('y2',y);
+    line.setAttribute('stroke',v===NOTA_MIN?'#ef4444':'#f3f4f6');
+    line.setAttribute('stroke-width',v===NOTA_MIN?'1.5':'1');
+    line.setAttribute('stroke-dasharray',v===NOTA_MIN?'4,3':'0');
+    svgEl.appendChild(line);
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',padL-8);t.setAttribute('y',y+4);t.setAttribute('text-anchor','end');t.setAttribute('font-size','10');t.setAttribute('fill','#9ca3af');t.textContent=v;
+    svgEl.appendChild(t);
+  });
+  // meta label
+  const metaY=padT+innerH-((NOTA_MIN-yMin)/(yMax-yMin))*innerH;
+  const metaLbl=document.createElementNS('http://www.w3.org/2000/svg','text');
+  metaLbl.setAttribute('x',padL+innerW+4);metaLbl.setAttribute('y',metaY+4);metaLbl.setAttribute('font-size','10');metaLbl.setAttribute('fill','#ef4444');metaLbl.setAttribute('font-weight','700');metaLbl.textContent='META';
+  svgEl.appendChild(metaLbl);
+  // pontos e linha
+  const pts=months.map((m,i)=>{
+    const x=months.length===1?padL+innerW/2:padL+(i/(months.length-1))*innerW;
+    const v=serie[i];
+    const y=v!==null?padT+innerH-((Math.min(Math.max(v,yMin),yMax)-yMin)/(yMax-yMin))*innerH:null;
+    return{x,y,v,m};
+  });
+  const validPts=pts.filter(p=>p.y!==null);
+  // area
+  if(validPts.length>=2){
+    const areaPath=document.createElementNS('http://www.w3.org/2000/svg','path');
+    let d='M '+validPts[0].x+' '+(padT+innerH);
+    validPts.forEach(p=>{d+=' L '+p.x+' '+p.y;});
+    d+=' L '+validPts[validPts.length-1].x+' '+(padT+innerH)+' Z';
+    areaPath.setAttribute('d',d);areaPath.setAttribute('fill',corLoja);areaPath.setAttribute('opacity','0.12');
+    svgEl.appendChild(areaPath);
+    const pl=document.createElementNS('http://www.w3.org/2000/svg','polyline');
+    pl.setAttribute('points',validPts.map(p=>p.x+','+p.y).join(' '));
+    pl.setAttribute('fill','none');pl.setAttribute('stroke',corLoja);pl.setAttribute('stroke-width','3');pl.setAttribute('stroke-linejoin','round');
+    svgEl.appendChild(pl);
+  }
+  validPts.forEach(p=>{
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',p.x);c.setAttribute('cy',p.y);c.setAttribute('r','6');
+    c.setAttribute('fill',corLoja);c.setAttribute('stroke','white');c.setAttribute('stroke-width','2.5');
+    svgEl.appendChild(c);
+    const tt=document.createElementNS('http://www.w3.org/2000/svg','text');
+    tt.setAttribute('x',p.x);tt.setAttribute('y',p.y-12);tt.setAttribute('text-anchor','middle');tt.setAttribute('font-size','11');tt.setAttribute('font-weight','700');tt.setAttribute('fill','#374151');
+    tt.textContent=p.v.toFixed(2);svgEl.appendChild(tt);
+  });
+  // x labels
+  months.forEach((m,i)=>{
+    const x=months.length===1?padL+innerW/2:padL+(i/(months.length-1))*innerW;
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',x);t.setAttribute('y',svgH-12);t.setAttribute('text-anchor','middle');t.setAttribute('font-size','10');t.setAttribute('fill','#6b7280');t.textContent=m;
+    svgEl.appendChild(t);
+  });
+  chartCard.appendChild(svgEl);
+  cont.appendChild(chartCard);
+
+  // ── Tabela: praças × meses ──
+  const tabCard=document.createElement('div');
+  tabCard.style.cssText='background:white;border-radius:12px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:18px;margin-bottom:14px';
+  tabCard.innerHTML='<div style="font-size:11px;font-weight:700;color:#1a1a2e;text-transform:uppercase;letter-spacing:.4px;margin-bottom:14px">📋 Detalhe por Praça e Mês</div>';
+  const tabWrap=document.createElement('div');tabWrap.style.cssText='overflow-x:auto';
+  const tbl=document.createElement('table');tbl.className='anual-table';tbl.style.minWidth='600px';
+  let thead='<thead><tr><th>Praça</th>';months.forEach(m=>{thead+='<th>'+m+'</th>';});thead+='<th style="background:'+corLoja+';color:#fff">Média Anual</th></tr></thead>';
+  tbl.innerHTML=thead;
+  const tbody=document.createElement('tbody');
+  conf.pracas.forEach(praca=>{
+    let row='<tr><td><strong>'+praca+'</strong></td>';
+    const notasPraca=[];
+    months.forEach(m=>{
+      const mData=data.months[m]||{lojas:{}};
+      const pd=(mData.lojas&&mData.lojas[loja]&&mData.lojas[loja][praca])||{visitas:[{data:'',nota:''},{data:'',nota:''},{data:'',nota:''},{data:'',nota:''}]};
+      const med=calcMedia(pd.visitas);
+      if(med!==null)notasPraca.push(med);
+      const cor=med===null?'#d1d5db':(med>=NOTA_MIN?'#10b981':'#ef4444');
+      const bg=med===null?'transparent':(med>=NOTA_MIN?'#f0fdf4':'#fef2f2');
+      row+='<td style="background:'+bg+';color:'+cor+';font-weight:600">'+(med!==null?med.toFixed(2):'—')+'</td>';
+    });
+    const medAno=notasPraca.length?notasPraca.reduce((a,b)=>a+b,0)/notasPraca.length:null;
+    const corA=medAno===null?'#d1d5db':(medAno>=NOTA_MIN?'#10b981':'#ef4444');
+    row+='<td style="font-weight:700;color:'+corA+';background:#fafafa">'+(medAno!==null?medAno.toFixed(2):'—')+'</td>';
+    row+='</tr>';
+    tbody.innerHTML+=row;
+  });
+  tbl.appendChild(tbody);tabWrap.appendChild(tbl);tabCard.appendChild(tabWrap);
+  cont.appendChild(tabCard);
+
+  // ── Diagnostico desta loja ──
+  const diagCard=document.createElement('div');
+  diagCard.style.cssText='background:white;border-radius:12px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:18px;margin-bottom:14px;border-left:4px solid '+corLoja;
+  diagCard.innerHTML='<div style="font-size:11px;font-weight:700;color:#1a1a2e;text-transform:uppercase;letter-spacing:.4px;margin-bottom:14px">🔎 Diagnóstico — '+loja+'</div>';
+  const _sev={crit:{bg:'#fef2f2',br:'#fecaca',fg:'#991b1b',ic:'🚨'},aten:{bg:'#fffbeb',br:'#fde68a',fg:'#92400e',ic:'⚠️'},ok:{bg:'#f0fdf4',br:'#bbf7d0',fg:'#166534',ic:'✅'},info:{bg:'#eff6ff',br:'#bfdbfe',fg:'#1e40af',ic:'ℹ️'}};
+  const ins=[];
+  if(validVals.length===0){
+    ins.push({sev:'info',text:'Nenhum dado preenchido para '+loja+' ainda.'});
+  }else{
+    // media geral
+    if(mediaLoja>=NOTA_MIN+1)ins.push({sev:'ok',text:`<b>Média anual de ${mediaLoja.toFixed(2)}</b> — bem acima da meta ${NOTA_MIN}, performance excelente`});
+    else if(mediaLoja>=NOTA_MIN)ins.push({sev:'ok',text:`<b>Média anual de ${mediaLoja.toFixed(2)}</b> — acima da meta ${NOTA_MIN}, manter rotina`});
+    else if(mediaLoja>=NOTA_MIN-0.5)ins.push({sev:'aten',text:`<b>Média anual de ${mediaLoja.toFixed(2)}</b> — pouco abaixo da meta ${NOTA_MIN}, agir agora antes de piorar`});
+    else ins.push({sev:'crit',text:`<b>Média anual de ${mediaLoja.toFixed(2)}</b> — bem abaixo da meta ${NOTA_MIN}, intervenção urgente necessária`});
+    // tendencia
+    if(tendencia!==null&&validVals.length>=2){
+      if(tendencia>=0.5)ins.push({sev:'ok',text:`Evolução positiva: <b>+${tendencia.toFixed(2)} pontos</b> do primeiro ao último mês — algo está funcionando, identificar e manter`});
+      else if(tendencia>=0.2)ins.push({sev:'ok',text:`Leve melhora (+${tendencia.toFixed(2)} pontos no período) — direção certa`});
+      else if(tendencia<=-0.5)ins.push({sev:'crit',text:`<b>Queda de ${Math.abs(tendencia).toFixed(2)} pontos</b> do primeiro ao último mês (${primeiraNota.toFixed(2)} → ${ultimaNota.toFixed(2)}) — investigar urgente`});
+      else if(tendencia<=-0.2)ins.push({sev:'aten',text:`Tendência de queda (${tendencia.toFixed(2)} pontos no período) — observar próximos meses`});
+    }
+    // volatilidade
+    if(validVals.length>=3){
+      const amp=maxVal-minVal;
+      if(amp>=1.5)ins.push({sev:'aten',text:`<b>Variação alta entre meses</b>: ${minVal.toFixed(2)} (${minMes}) → ${maxVal.toFixed(2)} (${maxMes}), amplitude ${amp.toFixed(2)} — inconsistência, padronizar rotina`});
+    }
+    // praças críticas
+    const pracasCriticas=[];const pracasExcelentes=[];
+    conf.pracas.forEach(praca=>{
+      const notasP=months.map(m=>{
+        const mData=data.months[m]||{lojas:{}};
+        const pd=(mData.lojas&&mData.lojas[loja]&&mData.lojas[loja][praca])||{visitas:[{data:'',nota:''},{data:'',nota:''},{data:'',nota:''},{data:'',nota:''}]};
+        return calcMedia(pd.visitas);
+      }).filter(v=>v!==null);
+      if(!notasP.length)return;
+      const med=notasP.reduce((a,b)=>a+b,0)/notasP.length;
+      if(med<NOTA_MIN)pracasCriticas.push({praca,med});
+      else if(med>=NOTA_MIN+1)pracasExcelentes.push({praca,med});
+    });
+    if(pracasCriticas.length>=2)ins.push({sev:'crit',text:`<b>${pracasCriticas.length} praças abaixo da meta</b>: ${pracasCriticas.map(p=>p.praca+' ('+p.med.toFixed(2)+')').join(', ')} — problema sistêmico na loja`});
+    else if(pracasCriticas.length===1)ins.push({sev:'aten',text:`<b>${pracasCriticas[0].praca}</b> abaixo da meta (${pracasCriticas[0].med.toFixed(2)}) — caso isolado, plano de ação focado`});
+    if(pracasExcelentes.length>=1)ins.push({sev:'ok',text:`<b>Praça(s) de excelência</b>: ${pracasExcelentes.map(p=>p.praca+' ('+p.med.toFixed(2)+')').join(', ')} — usar como referência interna para as demais`});
+    // cobertura
+    const mesesSemDados=serie.filter(v=>v===null).length;
+    if(mesesSemDados>0)ins.push({sev:'info',text:`<b>${mesesSemDados} mês(es) sem dados</b> nesta loja — completar para análise mais robusta`});
+    // ultimo mes
+    if(ultimaNota!==null){
+      if(ultimaNota<NOTA_MIN)ins.push({sev:'crit',text:`Último mês com nota <b>${ultimaNota.toFixed(2)}</b> — está abaixo da meta agora, ação imediata`});
+      else if(ultimaNota>=NOTA_MIN+1)ins.push({sev:'ok',text:`Último mês com nota <b>${ultimaNota.toFixed(2)}</b> — saindo bem do período recente`});
+    }
+    if(ins.length===0)ins.push({sev:'info',text:'Sem padrões relevantes a destacar.'});
+  }
+  const diagWrap=document.createElement('div');diagWrap.style.cssText='display:flex;flex-direction:column;gap:8px';
+  ins.forEach(i=>{const c=_sev[i.sev]||_sev.info;const item=document.createElement('div');item.style.cssText='background:'+c.bg+';border:1px solid '+c.br+';color:'+c.fg+';border-radius:8px;padding:10px 13px;font-size:13px;line-height:1.5';item.innerHTML='<span style="margin-right:6px">'+c.ic+'</span>'+i.text;diagWrap.appendChild(item);});
+  diagCard.appendChild(diagWrap);
+  cont.appendChild(diagCard);
+}
+
 // ── RENDER ALL ──
 function renderAll(){
   renderMonths();renderKPIs();renderLojas();
   document.getElementById('headerInfo').textContent=currentMonth+' — '+new Date().toLocaleDateString('pt-BR');
   if(document.getElementById('vtab-anual').classList.contains('active'))renderAnual();
+  if(document.getElementById('vtab-loja')&&document.getElementById('vtab-loja').classList.contains('active'))renderLoja();
 }
 
 // ── FIREBASE ──
