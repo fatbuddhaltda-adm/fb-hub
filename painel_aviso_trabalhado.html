@@ -109,6 +109,8 @@ body{font-family:Inter,sans-serif;background:var(--l);color:var(--d)}
  <nav class="nav">
   <button class="nb a" onclick="sv('d',this)">📊 Dashboard</button>
   <button class="nb" onclick="sv('r',this)">📋 Registros</button>
+  <button class="nb" onclick="sv('c',this)">📥 Contratações</button>
+  <button class="nb" onclick="sv('a',this)">🎯 Assertividade</button>
  </nav>
  <div class="con">
   <div id="vd" class="vi a">
@@ -191,6 +193,50 @@ body{font-family:Inter,sans-serif;background:var(--l);color:var(--d)}
    </div>
    <div class="tw"><table class="dt"><thead><tr><th>Colaborador</th><th>Loja</th><th>Início</th><th>Fim</th><th>Dias</th><th>Motivo</th><th>Status</th><th>Ações</th></tr></thead><tbody id="tb"></tbody></table></div>
   </div>
+  <div id="vc" class="vi">
+   <div class="sh"><h2>📥 Cadastro de Contratações</h2><button class="btn bp" onclick="oMC()">+ Nova Contratação</button></div>
+   <div style="background:#f5ede6;border-left:3px solid var(--d);padding:10px 14px;margin-bottom:14px;border-radius:6px;font-size:12px;color:var(--d);line-height:1.5">💡 <b>Cadastre toda contratação aqui</b> — é a base para calcular a Assertividade dos gestores. O sistema cruza por nome com a aba Registros para identificar saídas precoces (&lt;90 dias) por motivo imputável.</div>
+   <div class="fb">
+    <div class="fg"><span class="fl">Gestor</span><input type="text" id="fcg" placeholder="Filtrar por gestor..." oninput="rC()"></div>
+    <div class="fg"><span class="fl">Loja</span><select id="fcl" onchange="rC()"><option value="">Todas</option><option>MATRIZ</option><option>BROOKLIN</option><option>PERDIZES</option><option>VILA MARIANA</option></select></div>
+    <div class="fg"><span class="fl">Buscar</span><input type="text" id="fcn" placeholder="Nome..." oninput="rC()"></div>
+   </div>
+   <div class="tw"><table class="dt"><thead><tr><th>Colaborador</th><th>Cargo</th><th>Loja</th><th>Gestor</th><th>Líder Direto</th><th>Admissão</th><th>Status 90d</th><th>Ações</th></tr></thead><tbody id="tbc"></tbody></table></div>
+  </div>
+  <div id="va" class="vi">
+   <div class="sh"><h2>🎯 Assertividade de Contratação</h2></div>
+   <div style="background:#f5ede6;border-left:3px solid var(--d);padding:10px 14px;margin-bottom:14px;border-radius:6px;font-size:12px;color:var(--d);line-height:1.5">📐 <b>Cálculo:</b> Assertividade = Sucessos ÷ Elegíveis × 100. <b>Sucessos</b> = contratados ativos após 90 dias. <b>Insucessos</b> = saídas em &lt;90d por desempenho, comportamento, faltas, justa causa, incompatibilidade. <b>Externos</b> (mudança de cidade, saúde, etc) saem do denominador. <b>Em observação</b> = ainda dentro da janela de 90d.</div>
+   <div class="yb">
+    <label style="font-size:13px;font-weight:600;color:var(--m)">Safra (mês admissão):</label>
+    <select id="fya" onchange="rA()" style="padding:5px 10px;border:1px solid var(--c);border-radius:5px;font-size:13px"></select>
+    <label style="font-size:13px;font-weight:600;color:var(--m);margin-left:10px">Loja:</label>
+    <select id="fla" onchange="rA()" style="padding:5px 10px;border:1px solid var(--c);border-radius:5px;font-size:13px"><option value="">Todas</option><option>MATRIZ</option><option>BROOKLIN</option><option>PERDIZES</option><option>VILA MARIANA</option></select>
+   </div>
+   <div id="aKpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0"></div>
+   <div class="cc"><h3>🏆 Ranking de Gestores</h3><div style="overflow-x:auto"><table class="mt" id="mtra"><thead><tr><th>#</th><th>Gestor</th><th>Loja(s)</th><th>Contratações</th><th>Externos</th><th>Elegíveis</th><th>✅ Sucessos</th><th>❌ Insucessos</th><th>⏳ Em obs</th><th>Assertividade</th><th>Status</th></tr></thead><tbody></tbody></table></div></div>
+   <div class="cc"><h3>📊 Distribuição por Faixa de Assertividade</h3><div id="aDist" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px"></div></div>
+   <div class="cc"><h3>🔎 Diagnóstico Executivo — Assertividade</h3><div id="aDiag" style="margin-top:10px"></div></div>
+  </div>
+ </div>
+</div>
+<div class="mo" id="moc">
+ <div class="mb">
+  <h2 id="mtc">Nova Contratação</h2>
+  <input type="hidden" id="cei">
+  <div class="fr">
+   <div class="fg2"><label>Nome *</label><input type="text" id="cfn" placeholder="Nome completo"></div>
+   <div class="fg2"><label>Cargo</label><input type="text" id="cfc" placeholder="Ex: Aux Cozinha, Atendente..."></div>
+  </div>
+  <div class="fr">
+   <div class="fg2"><label>Loja *</label><select id="cflo"><option value="">Selecione</option><option>MATRIZ</option><option>BROOKLIN</option><option>PERDIZES</option><option>VILA MARIANA</option></select></div>
+   <div class="fg2"><label>Data Admissão *</label><input type="date" id="cfadm"></div>
+  </div>
+  <div class="fr">
+   <div class="fg2"><label>Gestor que aprovou *</label><input type="text" id="cfg" placeholder="Quem decidiu contratar"></div>
+   <div class="fg2"><label>Líder direto</label><input type="text" id="cflider" placeholder="Quem lidera no dia a dia"></div>
+  </div>
+  <div class="fg2"><label>Observações</label><input type="text" id="cfo" placeholder="Observação livre"></div>
+  <div class="mf"><button class="btn bo" onclick="cMC()">Cancelar</button><button class="btn bp" onclick="sC()">Salvar</button></div>
  </div>
 </div>
 <div class="mo" id="mo">
@@ -210,6 +256,10 @@ body{font-family:Inter,sans-serif;background:var(--l);color:var(--d)}
   <div class="fr">
    <div class="fg2"><label>Data Início *</label><input type="date" id="di" onchange="cDF()"></div>
    <div class="fg2"><label>Data Fim</label><input type="date" id="df"></div>
+  </div>
+  <div class="fr">
+   <div class="fg2"><label>Data de Admissão <span style="color:var(--m);font-size:10px">(p/ Assertividade)</span></label><input type="date" id="fadm" placeholder="Quando foi contratado"></div>
+   <div class="fg2"><label>Motivo Externo? <span style="color:var(--m);font-size:10px">(saída não imputável)</span></label><select id="fext" style="width:100%;padding:8px 10px;border:1px solid var(--c);border-radius:5px;font-size:13px;font-family:inherit"><option value="">Não — decisão de qualidade conta no indicador</option><option value="mudancaCidade">🌎 Mudança de cidade</option><option value="saudeFamiliar">🏥 Problema/saúde familiar</option><option value="saudeColab">💊 Saúde do colaborador</option><option value="outroPessoal">🙋 Outro motivo pessoal externo</option></select></div>
   </div>
   <div class="fr">
    <div class="fg2"><label>Status</label><select id="fst"><option value="Em Andamento">Em Andamento</option><option value="Concluido">Concluído</option></select></div>
@@ -738,14 +788,195 @@ function applyInitGestorLock(){
 }
 function onCatChange(){applyInitGestorLock();}
 function onInitChange(){applyInitGestorLock();}
-function oM(){document.getElementById('ei').value='';document.getElementById('mt2').textContent='Novo Registro';['fn','di','df','fo','fg','flider','ffb'].forEach(i=>document.getElementById(i).value='');document.getElementById('flo').value='';document.getElementById('fst').value='Em Andamento';document.getElementById('fcat').value='';document.getElementById('fmod').value='';document.getElementById('finit').value='Empresa';document.getElementById('faval').value='';document.getElementById('frec').value='';document.querySelectorAll('input[name="mot"]').forEach(r=>r.checked=false);applyInitGestorLock();document.getElementById('mo').classList.add('o');}
-function eR(id){const r=recs[id];if(!r)return;document.getElementById('ei').value=id;document.getElementById('mt2').textContent='Editar';document.getElementById('fn').value=r.nome||'';document.getElementById('flo').value=r.loja||'';document.getElementById('di').value=r.dataInicio||'';document.getElementById('df').value=r.dataFim||'';document.getElementById('fst').value=r.status||'Em Andamento';document.getElementById('fo').value=r.obs||'';document.getElementById('fcat').value=r.categoria==='acordo'?'':(r.categoria||'');document.getElementById('fmod').value=r.modalidade||(r.categoria==='acordo'?'acordo':r.categoria==='justaCausa'?'justaCausa':r.categoria==='fimContrato'?'fimExperiencia':'');document.getElementById('fg').value=r.gestor||'';document.getElementById('flider').value=r.liderDireto||'';document.getElementById('ffb').value=r.feedbacks||'';document.getElementById('finit').value=r.iniciadoPor||(r.categoria==='pedidoColaborador'?'Colaborador':'Empresa');document.getElementById('faval').value=r.avaliacao||'';document.getElementById('frec').value=r.recontratar||'';document.querySelectorAll('input[name="mot"]').forEach(x=>x.checked=x.value===r.motivo);applyInitGestorLock();document.getElementById('mo').classList.add('o');}
+function oM(){document.getElementById('ei').value='';document.getElementById('mt2').textContent='Novo Registro';['fn','di','df','fo','fg','flider','ffb','fadm'].forEach(i=>document.getElementById(i).value='');document.getElementById('flo').value='';document.getElementById('fst').value='Em Andamento';document.getElementById('fcat').value='';document.getElementById('fmod').value='';document.getElementById('finit').value='Empresa';document.getElementById('faval').value='';document.getElementById('frec').value='';document.getElementById('fext').value='';document.querySelectorAll('input[name="mot"]').forEach(r=>r.checked=false);applyInitGestorLock();document.getElementById('mo').classList.add('o');}
+function eR(id){const r=recs[id];if(!r)return;document.getElementById('ei').value=id;document.getElementById('mt2').textContent='Editar';document.getElementById('fn').value=r.nome||'';document.getElementById('flo').value=r.loja||'';document.getElementById('di').value=r.dataInicio||'';document.getElementById('df').value=r.dataFim||'';document.getElementById('fst').value=r.status||'Em Andamento';document.getElementById('fo').value=r.obs||'';document.getElementById('fcat').value=r.categoria==='acordo'?'':(r.categoria||'');document.getElementById('fmod').value=r.modalidade||(r.categoria==='acordo'?'acordo':r.categoria==='justaCausa'?'justaCausa':r.categoria==='fimContrato'?'fimExperiencia':'');document.getElementById('fg').value=r.gestor||'';document.getElementById('flider').value=r.liderDireto||'';document.getElementById('ffb').value=r.feedbacks||'';document.getElementById('finit').value=r.iniciadoPor||(r.categoria==='pedidoColaborador'?'Colaborador':'Empresa');document.getElementById('faval').value=r.avaliacao||'';document.getElementById('frec').value=r.recontratar||'';document.getElementById('fadm').value=r.dataAdmissao||'';document.getElementById('fext').value=r.motivoExterno||'';document.querySelectorAll('input[name="mot"]').forEach(x=>x.checked=x.value===r.motivo);applyInitGestorLock();document.getElementById('mo').classList.add('o');}
 function cM(){document.getElementById('mo').classList.remove('o');}
 function cDF(){const i=document.getElementById('di').value;if(!i)return;const m=document.querySelector('input[name="mot"]:checked');if(!m)return;let d=0;if(m.value==='empresa23dias')d=22;else if(m.value==='empresaReducao2h'||m.value==='colaborador')d=29;const dt=new Date(i+'T00:00:00');dt.setDate(dt.getDate()+d);document.getElementById('df').value=dt.toISOString().split('T')[0];}
-function sR(){const n=(document.getElementById('fn').value||'').trim(),m=document.querySelector('input[name="mot"]:checked'),i=document.getElementById('di').value,cat=document.getElementById('fcat').value;if(!n){alert('Informe o nome.');return;}if(!m){alert('Selecione o tipo de aviso.');return;}if(!i){alert('Informe a data de início.');return;}const p={nome:n,motivo:m.value,categoria:cat,modalidade:document.getElementById('fmod').value||'',gestor:(document.getElementById('fg').value||'').trim(),liderDireto:(document.getElementById('flider').value||'').trim(),iniciadoPor:document.getElementById('finit').value||'Empresa',avaliacao:document.getElementById('faval').value||'',recontratar:document.getElementById('frec').value||'',feedbacks:document.getElementById('ffb').value||'',loja:document.getElementById('flo').value||'-',dataInicio:i,dataFim:document.getElementById('df').value||i,status:document.getElementById('fst').value||'Em Andamento',obs:document.getElementById('fo').value||'',atualizadoEm:Date.now()};const eid=document.getElementById('ei').value;const ref=eid?db.ref('avisos_trabalhados/'+eid):db.ref('avisos_trabalhados').push();if(!eid)p.criadoEm=Date.now();(eid?ref.update(p):ref.set(p)).then(()=>cM()).catch(e=>alert(e.message));}
+function sR(){const n=(document.getElementById('fn').value||'').trim(),m=document.querySelector('input[name="mot"]:checked'),i=document.getElementById('di').value,cat=document.getElementById('fcat').value;if(!n){alert('Informe o nome.');return;}if(!m){alert('Selecione o tipo de aviso.');return;}if(!i){alert('Informe a data de início.');return;}const p={nome:n,motivo:m.value,categoria:cat,modalidade:document.getElementById('fmod').value||'',gestor:(document.getElementById('fg').value||'').trim(),liderDireto:(document.getElementById('flider').value||'').trim(),iniciadoPor:document.getElementById('finit').value||'Empresa',avaliacao:document.getElementById('faval').value||'',recontratar:document.getElementById('frec').value||'',feedbacks:document.getElementById('ffb').value||'',loja:document.getElementById('flo').value||'-',dataInicio:i,dataFim:document.getElementById('df').value||i,status:document.getElementById('fst').value||'Em Andamento',obs:document.getElementById('fo').value||'',dataAdmissao:document.getElementById('fadm').value||'',motivoExterno:document.getElementById('fext').value||'',atualizadoEm:Date.now()};const eid=document.getElementById('ei').value;const ref=eid?db.ref('avisos_trabalhados/'+eid):db.ref('avisos_trabalhados').push();if(!eid)p.criadoEm=Date.now();(eid?ref.update(p):ref.set(p)).then(()=>cM()).catch(e=>alert(e.message));}
 function co(id){if(!confirm('Marcar como concluído?'))return;db.ref('avisos_trabalhados/'+id).update({status:'Concluido'});}
 function dR(id){if(!confirm('Excluir?'))return;db.ref('avisos_trabalhados/'+id).remove();}
-function sv(id,btn){document.querySelectorAll('.vi').forEach(v=>v.classList.remove('a'));document.querySelectorAll('.nb').forEach(b=>b.classList.remove('a'));document.getElementById('v'+id).classList.add('a');btn.classList.add('a');if(id==='d')rD();}
+
+// ── CONTRATAÇÕES ──
+let contratacoes={};
+db.ref('contratacoes').on('value',s=>{contratacoes=s.val()||{};Object.keys(contratacoes).forEach(k=>{if(contratacoes[k])contratacoes[k].id=k;});if(document.getElementById('vc')&&document.getElementById('vc').classList.contains('a'))rC();if(document.getElementById('va')&&document.getElementById('va').classList.contains('a')){populateSafraYears();rA();}});
+function oMC(){document.getElementById('cei').value='';document.getElementById('mtc').textContent='Nova Contratação';['cfn','cfc','cfadm','cfg','cflider','cfo'].forEach(i=>document.getElementById(i).value='');document.getElementById('cflo').value='';document.getElementById('moc').classList.add('o');}
+function eC(id){const r=contratacoes[id];if(!r)return;document.getElementById('cei').value=id;document.getElementById('mtc').textContent='Editar Contratação';document.getElementById('cfn').value=r.nome||'';document.getElementById('cfc').value=r.cargo||'';document.getElementById('cflo').value=r.loja||'';document.getElementById('cfadm').value=r.dataAdmissao||'';document.getElementById('cfg').value=r.gestor||'';document.getElementById('cflider').value=r.liderDireto||'';document.getElementById('cfo').value=r.obs||'';document.getElementById('moc').classList.add('o');}
+function cMC(){document.getElementById('moc').classList.remove('o');}
+function sC(){const n=(document.getElementById('cfn').value||'').trim();const l=document.getElementById('cflo').value;const d=document.getElementById('cfadm').value;const g=(document.getElementById('cfg').value||'').trim();if(!n){alert('Informe o nome.');return;}if(!l){alert('Informe a loja.');return;}if(!d){alert('Informe a data de admissão.');return;}if(!g){alert('Informe o gestor que aprovou a contratação.');return;}const p={nome:n,cargo:(document.getElementById('cfc').value||'').trim(),loja:l,dataAdmissao:d,gestor:g,liderDireto:(document.getElementById('cflider').value||'').trim(),obs:document.getElementById('cfo').value||'',atualizadoEm:Date.now()};const eid=document.getElementById('cei').value;const ref=eid?db.ref('contratacoes/'+eid):db.ref('contratacoes').push();if(!eid)p.criadoEm=Date.now();(eid?ref.update(p):ref.set(p)).then(()=>cMC()).catch(e=>alert(e.message));}
+function dC(id){if(!confirm('Excluir contratação?'))return;db.ref('contratacoes/'+id).remove();}
+
+// Status 90 dias para uma contratacao (dado dataAdmissao e recs de demissão)
+function statusContratacao(c){
+ if(!c.dataAdmissao)return{label:'sem data',cor:'#9ca3af',cls:'aten'};
+ const adm=new Date(c.dataAdmissao+'T00:00:00');
+ const hoje=new Date();
+ const diasCorr=Math.floor((hoje-adm)/(1000*60*60*24));
+ const limite90=new Date(adm);limite90.setDate(limite90.getDate()+90);
+ // procurar demissao em recs com nome aproximado
+ const nm=(c.nome||'').trim().toLowerCase();
+ let demis=null;
+ Object.values(recs).forEach(r=>{
+  if((r.nome||'').trim().toLowerCase()===nm){
+   const df=r.dataFim||r.dataInicio;
+   if(df){
+    const dt=new Date(df+'T00:00:00');
+    if(dt>=adm)demis=r;
+   }
+  }
+ });
+ if(demis){
+  const dt=new Date((demis.dataFim||demis.dataInicio)+'T00:00:00');
+  const diasAteDem=Math.floor((dt-adm)/(1000*60*60*24));
+  if(dt<limite90){
+   // saída antes de 90d
+   if(demis.motivoExterno)return{label:'externo ('+diasAteDem+'d)',cor:'#6b7280',cls:'ext',demis,dias:diasAteDem};
+   const cat=demis.categoria||'';
+   const impCats=['desempenho','comportamento','desemCompMisto','justaCausa'];
+   if(impCats.includes(cat)||demis.modalidade==='justaCausa'||demis.motivo==='contratExperiencia'&&cat==='')return{label:'insucesso ('+diasAteDem+'d)',cor:'#C0392B',cls:'ins',demis,dias:diasAteDem};
+   if(cat==='reducao')return{label:'externo - redução ('+diasAteDem+'d)',cor:'#6b7280',cls:'ext',demis,dias:diasAteDem};
+   return{label:'insucesso ('+diasAteDem+'d)',cor:'#C0392B',cls:'ins',demis,dias:diasAteDem};
+  }
+  // saiu depois de 90d → sucesso
+  return{label:'sucesso (saiu '+diasAteDem+'d)',cor:'#10b981',cls:'suc',demis,dias:diasAteDem};
+ }
+ // não tem demissão
+ if(diasCorr<90)return{label:'em observação ('+diasCorr+'d)',cor:'#f59e0b',cls:'obs',dias:diasCorr};
+ return{label:'sucesso (>90d ativo)',cor:'#10b981',cls:'suc',dias:diasCorr};
+}
+
+function rC(){
+ const tb=document.getElementById('tbc');if(!tb)return;
+ const fg=(document.getElementById('fcg')||{value:''}).value.toLowerCase().trim();
+ const fl=(document.getElementById('fcl')||{value:''}).value;
+ const fn=(document.getElementById('fcn')||{value:''}).value.toLowerCase().trim();
+ const list=Object.values(contratacoes).filter(c=>{
+  if(fg&&!(c.gestor||'').toLowerCase().includes(fg))return false;
+  if(fl&&c.loja!==fl)return false;
+  if(fn&&!(c.nome||'').toLowerCase().includes(fn))return false;
+  return true;
+ }).sort((a,b)=>(b.dataAdmissao||'').localeCompare(a.dataAdmissao||''));
+ if(!list.length){tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--m);font-style:italic">Nenhuma contratação cadastrada ainda.</td></tr>';return;}
+ tb.innerHTML=list.map(c=>{
+  const st=statusContratacao(c);
+  const badge='<span style="background:'+st.cor+';color:#fff;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">'+st.label+'</span>';
+  return '<tr><td style="font-weight:600">'+(c.nome||'-')+'</td><td>'+(c.cargo||'-')+'</td><td>'+(c.loja||'-')+'</td><td>'+(c.gestor||'-')+'</td><td>'+(c.liderDireto||'-')+'</td><td>'+fd(c.dataAdmissao)+'</td><td>'+badge+'</td><td style="white-space:nowrap"><button class="btn bs be" onclick="eC(\''+c.id+'\')">✎</button> <button class="btn bs bd" onclick="dC(\''+c.id+'\')">✕</button></td></tr>';
+ }).join('');
+}
+
+function populateSafraYears(){
+ const sel=document.getElementById('fya');if(!sel)return;
+ const set=new Set();
+ Object.values(contratacoes).forEach(c=>{if(c.dataAdmissao)set.add(c.dataAdmissao.substring(0,4));});
+ const cur=sel.value;
+ const arr=[...set].sort().reverse();
+ if(!arr.length)arr.push(new Date().getFullYear().toString());
+ sel.innerHTML='<option value="">Todos os anos</option>'+arr.map(y=>'<option value="'+y+'">'+y+'</option>').join('');
+ if(cur)sel.value=cur;
+}
+
+function rA(){
+ const yr=(document.getElementById('fya')||{value:''}).value;
+ const lj=(document.getElementById('fla')||{value:''}).value;
+ const all=Object.values(contratacoes).filter(c=>{
+  if(yr&&(!c.dataAdmissao||!c.dataAdmissao.startsWith(yr)))return false;
+  if(lj&&c.loja!==lj)return false;
+  return true;
+ });
+ const kpis=document.getElementById('aKpis');
+ if(!all.length){
+  kpis.innerHTML='<div class="cc" style="grid-column:1/-1;text-align:center;padding:24px;color:var(--m)">📥 Sem contratações cadastradas para o filtro selecionado.<br><br><b>Cadastre contratações na aba "📥 Contratações"</b> para começar a medir a assertividade dos gestores.</div>';
+  document.querySelector('#mtra tbody').innerHTML='<tr><td colspan="11" style="text-align:center;padding:14px;color:var(--m);font-style:italic">Sem dados</td></tr>';
+  document.getElementById('aDist').innerHTML='';document.getElementById('aDiag').innerHTML='';
+  return;
+ }
+ // computar status de cada contratação
+ const dados=all.map(c=>({c,s:statusContratacao(c)}));
+ // agrupar por gestor
+ const porGestor={};
+ dados.forEach(({c,s})=>{
+  const g=(c.gestor||'(sem gestor)').trim();
+  if(!porGestor[g])porGestor[g]={lojas:new Set(),tot:0,suc:0,ins:0,ext:0,obs:0};
+  porGestor[g].tot++;porGestor[g].lojas.add(c.loja||'-');
+  if(s.cls==='suc')porGestor[g].suc++;
+  else if(s.cls==='ins')porGestor[g].ins++;
+  else if(s.cls==='ext')porGestor[g].ext++;
+  else if(s.cls==='obs')porGestor[g].obs++;
+ });
+ // KPIs gerais
+ let totGeral=0,sucGeral=0,insGeral=0,extGeral=0,obsGeral=0;
+ Object.values(porGestor).forEach(d=>{totGeral+=d.tot;sucGeral+=d.suc;insGeral+=d.ins;extGeral+=d.ext;obsGeral+=d.obs;});
+ const elegGeral=sucGeral+insGeral;
+ const assertGeral=elegGeral>0?Math.round(sucGeral/elegGeral*1000)/10:0;
+ const gestoresAv=Object.keys(porGestor).length;
+ kpis.innerHTML=
+  '<div class="cc" style="text-align:center;padding:16px"><div style="font-size:11px;color:var(--m);text-transform:uppercase;font-weight:700">Contratações</div><div style="font-size:28px;font-weight:800;color:var(--d);margin:4px 0">'+totGeral+'</div><div style="font-size:11px;color:var(--m)">'+gestoresAv+' gestor(es)</div></div>'+
+  '<div class="cc" style="text-align:center;padding:16px;border-left:3px solid #10b981"><div style="font-size:11px;color:var(--m);text-transform:uppercase;font-weight:700">✅ Sucessos</div><div style="font-size:28px;font-weight:800;color:#10b981;margin:4px 0">'+sucGeral+'</div><div style="font-size:11px;color:var(--m)">>90d ativos ou saídos depois</div></div>'+
+  '<div class="cc" style="text-align:center;padding:16px;border-left:3px solid #C0392B"><div style="font-size:11px;color:var(--m);text-transform:uppercase;font-weight:700">❌ Insucessos</div><div style="font-size:28px;font-weight:800;color:#C0392B;margin:4px 0">'+insGeral+'</div><div style="font-size:11px;color:var(--m)">&lt;90d imputáveis</div></div>'+
+  '<div class="cc" style="text-align:center;padding:16px;border-left:3px solid '+(assertGeral>=90?'#10b981':assertGeral>=80?'#86efac':assertGeral>=70?'#f59e0b':'#C0392B')+'"><div style="font-size:11px;color:var(--m);text-transform:uppercase;font-weight:700">Assertividade Geral</div><div style="font-size:28px;font-weight:800;color:'+(assertGeral>=90?'#10b981':assertGeral>=80?'#86efac':assertGeral>=70?'#f59e0b':'#C0392B')+';margin:4px 0">'+(elegGeral>0?assertGeral.toFixed(1)+'%':'—')+'</div><div style="font-size:11px;color:var(--m)">'+extGeral+' externos · '+obsGeral+' em obs</div></div>';
+
+ // Ranking tabela
+ const classFaixa=p=>p>=90?{l:'🏆 Excelente',c:'#10b981'}:p>=80?{l:'✅ Bom',c:'#86efac'}:p>=70?{l:'⚠️ Atenção',c:'#f59e0b'}:{l:'🚨 Crítico',c:'#C0392B'};
+ const arr=Object.entries(porGestor).map(([g,d])=>{const eleg=d.suc+d.ins;const pct=eleg>0?d.suc/eleg*100:null;return{g,d,eleg,pct};}).sort((a,b)=>{if(a.pct===null&&b.pct===null)return 0;if(a.pct===null)return 1;if(b.pct===null)return -1;return b.pct-a.pct;});
+ const tbra=document.querySelector('#mtra tbody');
+ tbra.innerHTML=arr.map((x,i)=>{
+  const cls=x.pct!==null?classFaixa(x.pct):{l:'⏳ Aguardando',c:'#9ca3af'};
+  const lojasStr=[...x.d.lojas].join(', ');
+  const volBaixoTag=x.eleg<3?' <span style="background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:700">vol baixo</span>':'';
+  return '<tr><td style="text-align:center;font-weight:700">'+(i+1)+'</td><td style="font-weight:600">'+x.g+volBaixoTag+'</td><td style="font-size:11px;color:var(--m)">'+lojasStr+'</td><td style="text-align:center">'+x.d.tot+'</td><td style="text-align:center;color:#6b7280">'+x.d.ext+'</td><td style="text-align:center;font-weight:700">'+x.eleg+'</td><td style="text-align:center;color:#10b981;font-weight:700">'+x.d.suc+'</td><td style="text-align:center;color:#C0392B;font-weight:700">'+x.d.ins+'</td><td style="text-align:center;color:#f59e0b">'+x.d.obs+'</td><td style="text-align:center;font-weight:700;color:'+cls.c+'">'+(x.pct!==null?x.pct.toFixed(1)+'%':'—')+'</td><td><span style="background:'+cls.c+';color:#fff;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:700">'+cls.l+'</span></td></tr>';
+ }).join('');
+
+ // Distribuição por faixa
+ const faixas=[{l:'🏆 Excelente (≥90%)',min:90,c:'#10b981'},{l:'✅ Bom (80-89%)',min:80,c:'#86efac'},{l:'⚠️ Atenção (70-79%)',min:70,c:'#f59e0b'},{l:'🚨 Crítico (<70%)',min:0,c:'#C0392B'}];
+ const dist={};faixas.forEach(f=>dist[f.l]=0);
+ arr.forEach(x=>{if(x.pct===null)return;for(const f of faixas){if(x.pct>=f.min){dist[f.l]++;break;}}});
+ document.getElementById('aDist').innerHTML=faixas.map(f=>'<div style="flex:1;min-width:140px;background:'+f.c+';color:#fff;padding:14px;border-radius:8px;text-align:center"><div style="font-size:12px;font-weight:700;opacity:.95">'+f.l+'</div><div style="font-size:28px;font-weight:800;margin-top:4px">'+dist[f.l]+'</div><div style="font-size:11px;opacity:.85">gestor(es)</div></div>').join('');
+
+ // Diagnostico Executivo
+ const _sev={crit:{bg:'#fef2f2',br:'#fecaca',fg:'#991b1b',ic:'🚨'},aten:{bg:'#fffbeb',br:'#fde68a',fg:'#92400e',ic:'⚠️'},ok:{bg:'#f0fdf4',br:'#bbf7d0',fg:'#166534',ic:'✅'},info:{bg:'#eff6ff',br:'#bfdbfe',fg:'#1e40af',ic:'ℹ️'}};
+ const ins=[];
+ ins.push({sev:'info',text:'<b>'+totGeral+' contratações</b> avaliadas, '+elegGeral+' elegíveis (sucessos+insucessos), '+extGeral+' externos descartados, '+obsGeral+' em observação (&lt;90d desde admissão).'});
+ if(elegGeral>0){
+  if(assertGeral>=90)ins.push({sev:'ok',text:'<b>Assertividade geral '+assertGeral.toFixed(1)+'%</b> — excelente, processo de seleção está calibrado'});
+  else if(assertGeral>=80)ins.push({sev:'ok',text:'<b>Assertividade geral '+assertGeral.toFixed(1)+'%</b> — bom, dentro do padrão de mercado'});
+  else if(assertGeral>=70)ins.push({sev:'aten',text:'<b>Assertividade geral '+assertGeral.toFixed(1)+'%</b> — atenção, '+insGeral+' insucessos custaram tempo/dinheiro de contratação e demissão'});
+  else ins.push({sev:'crit',text:'<b>Assertividade crítica '+assertGeral.toFixed(1)+'%</b> — revisar processo de seleção, perfil das vagas, ou critérios dos gestores'});
+ }
+ // gestor mais crítico
+ const criticos=arr.filter(x=>x.pct!==null&&x.pct<70&&x.eleg>=3);
+ if(criticos.length>=1){
+  ins.push({sev:'crit',text:'<b>'+criticos.length+' gestor(es) em zona crítica</b> (<70% com volume ≥3): '+criticos.map(c=>c.g+' ('+c.pct.toFixed(0)+'%)').join(', ')+' — feedback estruturado + revisão dos processos de contratação'});
+ }
+ const excelentes=arr.filter(x=>x.pct!==null&&x.pct>=90&&x.eleg>=3);
+ if(excelentes.length>=1){
+  ins.push({sev:'ok',text:'<b>Referência interna</b>: '+excelentes.map(c=>c.g+' ('+c.pct.toFixed(0)+'%)').join(', ')+' — entender critérios deles e replicar'});
+ }
+ // top motivo de insucesso
+ const motInsuc={};
+ dados.forEach(({c,s})=>{if(s.cls==='ins'&&s.demis){const cat=s.demis.categoria||'sem categoria';motInsuc[cat]=(motInsuc[cat]||0)+1;}});
+ const motArr=Object.entries(motInsuc).sort((a,b)=>b[1]-a[1]);
+ if(motArr.length){
+  const cat=motArr[0][0],qt=motArr[0][1];
+  const CAT_LBL={desempenho:'Desempenho',comportamento:'Comportamento',desemCompMisto:'Desempenho+Comportamento',justaCausa:'Justa Causa',fimContrato:'Fim Experiência','sem categoria':'Sem categoria'};
+  const totInsucDiag=motArr.reduce((a,b)=>a+b[1],0);
+  const pctMot=Math.round(qt/totInsucDiag*100);
+  ins.push({sev:'aten',text:'<b>Principal causa de insucesso: '+(CAT_LBL[cat]||cat)+'</b> ('+qt+'/'+totInsucDiag+' = '+pctMot+'%) — concentre esforço na triagem desse tipo de risco'});
+ }
+ // tempo medio até saida (insucessos)
+ const diasIns=dados.filter(d=>d.s.cls==='ins'&&d.s.dias!==undefined).map(d=>d.s.dias);
+ if(diasIns.length>=2){
+  const med=diasIns.reduce((a,b)=>a+b,0)/diasIns.length;
+  if(med<=30)ins.push({sev:'aten',text:'<b>Tempo médio até saída: '+Math.round(med)+' dias</b> — demissões muito precoces sugerem entrevista ou onboarding fraco'});
+  else ins.push({sev:'info',text:'<b>Tempo médio até saída (insucessos): '+Math.round(med)+' dias</b>'});
+ }
+ // volume baixo
+ const volBaixo=arr.filter(x=>x.eleg<3&&x.eleg>0);
+ if(volBaixo.length>=Math.max(2,Math.floor(arr.length*0.4)))ins.push({sev:'info',text:'<b>'+volBaixo.length+' gestor(es) com volume baixo</b> (&lt;3 elegíveis) — analise tem menos significância, aguarde mais safras maturarem'});
+ // muitos em observacao
+ if(obsGeral>=totGeral*0.4&&obsGeral>=3)ins.push({sev:'info',text:'<b>'+obsGeral+' contratações ainda em janela de observação</b> — o número final pode mudar quando completarem 90 dias'});
+ if(ins.length<=1)ins.push({sev:'info',text:'Cadastre contratações suficientes (≥3 por gestor) para análise estatística confiável.'});
+ document.getElementById('aDiag').innerHTML=ins.map(i=>{const c=_sev[i.sev]||_sev.info;return '<div style="background:'+c.bg+';border:1px solid '+c.br+';color:'+c.fg+';border-radius:8px;padding:10px 13px;font-size:13px;line-height:1.5;margin-bottom:8px"><span style="margin-right:6px">'+c.ic+'</span>'+i.text+'</div>';}).join('');
+}
+function sv(id,btn){document.querySelectorAll('.vi').forEach(v=>v.classList.remove('a'));document.querySelectorAll('.nb').forEach(b=>b.classList.remove('a'));document.getElementById('v'+id).classList.add('a');btn.classList.add('a');if(id==='d')rD();if(id==='c')rC();if(id==='a'){populateSafraYears();rA();}}
 </script>
 </body>
 </html>
