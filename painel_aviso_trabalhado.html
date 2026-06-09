@@ -103,6 +103,21 @@ tr:hover td{background:#F7EEE6}
   <div class="con">
     <div id="vd" class="vi a">
       <div class="kr" id="kpis"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+        <div class="cc" style="margin-bottom:0">
+          <h3>🏪 Avisos por Loja</h3>
+          <div id="distLoja"></div>
+        </div>
+        <div class="cc" style="margin-bottom:0">
+          <h3>📋 Avisos por Motivo</h3>
+          <div id="distMotivo"></div>
+        </div>
+      </div>
+      <div class="cc" id="evoCard">
+        <h3>📈 Avisos Iniciados — Últimos 6 Meses</h3>
+        <div id="evoChart"></div>
+        <div style="font-size:11px;color:var(--m);margin-top:6px">Quantos avisos novos foram abertos em cada mês.</div>
+      </div>
       <div class="cc">
         <h3>⏰ Próximos Vencimentos</h3>
         <div class="tw"><table><thead><tr><th>Colaborador</th><th>Loja</th><th>Início</th><th>Fim</th><th>Em quantos dias</th><th>Motivo</th></tr></thead><tbody id="tbprox"></tbody></table></div>
@@ -112,6 +127,10 @@ tr:hover td{background:#F7EEE6}
         <h3>✅ Desligamentos Recentes</h3>
         <div class="tw"><table><thead><tr><th>Colaborador</th><th>Loja</th><th>Início</th><th>Fim (Desligamento)</th><th>Motivo</th></tr></thead><tbody id="tbrec"></tbody></table></div>
         <div style="font-size:11px;color:var(--m);margin-top:8px">Últimos 10 avisos marcados como concluídos.</div>
+      </div>
+      <div class="cc" style="border-left:4px solid var(--r)">
+        <h3>🔎 Diagnóstico Operacional</h3>
+        <div id="diagOp" style="margin-top:8px"></div>
       </div>
     </div>
     <div id="vr" class="vi">
@@ -278,6 +297,74 @@ function rD(){
   const tbrec=document.getElementById('tbrec');
   if(!rec.length)tbrec.innerHTML='<tr><td colspan="5"><div class="empty">Nenhum desligamento concluído ainda.</div></td></tr>';
   else tbrec.innerHTML=rec.map(r=>'<tr><td style="font-weight:600">'+(r.nome||'-')+'</td><td><span class="badge b-loj">'+(r.loja||'-')+'</span></td><td>'+fd(r.dataInicio)+'</td><td>'+fd(r.dataFim)+'</td><td style="font-size:11px;color:var(--m)">'+(ML[r.motivo]||r.motivo||'-')+'</td></tr>').join('');
+
+  // Distribuição por loja (em andamento)
+  const LOJAS=['MATRIZ','BROOKLIN','PERDIZES','VILA MARIANA'];
+  const corLoja={'MATRIZ':'#92400e','BROOKLIN':'#0369a1','PERDIZES':'#9d174d','VILA MARIANA':'#5b21b6'};
+  const porLoja={};LOJAS.forEach(l=>porLoja[l]=0);
+  let outras=0;
+  andamento.forEach(r=>{if(LOJAS.includes(r.loja))porLoja[r.loja]++;else outras++;});
+  const totLojaAtivo=andamento.length;
+  const dlEl=document.getElementById('distLoja');
+  if(totLojaAtivo===0)dlEl.innerHTML='<div style="padding:14px;text-align:center;color:var(--m);font-style:italic">Nenhum aviso em andamento.</div>';
+  else dlEl.innerHTML=LOJAS.map(l=>{const q=porLoja[l],p=Math.round(q/totLojaAtivo*100);return '<div style="margin-bottom:9px"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:3px"><span>'+l+'</span><span style="color:var(--m)">'+q+' ('+p+'%)</span></div><div style="background:#f3ebe1;border-radius:4px;height:8px;overflow:hidden"><div style="background:'+corLoja[l]+';height:100%;width:'+p+'%"></div></div></div>';}).join('')+(outras>0?'<div style="font-size:11px;color:var(--m);margin-top:6px">+'+outras+' sem loja definida</div>':'');
+
+  // Distribuição por motivo (em andamento)
+  const porMot={};
+  andamento.forEach(r=>{const k=r.motivo||'sem';porMot[k]=(porMot[k]||0)+1;});
+  const totMot=andamento.length;
+  const corMot={empresa23dias:'#C0392B',empresaReducao2h:'#7A5C48',colaborador:'#3b82f6',contratExperiencia:'#10b981',sem:'#9ca3af'};
+  const dmEl=document.getElementById('distMotivo');
+  if(totMot===0)dmEl.innerHTML='<div style="padding:14px;text-align:center;color:var(--m);font-style:italic">Nenhum aviso em andamento.</div>';
+  else {
+    const ordem=['empresa23dias','empresaReducao2h','colaborador','contratExperiencia'];
+    dmEl.innerHTML=ordem.filter(k=>porMot[k]>0).map(k=>{const q=porMot[k],p=Math.round(q/totMot*100);return '<div style="margin-bottom:9px"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:3px"><span>'+(ML[k]||k)+'</span><span style="color:var(--m)">'+q+' ('+p+'%)</span></div><div style="background:#f3ebe1;border-radius:4px;height:8px;overflow:hidden"><div style="background:'+(corMot[k]||'#9ca3af')+';height:100%;width:'+p+'%"></div></div></div>';}).join('');
+  }
+
+  // Evolução últimos 6 meses (avisos iniciados)
+  const hojeRef=new Date();hojeRef.setDate(1);
+  const meses=[];
+  for(let i=5;i>=0;i--){const d=new Date(hojeRef);d.setMonth(d.getMonth()-i);meses.push({ano:d.getFullYear(),mes:d.getMonth(),label:['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][d.getMonth()]+'/'+String(d.getFullYear()).slice(2)});}
+  const cont=meses.map(m=>0);
+  all.forEach(r=>{if(!r.dataInicio)return;const dt=new Date(r.dataInicio+'T00:00:00');meses.forEach((m,i)=>{if(dt.getFullYear()===m.ano&&dt.getMonth()===m.mes)cont[i]++;});});
+  const maxCont=Math.max(...cont,1);
+  const evoEl=document.getElementById('evoChart');
+  evoEl.innerHTML='<div style="display:flex;align-items:flex-end;gap:10px;height:120px;padding:8px 0">'+meses.map((m,i)=>{const h=Math.max(4,(cont[i]/maxCont)*100);return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;justify-content:flex-end;height:100%"><div style="font-size:11px;font-weight:700;color:var(--ink)">'+cont[i]+'</div><div style="width:100%;background:var(--r);height:'+h+'%;border-radius:4px 4px 0 0;min-height:4px"></div><div style="font-size:10px;color:var(--m);text-align:center;font-weight:600">'+m.label+'</div></div>';}).join('')+'</div>';
+
+  // Diagnóstico Operacional
+  const ins=[];
+  const _sev={crit:{bg:'#fef2f2',br:'#fecaca',fg:'#991b1b',ic:'🚨'},aten:{bg:'#fffbeb',br:'#fde68a',fg:'#92400e',ic:'⚠️'},ok:{bg:'#f0fdf4',br:'#bbf7d0',fg:'#166534',ic:'✅'},info:{bg:'#eff6ff',br:'#bfdbfe',fg:'#1e40af',ic:'ℹ️'}};
+  if(vencidos.length>0)ins.push({sev:'crit',text:'<b>'+vencidos.length+' aviso(s) vencido(s)</b> sem conclusão — atualizar status urgente (provavelmente já desligou e ficou faltando marcar)'});
+  if(venceProx.length>=3)ins.push({sev:'aten',text:'<b>'+venceProx.length+' avisos vencem em 7 dias ou menos</b> — preparar acertos de rescisão e documentação para a próxima semana'});
+  else if(venceProx.length>=1)ins.push({sev:'aten',text:'<b>'+venceProx.length+' aviso(s) vencendo essa semana</b> — preparar acertos'});
+  if(andamento.length===0&&all.length===0)ins.push({sev:'info',text:'Nenhum aviso cadastrado ainda. Clique em <b>+ Novo Aviso</b> na aba Registros para começar.'});
+  else if(andamento.length===0)ins.push({sev:'ok',text:'Nenhum aviso em andamento — operação tranquila no momento'});
+  // concentração por loja
+  if(totLojaAtivo>=3){
+    const sorted=LOJAS.map(l=>({l,q:porLoja[l]})).filter(x=>x.q>0).sort((a,b)=>b.q-a.q);
+    if(sorted.length>0){
+      const top=sorted[0],topPct=Math.round(top.q/totLojaAtivo*100);
+      if(topPct>=60)ins.push({sev:'aten',text:'<b>'+top.l+'</b> concentra '+topPct+'% dos avisos ativos ('+top.q+'/'+totLojaAtivo+') — atenção a possível problema localizado'});
+    }
+  }
+  // concentração por motivo
+  if(totMot>=3){
+    const sortedM=Object.entries(porMot).sort((a,b)=>b[1]-a[1]);
+    const topM=sortedM[0];
+    const topMP=Math.round(topM[1]/totMot*100);
+    if(topMP>=60&&topM[0]==='colaborador')ins.push({sev:'info',text:'<b>'+topMP+'% dos avisos ativos são pedidos pelo colaborador</b> — pode indicar momento de revisar retenção'});
+    else if(topMP>=60&&(topM[0]==='empresa23dias'||topM[0]==='empresaReducao2h'))ins.push({sev:'info',text:'<b>'+topMP+'% dos avisos ativos foram iniciados pela empresa</b> — fluxo de demissões concentrado nesse perfil'});
+  }
+  // tendência últimos 6 meses
+  if(cont.filter(c=>c>0).length>=4){
+    const h1=(cont[0]+cont[1]+cont[2])/3;
+    const h2=(cont[3]+cont[4]+cont[5])/3;
+    if(h1>0&&h2>=h1*1.5)ins.push({sev:'aten',text:'<b>Volume crescente</b>: últimos 3 meses média '+h2.toFixed(1)+' avisos/mês vs '+h1.toFixed(1)+' dos 3 meses anteriores — verificar o que está acontecendo'});
+    else if(h2>0&&h1>=h2*1.5)ins.push({sev:'ok',text:'<b>Volume em queda</b>: últimos 3 meses média '+h2.toFixed(1)+' avisos/mês vs '+h1.toFixed(1)+' antes — situação melhorando'});
+  }
+  // ok fallback
+  if(ins.length===0)ins.push({sev:'ok',text:'Tudo em dia — sem pendências críticas ou padrões preocupantes nos avisos ativos'});
+  document.getElementById('diagOp').innerHTML=ins.map(i=>{const c=_sev[i.sev]||_sev.info;return '<div style="background:'+c.bg+';border:1px solid '+c.br+';color:'+c.fg+';border-radius:8px;padding:11px 14px;font-size:13px;line-height:1.5;margin-bottom:8px"><span style="margin-right:6px">'+c.ic+'</span>'+i.text+'</div>';}).join('');
 }
 
 function rT(){
