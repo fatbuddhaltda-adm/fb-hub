@@ -550,6 +550,12 @@ firebase.auth().onAuthStateChanged(async user=>{
 <div id="view-dashboard" class="view active">
   <div class="kpi-grid" id="dash-kpis"></div>
   <div class="loja-grid" id="dash-lojas"></div>
+  <div class="section" id="dash-diag-card" style="margin-top:20px;border-left:4px solid var(--red,#C0392B);display:none">
+    <div class="section-header">
+      <span class="section-title">🔎 Diagnóstico Geral da Folha</span>
+    </div>
+    <div id="dash-diag" style="padding:6px 0 14px"></div>
+  </div>
 </div>
 
 <!-- ═══════════════ FUNCIONÁRIOS ═══════════════ -->
@@ -1014,6 +1020,104 @@ function renderDashboard() {
   if (!emps.length) {
     lGrid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><b>Nenhum funcionário cadastrado</b>Clique em "+ Novo Funcionário" para começar, ou importe um CSV.</div>`;
   }
+
+  renderDashDiagnostico(emps, clts, pjs, totalSal, totalMensal, totalAnual);
+}
+
+function renderDashDiagnostico(emps, clts, pjs, totalSal, totalMensal, totalAnual) {
+  const card = document.getElementById('dash-diag-card');
+  const cont = document.getElementById('dash-diag');
+  if (!card || !cont) return;
+  if (!emps.length) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  const _sev = {
+    crit: { bg:'#fef2f2', br:'#fecaca', fg:'#991b1b', ic:'🚨' },
+    aten: { bg:'#fffbeb', br:'#fde68a', fg:'#92400e', ic:'⚠️' },
+    ok:   { bg:'#f0fdf4', br:'#bbf7d0', fg:'#166534', ic:'✅' },
+    info: { bg:'#eff6ff', br:'#bfdbfe', fg:'#1e40af', ic:'ℹ️' }
+  };
+  const ins = [];
+
+  // 1) Overview financeiro
+  const custoMedio = totalMensal / emps.length;
+  const cargaPct = totalSal > 0 ? Math.round((totalMensal/totalSal - 1) * 100) : 0;
+  ins.push({ sev:'info', text:`<b>${emps.length} funcionários</b> custam <b>${fmt(totalMensal)}/mês</b> (anual ${fmt(totalAnual)}). Folha bruta de <b>${fmt(totalSal)}</b> + <b>${cargaPct}% de encargos e benefícios</b> = custo médio <b>${fmt(custoMedio)}/pessoa</b>.` });
+
+  // 2) Composição CLT vs PJ
+  const pctPJ = Math.round(pjs.length / emps.length * 100);
+  const pctCLT = 100 - pctPJ;
+  if (pctPJ === 0) ins.push({ sev:'ok', text:`<b>100% CLT</b> — exposição mínima a risco trabalhista de vínculo` });
+  else if (pctPJ >= 50) ins.push({ sev:'crit', text:`<b>${pctPJ}% PJ</b> (${pjs.length} de ${emps.length}) — alta exposição a reclassificação trabalhista, revisar contratos e rotina operacional dos PJ urgente` });
+  else if (pctPJ >= 30) ins.push({ sev:'aten', text:`<b>${pctPJ}% PJ</b> (${pjs.length} de ${emps.length}) — proporção elevada, validar com jurídico se relação atende requisitos de PJ real (autonomia, ausência de subordinação)` });
+  else ins.push({ sev:'ok', text:`Composição equilibrada: <b>${pctCLT}% CLT · ${pctPJ}% PJ</b> — exposição trabalhista controlada` });
+
+  // 3) Carga de encargos CLT — deveria ser ~50-70%
+  if (clts.length >= 3) {
+    const cltSal = clts.reduce((s,e) => s + (e.salario||0), 0);
+    const cltCusto = clts.reduce((s,e) => s + calc(e).total, 0);
+    const cltCarga = cltSal > 0 ? Math.round((cltCusto/cltSal - 1) * 100) : 0;
+    if (cltCarga > 90) ins.push({ sev:'aten', text:`<b>Carga de encargos CLT em ${cltCarga}%</b> sobre o salário — acima do padrão (50-70%), verificar se plano de saúde ou outros benefícios estão elevando o custo` });
+    else if (cltCarga >= 50 && cltCarga <= 75) ins.push({ sev:'ok', text:`Carga de encargos CLT em <b>${cltCarga}%</b> — dentro do padrão de mercado` });
+    else if (cltCarga < 50 && cltSal > 0) ins.push({ sev:'info', text:`Carga de encargos CLT em <b>${cltCarga}%</b> — abaixo do esperado, conferir se todos os encargos (FGTS, férias, 13o, aviso) estão sendo provisionados` });
+  }
+
+  // 4) Distribuição por loja - concentração
+  const porLoja = {};
+  emps.forEach(e => { const l = e.loja || 'Sem loja'; if (!porLoja[l]) porLoja[l] = { qt:0, sal:0, custo:0 }; porLoja[l].qt++; porLoja[l].sal += (e.salario||0); porLoja[l].custo += calc(e).total; });
+  const lojasArr = Object.entries(porLoja).sort((a,b) => b[1].custo - a[1].custo);
+  if (lojasArr.length >= 2) {
+    const top = lojasArr[0], bot = lojasArr[lojasArr.length-1];
+    const topPct = Math.round(top[1].custo / totalMensal * 100);
+    if (topPct >= 50) ins.push({ sev:'aten', text:`<b>${top[0]}</b> concentra <b>${topPct}% da folha</b> (${fmt(top[1].custo)}) — risco operacional alto se loja tiver problema, considerar redistribuição` });
+    else ins.push({ sev:'info', text:`Loja mais cara é <b>${top[0]}</b> com <b>${topPct}%</b> da folha (${fmt(top[1].custo)})` });
+    // custo médio por loja (desnível)
+    const cMedTop = top[1].custo / top[1].qt;
+    const cMedBot = bot[1].custo / bot[1].qt;
+    if (cMedTop > 0 && cMedBot > 0 && cMedTop / cMedBot >= 1.8) ins.push({ sev:'aten', text:`Desnível salarial entre lojas: <b>${top[0]}</b> tem custo médio ${fmt(cMedTop)} vs <b>${bot[0]}</b> com ${fmt(cMedBot)} (${(cMedTop/cMedBot).toFixed(1)}× maior) — composição diferente de cargos ou senioridade` });
+  }
+
+  // 5) Outliers - salário muito acima da média
+  const salarios = emps.map(e => e.salario||0).filter(s => s > 0).sort((a,b) => b-a);
+  if (salarios.length >= 5) {
+    const mediaSal = salarios.reduce((a,b) => a+b, 0) / salarios.length;
+    const topSal = salarios[0];
+    if (topSal >= mediaSal * 3) {
+      const dono = emps.find(e => e.salario === topSal);
+      ins.push({ sev:'info', text:`Maior salário individual é <b>${fmt(topSal)}</b> (${dono?dono.nome+' — '+(dono.cargo||'sem cargo'):'?'}) — ${(topSal/mediaSal).toFixed(1)}× a média da folha, peso considerável` });
+    }
+  }
+
+  // 6) PJ com salário menor que CLT médio (potencial reclassificação)
+  if (pjs.length >= 2 && clts.length >= 2) {
+    const cltMedio = clts.reduce((s,e) => s + (e.salario||0), 0) / clts.length;
+    const pjMedio = pjs.reduce((s,e) => s + (e.salario||0), 0) / pjs.length;
+    if (pjMedio < cltMedio * 1.4 && pjMedio > 0) ins.push({ sev:'aten', text:`PJ médio <b>${fmt(pjMedio)}</b> < CLT médio <b>${fmt(cltMedio)}</b> × 1.4 — PJ deveria custar mais para compensar ausência de encargos. Diferença pequena sugere PJ assumindo encargos sozinho (risco de reclassificação)` });
+  }
+
+  // 7) Data quality
+  const semPix = emps.filter(e => !e.pix || !e.pix.trim()).length;
+  const semCargo = emps.filter(e => !e.cargo || !e.cargo.trim()).length;
+  const semInicio = emps.filter(e => !e.inicio).length;
+  const dqAvisos = [];
+  if (semPix > 0) dqAvisos.push(semPix+' sem PIX');
+  if (semCargo > 0) dqAvisos.push(semCargo+' sem cargo');
+  if (semInicio > 0) dqAvisos.push(semInicio+' sem data de início');
+  if (dqAvisos.length > 0) ins.push({ sev:'info', text:`<b>Cadastros incompletos:</b> ${dqAvisos.join(', ')} — completar para folha pronta para uso financeiro/fiscal` });
+
+  // 8) Provisionamento de 13o (CLT) vs anual
+  if (clts.length >= 1) {
+    const cltAnual = clts.reduce((s,e) => s + calc(e).anual, 0);
+    const cltMensal = clts.reduce((s,e) => s + calc(e).total, 0);
+    const peso13 = cltMensal > 0 ? cltAnual / cltMensal : 12;
+    if (peso13 > 13.5) ins.push({ sev:'info', text:`Provisionamento anual CLT em <b>${peso13.toFixed(1)} folhas/mês</b> — inclui 13o salário e ajustes` });
+  }
+
+  // Render
+  cont.innerHTML = ins.map(i => {
+    const c = _sev[i.sev] || _sev.info;
+    return `<div style="background:${c.bg};border:1px solid ${c.br};color:${c.fg};border-radius:8px;padding:11px 14px;font-size:13px;line-height:1.5;margin-bottom:8px"><span style="margin-right:6px">${c.ic}</span>${i.text}</div>`;
+  }).join('');
 }
 
 // ─── FUNCIONÁRIOS ────────────────────────────────────────────────────────────
