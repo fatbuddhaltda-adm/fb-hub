@@ -496,6 +496,12 @@
   .alert-item.warn{background:#fef3c7;color:#92400e;border:1px solid #fcd34d}
   .alert-item.ok{background:var(--green-soft);color:var(--green);border:1px solid var(--green)}
 
+  /* Status de hoje (grupos: relatórios / ocorrências / logística) */
+  .status-groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+  .status-groups .alert-item{margin-bottom:8px}
+  .status-groups .alert-item:last-child{margin-bottom:0}
+  .period-note{font-size:11px;color:var(--ink-3);font-weight:400;font-family:'JetBrains Mono',monospace;margin-left:6px}
+
   /* Melhor/Pior */
   .mp-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   .mp-card{
@@ -831,7 +837,7 @@
 
     <div class="grid-2">
       <div class="card">
-        <h3>🚛 Logística de hoje · tempos em minutos</h3>
+        <h3>🚛 Logística de hoje · tempos em minutos <span class="period-note">meta máx ≤ 45 min</span></h3>
         <div id="opLogistica" class="metric-rows"></div>
       </div>
       <div class="card">
@@ -841,7 +847,7 @@
     </div>
 
     <div class="card">
-      <h3>⚠️ Ocorrências de hoje</h3>
+      <h3>🚦 Status de hoje</h3>
       <div id="opOcorrencias"></div>
     </div>
   </div>
@@ -884,7 +890,7 @@
   <div class="subpage" id="sub-produtos">
     <div class="grid-3">
       <div class="card">
-        <h3>🔥 Top 10 geral</h3>
+        <h3>🔥 Top 10 geral <span class="period-note" id="opProdPeriodo"></span></h3>
         <div id="opTopGeral" class="rank-list"></div>
       </div>
       <div class="card">
@@ -971,8 +977,8 @@
 
     <div class="grid-2">
       <div class="card">
-        <h3>🚨 Alertas de hoje</h3>
-        <div id="opAlertas" class="alert-list"></div>
+        <h3>🚦 Status de hoje</h3>
+        <div id="opAlertas"></div>
       </div>
       <div class="card">
         <h3>🏆 Melhor &amp; pior dia</h3>
@@ -2127,6 +2133,8 @@ function renderSmartAlerts(rows){
    ============================================================ */
 
 const OP_LOJAS = ["Brooklin","Perdizes","Vila Mariana"];
+const OP_TURNOS = ["Almoço","Jantar"];
+const OP_META_MAX = 45; // meta de tempo máximo de logística (min)
 const DIAS_SEMANA = ["Segunda","Terça","Quarta","Quinta","Sexta","Sábado","Domingo"];
 const opCharts = {};
 let OP_DATA = null;
@@ -2139,6 +2147,13 @@ function buildOpMock(){
     dataHoje: "5/4/2026",
     hoje: {
       relatorios: { recebidos:2, esperados:6, pendentes:4 },
+      pendentesDetalhe: [
+        { loja:"Brooklin",     turno:"Jantar" },
+        { loja:"Perdizes",     turno:"Almoço" },
+        { loja:"Perdizes",     turno:"Jantar" },
+        { loja:"Vila Mariana", turno:"Jantar" }
+      ],
+      ocorrencias: [],
       logistica: [
         { loja:"Brooklin",     min:45, max:110 },
         { loja:"Perdizes",     min:null, max:null },
@@ -2366,12 +2381,24 @@ function aggregateRespostas(rows){
   const aberturasHoje = todayItems.filter(it => it.tipo === "Abertura de turno");
   const ocorrenciasHoje = todayItems.filter(it => it.tipo === "Ocorrência (meio do turno)" || it.tipo.toLowerCase().includes("ocorrênc"));
 
+  // Quais combinações loja × turno ainda não enviaram relatório hoje
+  const pendentesDetalhe = [];
+  OP_LOJAS.forEach(loja => {
+    OP_TURNOS.forEach(turno => {
+      if (!aberturasHoje.some(i => i.loja === loja && i.turno === turno)){
+        pendentesDetalhe.push({ loja, turno });
+      }
+    });
+  });
+
   const hoje = {
     relatorios: {
       recebidos: aberturasHoje.length,
       esperados: 6,
       pendentes: Math.max(0, 6 - aberturasHoje.length)
     },
+    pendentesDetalhe,
+    ocorrencias: ocorrenciasHoje.map(o => ({ loja:o.loja, turno:o.turno, data:o.dataStr })),
     logistica: OP_LOJAS.map(loja => {
       const lojaItems = aberturasHoje.filter(it => it.loja === loja);
       const mins = lojaItems.map(i => i.tempoMin).filter(v => v !== null);
@@ -2407,8 +2434,8 @@ function aggregateRespostas(rows){
     hoje.alertas.push({ tipo:"ok", texto:"✅ Sem ocorrências" });
   }
   hoje.logistica.forEach(l => {
-    if (l.max !== null && l.max > 45) {
-      hoje.alertas.push({ tipo:"warn", texto:`⚠️ ${l.loja} máx >45min (${l.max})` });
+    if (l.max !== null && l.max > OP_META_MAX) {
+      hoje.alertas.push({ tipo:"warn", texto:`⚠️ ${l.loja} máx >${OP_META_MAX}min (${l.max})` });
     }
   });
 
@@ -2624,6 +2651,8 @@ function buildEmptyOpData(){
     dataHoje: formatDataBR(new Date()),
     hoje: {
       relatorios: { recebidos:0, esperados:6, pendentes:6 },
+      pendentesDetalhe: OP_LOJAS.flatMap(loja => OP_TURNOS.map(turno => ({ loja, turno }))),
+      ocorrencias: [],
       logistica: OP_LOJAS.map(loja => ({ loja, min:null, max:null })),
       motoboys:  OP_LOJAS.map(loja => ({ loja, almoco:null, jantar:null })),
       ocorrenciasTotal: 0,
@@ -2655,11 +2684,44 @@ const fmtMin  = v => (v===null || v===undefined || v==="" || isNaN(v) || v===0) 
 const lojaShort = l => l==="Vila Mariana" ? "VM" : l==="Brooklin" ? "Brook" : "Perd";
 
 /* ====================== HOJE ====================== */
+/* Status agrupado: relatórios pendentes / ocorrências / logística vs meta */
+function buildOpStatusHtml(d){
+  const rel = (d.pendentesDetalhe && d.pendentesDetalhe.length)
+    ? d.pendentesDetalhe.map(p =>
+        `<div class="alert-item danger">📨 ${p.loja} · ${p.turno} não enviou</div>`).join("")
+    : (d.relatorios.pendentes > 0
+        ? `<div class="alert-item danger">📨 Faltam ${d.relatorios.pendentes} relatórios</div>`
+        : `<div class="alert-item ok">✅ Todos os relatórios enviados</div>`);
+
+  const oco = (d.ocorrencias && d.ocorrencias.length)
+    ? d.ocorrencias.map(o =>
+        `<div class="alert-item warn">⚠️ ${o.loja} · ${o.turno || "—"}</div>`).join("")
+    : (d.ocorrenciasTotal > 0
+        ? `<div class="alert-item warn">🟡 ${d.ocorrenciasTotal} ocorrência(s) registradas</div>`
+        : `<div class="alert-item ok">✅ Sem ocorrências</div>`);
+
+  const acima = (d.logistica || []).filter(l => l.max !== null && l.max > OP_META_MAX);
+  const log = acima.length
+    ? acima.map(l =>
+        `<div class="alert-item warn">🚛 ${l.loja}: máx ${l.max} min</div>`).join("")
+    : `<div class="alert-item ok">✅ Tempos dentro da meta</div>`;
+
+  return `
+    <div class="status-groups">
+      <div><h4 class="card-sub">📨 Relatórios</h4>${rel}</div>
+      <div><h4 class="card-sub">⚠️ Ocorrências</h4>${oco}</div>
+      <div><h4 class="card-sub">🚛 Logística · meta ≤ ${OP_META_MAX} min</h4>${log}</div>
+    </div>`;
+}
+
 function renderOpHoje(){
   const d = OP_DATA.hoje;
 
   // KPIs
   const pct = d.relatorios.esperados ? Math.round(d.relatorios.recebidos/d.relatorios.esperados*100) : 0;
+  const pendSub = (d.pendentesDetalhe && d.pendentesDetalhe.length)
+    ? d.pendentesDetalhe.map(p => `${lojaShort(p.loja)} · ${p.turno}`).join(", ")
+    : (d.relatorios.pendentes > 0 ? "faltam enviar" : "todos OK");
   document.getElementById("opHojeKpis").innerHTML = `
     <div class="kpi gold">
       <div class="label">Relatórios recebidos</div>
@@ -2669,7 +2731,7 @@ function renderOpHoje(){
     <div class="kpi ${d.relatorios.pendentes>0?'danger':'success'}">
       <div class="label">Pendentes</div>
       <div class="value">${d.relatorios.pendentes}</div>
-      <div class="sub">${d.relatorios.pendentes>0?"faltam enviar":"todos OK"}</div>
+      <div class="sub">${pendSub}</div>
     </div>
     <div class="kpi ${d.ocorrenciasTotal>0?'danger':'success'}" onclick="document.getElementById('ocorrDetail').classList.toggle('hidden')" style="cursor:pointer">
       <div class="label">Ocorrências</div>
@@ -2681,10 +2743,10 @@ function renderOpHoje(){
   // Ocorrências detail panel
   const ocorrEl = document.getElementById("ocorrDetail");
   if (ocorrEl){
-    const items = d.ocorrencias || d.alertas || [];
+    const items = d.ocorrencias || [];
     if (items.length > 0){
       ocorrEl.innerHTML = `<div class="ocorr-title">Detalhamento de ocorrências</div>` +
-        items.map(a => `<div class="ocorr-item ${a.tipo||''}">${a.texto || a.descricao || JSON.stringify(a)}</div>`).join("");
+        items.map(o => `<div class="ocorr-item warn">⚠️ ${o.loja || "—"} · ${o.turno || "—"}${o.data ? " · " + o.data : ""}${o.texto ? " — " + o.texto : ""}</div>`).join("");
     } else {
       ocorrEl.innerHTML = `<div class="ocorr-title">Ocorrências</div><div class="ocorr-item" style="color:var(--green)">Nenhuma ocorrência registrada hoje</div>`;
     }
@@ -2694,12 +2756,13 @@ function renderOpHoje(){
   // Logística
   document.getElementById("opLogistica").innerHTML = d.logistica.map(l => {
     const dim = (l.min===null && l.max===null);
+    const acima = (l.max !== null && l.max > OP_META_MAX);
     return `
       <div class="metric-row ${dim?'dim':''}">
         <span class="loja-name">${l.loja}</span>
         <span class="loja-vals">
           <span><span class="label">Mín</span><span class="v">${fmtMin(l.min)}</span></span>
-          <span><span class="label">Máx</span><span class="v">${fmtMin(l.max)}</span></span>
+          <span><span class="label">Máx</span><span class="v" style="${acima?'color:var(--red)':''}">${fmtMin(l.max)}${acima?' ⚠':''}</span></span>
         </span>
       </div>
     `;
@@ -2719,10 +2782,8 @@ function renderOpHoje(){
     `;
   }).join("");
 
-  // Ocorrências (alertas de hoje)
-  document.getElementById("opOcorrencias").innerHTML = d.alertas.map(a =>
-    `<div class="alert-item ${a.tipo}">${a.texto}</div>`
-  ).join("") || `<div class="alert-item ok">Nenhuma ocorrência registrada hoje</div>`;
+  // Status de hoje (relatórios / ocorrências / logística)
+  document.getElementById("opOcorrencias").innerHTML = buildOpStatusHtml(d);
 }
 
 /* ====================== SEMANAL ====================== */
@@ -2740,7 +2801,8 @@ function renderOpSemanal(){
       { label:"Vila Mariana · máx", data:s.logistica.map(d=>d.vmMax||null),   borderColor:"#a37e3a", backgroundColor:"rgba(163,126,58,.06)", borderWidth:2, tension:.3, pointRadius:3 },
       { label:"Brooklin · mín",     data:s.logistica.map(d=>d.brookMin||null), borderColor:"#e51b24", borderDash:[5,5], borderWidth:1.5, tension:.3, pointRadius:2, backgroundColor:"transparent" },
       { label:"Perdizes · mín",     data:s.logistica.map(d=>d.perdMin||null), borderColor:"#f7a5a5", borderDash:[5,5], borderWidth:1.5, tension:.3, pointRadius:2, backgroundColor:"transparent" },
-      { label:"Vila Mariana · mín", data:s.logistica.map(d=>d.vmMin||null),   borderColor:"#a37e3a", borderDash:[5,5], borderWidth:1.5, tension:.3, pointRadius:2, backgroundColor:"transparent" }
+      { label:"Vila Mariana · mín", data:s.logistica.map(d=>d.vmMin||null),   borderColor:"#a37e3a", borderDash:[5,5], borderWidth:1.5, tension:.3, pointRadius:2, backgroundColor:"transparent" },
+      { label:`Meta · ${OP_META_MAX} min`, data:s.logistica.map(()=>OP_META_MAX), borderColor:"#8a9a5b", borderDash:[3,4], borderWidth:1.5, tension:0, pointRadius:0, backgroundColor:"transparent" }
     ]},
     options:{
       plugins:{legend:{position:"top",labels:{boxWidth:10,boxHeight:10,padding:10}}},
@@ -2860,6 +2922,15 @@ function renderMotivosPorLoja(rows){
 
 function renderOpProdutos(){
   const rows = OP_DATA.produtos.registros.filter(r => r.produto && r.produto.trim());
+
+  // Período coberto pelos registros
+  const periodoEl = document.getElementById("opProdPeriodo");
+  if (periodoEl){
+    const datas = rows.map(r => r.data).filter(Boolean);
+    periodoEl.textContent = datas.length
+      ? `· ${rows.length} registros · ${String(datas[0]).split(" ")[0]} → ${String(datas[datas.length-1]).split(" ")[0]}`
+      : "· sem registros";
+  }
 
   // Top 10 geral
   renderRankList("opTopGeral", aggregateTopProdutos(rows, null));
@@ -3000,10 +3071,8 @@ function renderOpAnalise(){
   renderTaxa("opTaxaAlmoco", a.taxaAlmoco);
   renderTaxa("opTaxaJantar", a.taxaJantar);
 
-  // Alertas
-  document.getElementById("opAlertas").innerHTML = OP_DATA.hoje.alertas.map(al =>
-    `<div class="alert-item ${al.tipo}">${al.texto}</div>`
-  ).join("");
+  // Status de hoje (mesma visão agrupada da aba Hoje)
+  document.getElementById("opAlertas").innerHTML = buildOpStatusHtml(OP_DATA.hoje);
 
   // Melhor / pior
   const mpHtml = (titulo, items) => `
@@ -3046,6 +3115,11 @@ document.querySelectorAll(".subtab").forEach(b => b.addEventListener("click", ()
   document.querySelectorAll(".subpage").forEach(x => x.classList.remove("active"));
   b.classList.add("active");
   document.getElementById("sub-" + b.dataset.sub).classList.add("active");
+  // Gráficos desenhados em container oculto (display:none) ficam com tamanho
+  // errado — redimensiona ao ativar a sub-aba
+  requestAnimationFrame(() => {
+    Object.values(opCharts).forEach(c => { if (c && typeof c.resize === "function") c.resize(); });
+  });
 }));
 
 /* ============================================================
