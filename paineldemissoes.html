@@ -178,15 +178,10 @@ tr:hover td{background:#F7EEE6}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
 firebase.initializeApp({apiKey:"AIzaSyCyMw54A5hb1uiOypt5mABVxo96aUNLZtw",authDomain:"fat-buddha-hub.firebaseapp.com",databaseURL:"https://fat-buddha-hub-default-rtdb.firebaseio.com",projectId:"fat-buddha-hub",storageBucket:"fat-buddha-hub.firebasestorage.app",messagingSenderId:"748093225714",appId:"1:748093225714:web:58c7e22c7b588b797eee6b"});
-const auth=firebase.auth(),db=firebase.database(),allowed=['rh@fatbuddha.com.br','admin@fatbuddha.com.br'];
+const auth=firebase.auth(),db=firebase.database();
 document.getElementById('lg').addEventListener('click',()=>auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>{document.getElementById('ast').textContent=e.message;}));
 function sOut(){auth.signOut();}
-auth.onAuthStateChanged(u=>{
-  const ov=document.getElementById('auth'),ap=document.getElementById('app');
-  if(u&&allowed.includes(u.email)){ov.style.display='none';ap.style.display='block';document.getElementById('ue').textContent=u.email;loadData();}
-  else if(u){auth.signOut();document.getElementById('ast').textContent='Acesso não autorizado.';}
-  else{ov.style.display='flex';ap.style.display='none';}
-});
+auth.onAuthStateChanged(async u=>{const ov=document.getElementById('auth'),ap=document.getElementById('app');if(!u){ov.style.display='flex';ap.style.display='none';return;}try{const snap=await db.ref('authorized/admins').once('value');const admins=snap.val()||[];const list=Array.isArray(admins)?admins:Object.values(admins);if(list.includes(u.email)){ov.style.display='none';ap.style.display='block';document.getElementById('ue').textContent=u.email;loadData();}else{document.getElementById('ast').textContent='Acesso negado. E-mail '+u.email+' não autorizado.';setTimeout(()=>auth.signOut(),3000);}}catch(e){document.getElementById('ast').textContent='Erro ao verificar acesso.';setTimeout(()=>auth.signOut(),3000);}});
 
 let recs={};
 const ML={empresa23dias:'🏢 Empresa 23d',empresaReducao2h:'🏢 Emp 30d/2h red.',colaborador:'👤 Colab 30d',contratExperiencia:'📄 Fim experiência'};
