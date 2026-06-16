@@ -478,9 +478,7 @@ function doLogout(){firebase.auth().signOut().then(()=>{location.reload();});}
 firebase.auth().onAuthStateChanged(async user=>{
   if(!user){document.getElementById('auth-overlay').style.display='flex';document.body.classList.add('locked');hideAuthLoading();return;}
   try{
-    const snap=await firebase.database().ref('authorized/admins').once('value');
-    const admins=snap.val()||[];
-    const list=Array.isArray(admins)?admins:Object.values(admins);
+    const [sAdm,sPed,sFol]=await Promise.all([firebase.database().ref('authorized/admins').once('value'),firebase.database().ref('authorized/pedidos').once('value'),firebase.database().ref('authorized/folha').once('value')]);const a=sAdm.val()||[],p=sPed.val()||[],f=sFol.val()||[];const list=[...new Set([...(Array.isArray(a)?a:Object.values(a)),...(Array.isArray(p)?p:Object.values(p)),...(Array.isArray(f)?f:Object.values(f))])]
     if(!list.includes(user.email)){
       showAuthError('Acesso negado. E-mail '+user.email+' não autorizado.');
       setTimeout(()=>firebase.auth().signOut(),3000);
