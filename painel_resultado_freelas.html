@@ -176,8 +176,23 @@ body{font-family:Inter,sans-serif;background:var(--l);color:var(--d)}
 <script>
 firebase.initializeApp({apiKey:"AIzaSyCyMw54A5hb1uiOypt5mABVxo96aUNLZtw",authDomain:"fat-buddha-hub.firebaseapp.com",databaseURL:"https://fat-buddha-hub-default-rtdb.firebaseio.com",projectId:"fat-buddha-hub",storageBucket:"fat-buddha-hub.firebasestorage.app",messagingSenderId:"748093225714",appId:"1:748093225714:web:58c7e22c7b588b797eee6b"});
 const auth=firebase.auth(),db=firebase.database();
-function sIn(){auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>alert(e.message));}
+// Persiste sessao localmente para nao precisar logar a cada visita
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});
+function sIn(){
+  const provider=new firebase.auth.GoogleAuthProvider();
+  // Tenta popup primeiro (mais rapido). Se houver conflito de popup, faz redirect (sem conflito entre abas).
+  auth.signInWithPopup(provider).catch(e=>{
+    if(e&&(e.code==='auth/popup-blocked'||e.code==='auth/popup-closed-by-user'||e.code==='auth/cancelled-popup-request')){
+      // Cai para redirect — funciona sempre, sem conflito de aba/popup
+      auth.signInWithRedirect(provider).catch(er=>alert('Erro no login: '+er.message));
+    }else{
+      alert('Erro no login: '+e.message);
+    }
+  });
+}
 function sOut(){auth.signOut();}
+// Trata retorno do redirect (caso tenha vindo do fluxo de redirect)
+auth.getRedirectResult().catch(e=>{if(e&&e.message)console.warn('Redirect result:',e.message);});
 auth.onAuthStateChanged(u=>{
  if(u&&ae.includes(u.email)){document.getElementById('auth').style.display='none';document.getElementById('app').style.display='block';document.getElementById('ue').textContent=u.email;init();}
  else{document.getElementById('auth').style.display='flex';document.getElementById('app').style.display='none';if(u){auth.signOut();alert('Acesso não autorizado.');}}
