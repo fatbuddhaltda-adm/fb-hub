@@ -1145,7 +1145,51 @@ function removeEmployee(id){
   autoSave();renderAll();
 }
 function encodeMonthKeys(months){const r={};Object.keys(months).forEach(k=>{r[k.replace(/\//g,'_')]=months[k];});return r;}function decodeMonthKeys(months){const r={};Object.keys(months).forEach(k=>{r[k.replace(/_/g,'/')]=months[k];});return r;}
-function autoSave(){const toSave={...data,months:encodeMonthKeys(data.months)};bonusRef.set(toSave).catch(e=>console.error('Firebase save:',e));}
+// ── SEGURANÇA: monitor de mes conhecido para evitar wipe ──
+let _knownMonthCount = 0;
+function autoSave(){
+  const localMonthCount = Object.keys(data.months || {}).length;
+  // GUARDA: se temos menos meses em memoria do que ja conhecemos, ALGO ESTA ERRADO. Aborta para nao apagar.
+  if (_knownMonthCount > 0 && localMonthCount < _knownMonthCount) {
+    console.error('[AUTOSAVE BLOCKED] data.months tem '+localMonthCount+' meses mas Firebase conhece '+_knownMonthCount+'. Abortando para evitar wipe de dados. Recarregue a pagina.');
+    alert('Atencao: deteccao de inconsistencia. O save foi bloqueado para proteger seus dados. Recarregue a pagina (F5) antes de continuar.');
+    return;
+  }
+  _knownMonthCount = Math.max(_knownMonthCount, localMonthCount);
+  // Salvar mes a mes via update (cirurgico), nao set (destrutivo)
+  const updates = {};
+  const encoded = encodeMonthKeys(data.months || {});
+  Object.keys(encoded).forEach(k => { updates['months/' + k] = encoded[k]; });
+  if (data.currentMonth) updates['currentMonth'] = data.currentMonth;
+  bonusRef.update(updates).catch(e=>console.error('Firebase save:',e));
+}
+// ── BACKUP AUTOMATICO no load - snapshot do estado antes de qualquer escrita ──
+function _backupOnLoad(snapshot) {
+  try {
+    const val = snapshot.val();
+    if (!val || !val.months) return;
+    const monthCount = Object.keys(val.months).length;
+    if (monthCount === 0) return;
+    const ts = new Date().toISOString().replace(/[:.]/g, '-');
+    const userEmail = (firebase.auth().currentUser && firebase.auth().currentUser.email) || 'unknown';
+    fbDb.ref('bonus_backups/' + ts).set({
+      data: val,
+      monthCount: monthCount,
+      capturedBy: userEmail,
+      capturedAt: Date.now()
+    }).then(()=>{
+      console.log('[BACKUP] Snapshot salvo em bonus_backups/' + ts + ' (' + monthCount + ' meses)');
+      // Limpar backups com mais de 30 dias
+      fbDb.ref('bonus_backups').once('value').then(s=>{
+        const all = s.val() || {};
+        const cutoff = Date.now() - (30 * 24 * 60 * 60 * 1000);
+        const toDelete = {};
+        Object.keys(all).forEach(k => { if ((all[k].capturedAt||0) < cutoff) toDelete['bonus_backups/' + k] = null; });
+        if (Object.keys(toDelete).length > 0) fbDb.ref().update(toDelete);
+      });
+    }).catch(e=>console.warn('[BACKUP] falha:', e.message));
+  } catch(e) { console.warn('[BACKUP] erro:', e); }
+}
 function saveData(){autoSave();const m=document.getElementById('savedMsg');m.style.display='inline';setTimeout(()=>m.style.display='none',2500);}
 function openImport(){document.getElementById('import-overlay-bonus').classList.add('open');}
 function closeImport(){document.getElementById('import-overlay-bonus').classList.remove('open');document.getElementById('csv-input-bonus').value='';}
@@ -1503,9 +1547,13 @@ function renderDiagExecBonus(stats){
 
 // Carrega dados do Firebase em tempo real (só depois do login)
 window._authReadyPromise.then(()=>{
+let _firstLoad = true;
 bonusRef.on('value', snapshot=>{
+  if (_firstLoad) { _backupOnLoad(snapshot); _firstLoad = false; }
   const val=snapshot.val();
   if(val && val.months){
+    const incomingCount = Object.keys(val.months).length;
+    _knownMonthCount = Math.max(_knownMonthCount, incomingCount);
     data={...val,months:decodeMonthKeys(val.months)};
     currentMonth=data.currentMonth||"Jan/2026";
     fixDuplicateIds();
