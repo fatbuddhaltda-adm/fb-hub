@@ -230,6 +230,10 @@ const FB_CONFIG={apiKey:"AIzaSyCyMw54A5hb1uiOypt5mABVxo96aUNLZtw",authDomain:"fa
 if(!firebase.apps.length){firebase.initializeApp(FB_CONFIG);}
 const fbDb=firebase.database();
 const nutriRef=fbDb.ref('nutri');
+const nutriBackupsRef=fbDb.ref('nutri_backups');
+let _nutriLoadedOnce=false;
+let _nutriKnownMonthCount=0;
+let _nutriBackupDone=false;
 let data={months:{},currentMonth:''};
 let currentMonth='';
 
@@ -838,13 +842,13 @@ function renderAll(){
 }
 
 // ── FIREBASE ──
-function autoSave(){nutriRef.set({currentMonth:data.currentMonth,months:encM(data.months)}).catch(e=>console.error(e));}
+function autoSave(){if(!_nutriLoadedOnce){console.warn('[Nutri] save bloqueado');return;}const n=Object.keys(data.months||{}).length;if(_nutriKnownMonthCount>0&&n<_nutriKnownMonthCount*0.5){console.warn('[Nutri] save bloqueado anti-wipe');return;}nutriRef.update({currentMonth:data.currentMonth,months:encM(data.months)}).then(()=>{_nutriKnownMonthCount=n;}).catch(e=>console.error(e));}
 function saveData(){autoSave();const m=document.getElementById('savedMsg');m.style.display='inline';setTimeout(()=>m.style.display='none',2500);}
 
 window._authReadyPromise.then(()=>{
 nutriRef.on('value',snapshot=>{
   const val=snapshot.val();
-  if(val&&val.months){data.months=decM(val.months);data.currentMonth=val.currentMonth||'';}
+  if(val&&val.months){data.months=decM(val.months);data.currentMonth=val.currentMonth||'';_nutriKnownMonthCount=Object.keys(data.months).length;if(!_nutriBackupDone&&_nutriKnownMonthCount>0){const ts=new Date().toISOString().replace(/[:.]/g,'-');nutriBackupsRef.child(ts).set(val).then(()=>{_nutriBackupDone=true;console.log('[Nutri] Backup:',ts);}).catch(e=>console.warn('Backup falhou',e));}}_nutriLoadedOnce=true;
   // Garante meses históricos + mês atual (sem sobrescrever dados existentes)
   const historico=['Jan/2026','Fev/2026','Mar/2026','Abr/2026'];
   const hoje=new Date();
