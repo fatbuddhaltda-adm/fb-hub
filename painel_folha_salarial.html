@@ -863,8 +863,12 @@ const LOJAS = ['PERDIZES','BROOKLIN','VILA MARIANA','MATRIZ PRODUÇÃO','MATRIZ 
 if(!firebase.apps.length){firebase.initializeApp({apiKey:"AIzaSyCyMw54A5hb1uiOypt5mABVxo96aUNLZtw",authDomain:"fat-buddha-hub.firebaseapp.com",databaseURL:"https://fat-buddha-hub-default-rtdb.firebaseio.com",projectId:"fat-buddha-hub",storageBucket:"fat-buddha-hub.firebasestorage.app",messagingSenderId:"748093225714",appId:"1:748093225714:web:58c7e22c7b588b797eee6b"});}
 const fbDbFolha=firebase.database();
 const folhaRef=fbDbFolha.ref('folha');
+const folhaBackupsRef=fbDbFolha.ref('folha_backups');
 // ──────────────────────────────────────────────────────
 let data = { employees: [], nextId: 1 };
+let _folhaLoadedOnce=false;
+let _knownEmployeeCount=0;
+let _folhaBackupDone=false;
 let editingId = null;
 let currentLojaTab = 'PERDIZES';
 
@@ -894,7 +898,7 @@ function cleanData() {
   });
 }
 
-function save() { folhaRef.set(data).catch(e=>console.error('Firebase save:',e)); }
+function save() { if(!_folhaLoadedOnce){console.warn('[Folha] save bloqueado');return;} const n=(data.employees||[]).length; if(_knownEmployeeCount>0 && n<_knownEmployeeCount*0.5){console.warn('[Folha] save bloqueado anti-wipe');return;} folhaRef.update({employees:data.employees,nextId:data.nextId}).then(()=>{_knownEmployeeCount=n;}).catch(e=>console.error('Firebase save:',e)); }
 function r2(n) { return Math.round((n||0) * 100) / 100; }
 function fmt(n) { return 'R$ ' + r2(n).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
 function fmtShort(n) { return r2(n).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
@@ -1983,7 +1987,15 @@ function renderValeTransporte() {
 window._authReadyPromise.then(()=>{
 folhaRef.on('value', snapshot=>{
   const val=snapshot.val();
-  if(val && val.employees){ data=val; cleanData(); }
+  if(val && val.employees){
+    data=val; cleanData();
+    _knownEmployeeCount=(data.employees||[]).length;
+    if(!_folhaBackupDone && _knownEmployeeCount>0){
+      const ts=new Date().toISOString().replace(/[:.]/g,'-');
+      folhaBackupsRef.child(ts).set(val).then(()=>{_folhaBackupDone=true;console.log('[Folha] Backup:',ts);}).catch(e=>console.warn('Backup falhou',e));
+    }
+  }
+  _folhaLoadedOnce=true;
   renderDashboard();
 });
 });
