@@ -1499,7 +1499,6 @@ function renderProvisionamento() {
 
   LOJAS.forEach(loja => {
     const le = emps.filter(e => e.loja === loja);
-    if (!le.length) return;
     const lSal   = r2(le.reduce((s,e) => s + (e.salario||0), 0));
     const lFgts  = r2(le.reduce((s,e) => s + calc(e).fgts, 0));
     const lDec   = r2(le.reduce((s,e) => s + calc(e).dec, 0));
