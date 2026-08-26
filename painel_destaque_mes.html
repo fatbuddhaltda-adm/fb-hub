@@ -545,6 +545,8 @@ const DEFAULT = {
 if(!firebase.apps.length){firebase.initializeApp({apiKey:"AIzaSyCyMw54A5hb1uiOypt5mABVxo96aUNLZtw",authDomain:"fat-buddha-hub.firebaseapp.com",databaseURL:"https://fat-buddha-hub-default-rtdb.firebaseio.com",projectId:"fat-buddha-hub",storageBucket:"fat-buddha-hub.firebasestorage.app",messagingSenderId:"748093225714",appId:"1:748093225714:web:58c7e22c7b588b797eee6b"});}
 const fbDb2=firebase.database();
 const destaqueRef=fbDb2.ref('destaque');
+const destaqueBackupsRef=fbDb2.ref('destaque_backups');
+let _destLoaded=false,_destBackupDone=false,_destKnownYears=0;
 // ──────────────────────────────────────────────────────
 let data = JSON.parse(JSON.stringify(DEFAULT));
 let currentYear = data.currentYear || thisYear;
@@ -663,7 +665,12 @@ function renderRankings(){
 }
 
 /* ---- Util ---- */
-function autoSave(){ destaqueRef.update(data).catch(e=>console.error('Firebase save:',e)); }
+function autoSave(){
+  if(!_destLoaded){console.warn('[Destaque] save bloqueado');return;}
+  const ny=Object.keys(data.years||{}).length;
+  if(_destKnownYears>0 && ny<_destKnownYears*0.5){console.warn('[Destaque] save bloqueado anti-wipe');return;}
+  destaqueRef.update(data).then(()=>{_destKnownYears=ny;}).catch(e=>console.error('Firebase save:',e));
+}
 function saveData(){ autoSave(); const m=document.getElementById('savedMsg'); m.style.display='inline'; setTimeout(()=>m.style.display='none',2500); }
 function renderAll(){ renderYearBar(); renderMatrix(); renderRankings(); }
 
@@ -756,7 +763,15 @@ function processImport(){
 window._authReadyPromise.then(()=>{
 destaqueRef.on('value', snapshot=>{
   const val=snapshot.val();
-  if(val && val.years){ data=val; currentYear=data.currentYear||thisYear; }
+  if(val && val.years){
+    data=val; currentYear=data.currentYear||thisYear;
+    _destKnownYears=Object.keys(data.years||{}).length;
+    if(!_destBackupDone && _destKnownYears>0){
+      const ts=new Date().toISOString().replace(/[:.]/g,'-');
+      destaqueBackupsRef.child(ts).set(val).then(()=>{_destBackupDone=true;console.log('[Destaque] Backup:',ts);}).catch(e=>console.warn('Backup falhou',e));
+    }
+  }
+  _destLoaded=true;
   renderAll();
 });
 });
