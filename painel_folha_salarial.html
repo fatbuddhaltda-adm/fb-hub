@@ -568,7 +568,7 @@ firebase.auth().onAuthStateChanged(async user=>{
         <select id="fLoja" onchange="renderFuncionarios()">
           <option value="">Todas as lojas</option>
           <option>PERDIZES</option><option>BROOKLIN</option><option>VILA MARIANA</option>
-          <option>MATRIZ PRODUÇÃO</option><option>MATRIZ ESCRITÓRIO</option>
+          <option>MATRIZ PRODUÇÃO</option><option>MATRIZ ESCRITÓRIO</option><option>TATUAPÉ</option><option>BUTANTÃ</option>
         </select>
         <select id="fTipo" onchange="renderFuncionarios()">
           <option value="">CLT e PJ</option>
@@ -600,6 +600,8 @@ firebase.auth().onAuthStateChanged(async user=>{
     <button class="btn btn-outline btn-sm" onclick="setLojaTab('VILA MARIANA',this)" id="ltab-VILA MARIANA">VILA MARIANA</button>
     <button class="btn btn-outline btn-sm" onclick="setLojaTab('MATRIZ PRODUÇÃO',this)" id="ltab-MATRIZ PRODUÇÃO">MATRIZ PRODUÇÃO</button>
     <button class="btn btn-outline btn-sm" onclick="setLojaTab('MATRIZ ESCRITÓRIO',this)" id="ltab-MATRIZ ESCRITÓRIO">MATRIZ ESCRITÓRIO</button>
+    <button class="btn btn-outline btn-sm" onclick="setLojaTab('TATUAPÉ',this)" id="ltab-TATUAPÉ">TATUAPÉ</button>
+    <button class="btn btn-outline btn-sm" onclick="setLojaTab('BUTANTÃ',this)" id="ltab-BUTANTÃ">BUTANTÃ</button>
   </div>
   <div id="porloja-content"></div>
 </div>
@@ -695,7 +697,7 @@ firebase.auth().onAuthStateChanged(async user=>{
           <label>Loja *</label>
           <select id="f-loja">
             <option>PERDIZES</option><option>BROOKLIN</option><option>VILA MARIANA</option>
-            <option>MATRIZ PRODUÇÃO</option><option>MATRIZ ESCRITÓRIO</option>
+            <option>MATRIZ PRODUÇÃO</option><option>MATRIZ ESCRITÓRIO</option><option>TATUAPÉ</option><option>BUTANTÃ</option>
           </select>
         </div>
         <div class="form-group">
@@ -712,35 +714,73 @@ firebase.auth().onAuthStateChanged(async user=>{
             <optgroup label="Cozinha">
               <option>CHEFE DE COZINHA DIURNO</option>
               <option>CHEFE DE COZINHA NOTURNO</option>
-              <option>LIDER DIURNO</option>
-              <option>LIDER NOTURNO</option>
-              <option>COZINHEIRO I DIURNO</option>
-              <option>COZINHEIRO I NOTURNO</option>
-              <option>COZINHEIRO II DIURNO</option>
-              <option>COZINHEIRO II NOTURNO</option>
+              <option>LIDER A DIURNO</option>
+              <option>LIDER B DIURNO</option>
+              <option>LIDER C DIURNO</option>
+              <option>LIDER A NOTURNO</option>
+              <option>LIDER B NOTURNO</option>
+              <option>LIDER C NOTURNO</option>
+              <option>COZINHEIRO NIVEL A DIURNO</option>
+              <option>COZINHEIRO NIVEL B DIURNO</option>
+              <option>COZINHEIRO NIVEL C DIURNO</option>
+              <option>COZINHEIRO NIVEL D DIURNO</option>
+              <option>COZINHEIRO NIVEL A NOTURNO</option>
+              <option>COZINHEIRO NIVEL B NOTURNO</option>
+              <option>COZINHEIRO NIVEL C NOTURNO</option>
+              <option>COZINHEIRO NIVEL D NOTURNO</option>
               <option>AUXILIAR DE COZINHA DIURNO</option>
               <option>AUXILIAR DE COZINHA NOTURNO</option>
             </optgroup>
             <optgroup label="Expedição">
               <option>GERENTE DE LOJA</option>
               <option>SUPERVISOR/A</option>
-              <option>ATENDENTE DIURNO</option>
-              <option>ATENDENTE NOTURNO</option>
-              <option>EMPACOTADOR/A DIURNO</option>
-              <option>EMPACOTADOR/A NOTURNO</option>
+              <option>COORDENADOR/A EXPEDIDOR DE MERCADORIA</option>
+              <option>EXPEDIDOR DE MERCADORIA I DIURNO</option>
+              <option>EXPEDIDOR DE MERCADORIA I JUNIOR DIURNO</option>
+              <option>EXPEDIDOR DE MERCADORIA I PLENO DIURNO</option>
+              <option>EXPEDIDOR DE MERCADORIA I SENIOR DIURNO</option>
+              <option>EXPEDIDOR DE MERCADORIA II JUNIOR DIURNO</option>
+              <option>EXPEDIDOR DE MERCADORIA II PLENO DIURNO</option>
+              <option>EXPEDIDOR DE MERCADORIA II SENIOR DIURNO</option>
+              <option>EXPEDIDOR DE MERCADORIA I NOTURNO</option>
+              <option>EXPEDIDOR DE MERCADORIA I JUNIOR NOTURNO</option>
+              <option>EXPEDIDOR DE MERCADORIA I PLENO NOTURNO</option>
+              <option>EXPEDIDOR DE MERCADORIA I SENIOR NOTURNO</option>
+              <option>EXPEDIDOR DE MERCADORIA II JUNIOR NOTURNO</option>
+              <option>EXPEDIDOR DE MERCADORIA II PLENO NOTURNO</option>
+              <option>EXPEDIDOR DE MERCADORIA II SENIOR NOTURNO</option>
               <option>AUXILIAR GERAL</option>
               <option>AUXILIAR DE LIMPEZA DIURNO</option>
             </optgroup>
             <optgroup label="Produção">
               <option>CHEFE DE PRODUÇÃO</option>
-              <option>COZINHEIRO I PRODUÇÃO</option>
-              <option>COZINHEIRO II PRODUÇÃO</option>
+              <option>COZINHEIRO PRODUÇÃO NIVEL A</option>
+              <option>COZINHEIRO PRODUÇÃO NIVEL B</option>
+              <option>COZINHEIRO PRODUÇÃO NIVEL C</option>
+              <option>COZINHEIRO PRODUÇÃO NIVEL D</option>
               <option>AUXILIAR DE PRODUÇÃO</option>
             </optgroup>
             <optgroup label="Administrativo / Matriz">
               <option>GERENTE GERAL</option>
+              <option>GERENTE</option>
+              <option>GERENTE JR</option>
+              <option>GERENTE JR I</option>
+              <option>GERENTE JR II</option>
+              <option>GERENTE JR III</option>
+              <option>GERENTE PLENO</option>
+              <option>GERENTE JR PLENO I</option>
+              <option>GERENTE JR PLENO II</option>
+              <option>GERENTE JR PLENO III</option>
+              <option>GERENTE SENIOR</option>
+              <option>GERENTE SENIOR I</option>
+              <option>GERENTE SENIOR II</option>
+              <option>GERENTE SENIOR III</option>
               <option>ANALISTA DE RECURSOS HUMANOS JR</option>
+              <option>ANALISTA DE RECURSOS HUMANOS PLENO</option>
+              <option>ANALISTA DE RECURSOS HUMANOS SENIOR</option>
               <option>ANALISTA FINANCEIRO JR</option>
+              <option>ANALISTA FINANCEIRO PLENO</option>
+              <option>ANALISTA FINANCEIRO SENIOR</option>
               <option>ANALISTA FOODTECH</option>
               <option>COMPRAS/ESTOQUE</option>
               <option>MARKETING</option>
@@ -885,6 +925,8 @@ function cleanData() {
     if (u === 'PERDIZES') return 'PERDIZES';
     if (u === 'BROOKLIN') return 'BROOKLIN';
     if (u.startsWith('VILA MARIANA')) return 'VILA MARIANA';
+    if (u === 'TATUAPÉ' || u === 'TATUAPE') return 'TATUAPÉ';
+    if (u === 'BUTANTÃ' || u === 'BUTANTA' || u.startsWith('BUTANT')) return 'BUTANTÃ';
     return s; // mantém original se já correto
   }
   data.employees.forEach(e => { e.loja = normLoja(e.loja); });
@@ -896,6 +938,33 @@ function cleanData() {
     seen.add(key);
     return true;
   });
+  // Migração automática de cargos antigos → novos
+  const CARGO_MIG = {
+    'COZINHEIRO II DIURNO': 'COZINHEIRO NIVEL A DIURNO',
+    'COZINHEIRO I DIURNO': 'COZINHEIRO NIVEL B DIURNO',
+    'COZINHEIRO II NOTURNO': 'COZINHEIRO NIVEL A NOTURNO',
+    'COZINHEIRO I NOTURNO': 'COZINHEIRO NIVEL B NOTURNO',
+    'COZINHEIRO II PRODUÇÃO': 'COZINHEIRO PRODUÇÃO NIVEL A',
+    'COZINHEIRO I PRODUÇÃO': 'COZINHEIRO PRODUÇÃO NIVEL B',
+    'LIDER DIURNO': 'LIDER A DIURNO',
+    'LIDER NOTURNO': 'LIDER A NOTURNO',
+    'ATENDENTE DIURNO': 'EXPEDIDOR DE MERCADORIA I DIURNO',
+    'ATENDENTE NOTURNO': 'EXPEDIDOR DE MERCADORIA I NOTURNO',
+    'EMPACOTADOR/A DIURNO': 'EXPEDIDOR DE MERCADORIA II JUNIOR DIURNO',
+    'EMPACOTADOR/A NOTURNO': 'EXPEDIDOR DE MERCADORIA II JUNIOR NOTURNO'
+  };
+  let __migCount = 0;
+  data.employees.forEach(e => {
+    const key = (e.cargo||'').trim().toUpperCase();
+    if (CARGO_MIG[key]) {
+      console.log('[Cargo Migration] ' + (e.nome||'?') + ': ' + e.cargo + ' → ' + CARGO_MIG[key]);
+      e.cargo = CARGO_MIG[key];
+      __migCount++;
+    }
+  });
+  if (__migCount > 0) {
+    console.log('[Cargo Migration] Total: ' + __migCount + ' funcionário(s) atualizado(s)');
+  }
 }
 
 function save() { if(!_folhaLoadedOnce){console.warn('[Folha] save bloqueado');return;} const n=(data.employees||[]).length; if(_knownEmployeeCount>0 && n<_knownEmployeeCount*0.5){console.warn('[Folha] save bloqueado anti-wipe');return;} folhaRef.update({employees:data.employees,nextId:data.nextId}).then(()=>{_knownEmployeeCount=n;}).catch(e=>console.error('Firebase save:',e)); }
