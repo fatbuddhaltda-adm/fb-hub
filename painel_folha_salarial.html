@@ -734,6 +734,19 @@ firebase.auth().onAuthStateChanged(async user=>{
             </optgroup>
             <optgroup label="Expedição">
               <option>GERENTE DE LOJA</option>
+              <option>GERENTE</option>
+              <option>GERENTE JR</option>
+              <option>GERENTE JR I</option>
+              <option>GERENTE JR II</option>
+              <option>GERENTE JR III</option>
+              <option>GERENTE PLENO</option>
+              <option>GERENTE JR PLENO I</option>
+              <option>GERENTE JR PLENO II</option>
+              <option>GERENTE JR PLENO III</option>
+              <option>GERENTE SENIOR</option>
+              <option>GERENTE SENIOR I</option>
+              <option>GERENTE SENIOR II</option>
+              <option>GERENTE SENIOR III</option>
               <option>SUPERVISOR/A</option>
               <option>COORDENADOR/A EXPEDIDOR DE MERCADORIA</option>
               <option>EXPEDIDOR DE MERCADORIA I DIURNO</option>
@@ -747,6 +760,7 @@ firebase.auth().onAuthStateChanged(async user=>{
               <option>EXPEDIDOR DE MERCADORIA I JUNIOR NOTURNO</option>
               <option>EXPEDIDOR DE MERCADORIA I PLENO NOTURNO</option>
               <option>EXPEDIDOR DE MERCADORIA I SENIOR NOTURNO</option>
+              <option>EXPEDIDOR DE MERCADORIA II NOTURNO</option>
               <option>EXPEDIDOR DE MERCADORIA II JUNIOR NOTURNO</option>
               <option>EXPEDIDOR DE MERCADORIA II PLENO NOTURNO</option>
               <option>EXPEDIDOR DE MERCADORIA II SENIOR NOTURNO</option>
@@ -763,19 +777,6 @@ firebase.auth().onAuthStateChanged(async user=>{
             </optgroup>
             <optgroup label="Administrativo / Matriz">
               <option>GERENTE GERAL</option>
-              <option>GERENTE</option>
-              <option>GERENTE JR</option>
-              <option>GERENTE JR I</option>
-              <option>GERENTE JR II</option>
-              <option>GERENTE JR III</option>
-              <option>GERENTE PLENO</option>
-              <option>GERENTE JR PLENO I</option>
-              <option>GERENTE JR PLENO II</option>
-              <option>GERENTE JR PLENO III</option>
-              <option>GERENTE SENIOR</option>
-              <option>GERENTE SENIOR I</option>
-              <option>GERENTE SENIOR II</option>
-              <option>GERENTE SENIOR III</option>
               <option>ANALISTA DE RECURSOS HUMANOS JR</option>
               <option>ANALISTA DE RECURSOS HUMANOS PLENO</option>
               <option>ANALISTA DE RECURSOS HUMANOS SENIOR</option>
@@ -1215,7 +1216,8 @@ function renderFuncionarios() {
   function getArea(cargo) {
     const c = (cargo||'').toUpperCase();
     if (/ANALISTA DE ESTOQUE|ESTOQUISTA|AUXILIAR DE ESTOQUE/.test(c)) return 'estoque';
-    if (/GERENTE DE LOJA|SUPERVISOR\/A|^SUPERVISORA?$|ATENDENTE|EMPACOTADOR|AUXILIAR.*(GERAL|LINHA|LIMPEZA)|AUXILIAR GERAL|AUXILIAR DE LINHA|AUXILIAR DE LIMPEZA/.test(c)) return 'expedicao';
+    if (/GERENTE GERAL|ANALISTA (DE )?(RECURSOS HUMANOS|FINANCEIRO|FOODTECH)|COMPRAS\/ESTOQUE|MARKETING|GESTOR DE TR[ÁA]FEGO|^SUPERVISOR$/.test(c)) return 'outros';
+    if (/GERENTE|SUPERVISOR\/A|^SUPERVISORA?$|COORDENADOR|EXPEDIDOR|ATENDENTE|EMPACOTADOR|AUXILIAR.*(GERAL|LINHA|LIMPEZA)|AUXILIAR GERAL|AUXILIAR DE LINHA|AUXILIAR DE LIMPEZA/.test(c)) return 'expedicao';
     if (/CHEF|LIDER|LÍDER|COZINHEIRO|AUXILIAR.*(COZINHA|PROD)|AUXILIAR COZINHA|CHEFE/.test(c)) return 'cozinha';
     return 'outros';
   }
@@ -1225,12 +1227,13 @@ function renderFuncionarios() {
     const c = (cargo||'').toUpperCase();
     const area = getArea(cargo);
     if (area === 'expedicao') {
-      if (/GERENTE DE LOJA/.test(c))        return 0;
-      if (/SUPERVISOR/.test(c))             return 1;
-      if (/ATENDENTE/.test(c))              return 2;
-      if (/EMPACOTADOR/.test(c))            return 3;
-      if (/AUXILIAR/.test(c))               return 4;
-      return 5;
+      if (/GERENTE DE LOJA|^GERENTE$|GERENTE JR|GERENTE PLENO|GERENTE SENIOR/.test(c)) return 0;
+      if (/COORDENADOR/.test(c)) return 1;
+      if (/SUPERVISOR/.test(c)) return 2;
+      if (/EXPEDIDOR DE MERCADORIA II/.test(c)) return 3;
+      if (/EXPEDIDOR DE MERCADORIA I|ATENDENTE|EMPACOTADOR/.test(c)) return 4;
+      if (/AUXILIAR/.test(c)) return 5;
+      return 6;
     }
     if (area === 'cozinha') {
       if (/CHEFE DE COZINHA/.test(c))                            return 0;  // inclui DIURNO e NOTURNO
