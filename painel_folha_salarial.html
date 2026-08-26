@@ -899,7 +899,7 @@ firebase.auth().onAuthStateChanged(async user=>{
 </div>
 
 <script>
-const LOJAS = ['PERDIZES','BROOKLIN','VILA MARIANA','MATRIZ PRODUÇÃO','MATRIZ ESCRITÓRIO'];
+const LOJAS = ['PERDIZES','BROOKLIN','VILA MARIANA','TATUAPÉ','BUTANTÃ','MATRIZ PRODUÇÃO','MATRIZ ESCRITÓRIO'];
 // ── Firebase ──────────────────────────────────────────
 if(!firebase.apps.length){firebase.initializeApp({apiKey:"AIzaSyCyMw54A5hb1uiOypt5mABVxo96aUNLZtw",authDomain:"fat-buddha-hub.firebaseapp.com",databaseURL:"https://fat-buddha-hub-default-rtdb.firebaseio.com",projectId:"fat-buddha-hub",storageBucket:"fat-buddha-hub.firebasestorage.app",messagingSenderId:"748093225714",appId:"1:748093225714:web:58c7e22c7b588b797eee6b"});}
 const fbDbFolha=firebase.database();
@@ -1761,7 +1761,7 @@ function processCSV() {
     return LOJA_MAP[u] || u;
   }
 
-  const KNOWN = ['PERDIZES','BROOKLIN','VILA MARIANA','MATRIZ','ESCRITORIO','ESCRITÓRIO'];
+  const KNOWN = ['PERDIZES','BROOKLIN','VILA MARIANA','TATUAPÉ','TATUAPE','BUTANTÃ','BUTANTA','BUTANT','MATRIZ','ESCRITORIO','ESCRITÓRIO'];
   const isKnownLoja = s => KNOWN.some(k => s.toUpperCase().trim().startsWith(k));
 
   const rows = parseCSVAll(text);
