@@ -1072,7 +1072,6 @@ function renderDashboard() {
   lGrid.innerHTML = '';
   LOJAS.forEach(loja => {
     const le = emps.filter(e => e.loja === loja);
-    if (!le.length) return;
     const lclt = le.filter(e => e.tipo==='CLT');
     const lpj  = le.filter(e => e.tipo==='PJ');
     const lTotal = le.reduce((s,e) => s + calc(e).total, 0);
