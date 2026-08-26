@@ -502,6 +502,8 @@ let charts = {};
 if(!firebase.apps.length){firebase.initializeApp({apiKey:"AIzaSyCyMw54A5hb1uiOypt5mABVxo96aUNLZtw",authDomain:"fat-buddha-hub.firebaseapp.com",databaseURL:"https://fat-buddha-hub-default-rtdb.firebaseio.com",projectId:"fat-buddha-hub",storageBucket:"fat-buddha-hub.firebasestorage.app",messagingSenderId:"748093225714",appId:"1:748093225714:web:58c7e22c7b588b797eee6b"});}
 const fbDbKpi=firebase.database();
 const kpiRef=fbDbKpi.ref('kpi');
+const kpiBackupsRef=fbDbKpi.ref('kpi_backups');
+let _kpiLoaded=false,_kpiBackupDone=false,_kpiKnownKeys=0;
 // ──────────────────────────────────────────────────────
 let data = JSON.parse(JSON.stringify(DEFAULT_DATA));
 
@@ -720,7 +722,10 @@ function updateAll() {
 }
 
 function autoSave() {
-  kpiRef.update(data).catch(e=>console.error('Firebase save:',e));
+  if(!_kpiLoaded){console.warn('[KPI] save bloqueado');return;}
+  const nk=Object.keys(data||{}).length;
+  if(_kpiKnownKeys>0 && nk<_kpiKnownKeys*0.5){console.warn('[KPI] save bloqueado anti-wipe');return;}
+  kpiRef.update(data).then(()=>{_kpiKnownKeys=nk;}).catch(e=>console.error('Firebase save:',e));
 }
 
 function saveData() {
@@ -754,7 +759,15 @@ function exportCSV() {
 window._authReadyPromise.then(()=>{
 kpiRef.on('value', snapshot=>{
   const val=snapshot.val();
-  if(val){ data=val; }
+  if(val){
+    data=val;
+    _kpiKnownKeys=Object.keys(data||{}).length;
+    if(!_kpiBackupDone && _kpiKnownKeys>0){
+      const ts=new Date().toISOString().replace(/[:.]/g,'-');
+      kpiBackupsRef.child(ts).set(val).then(()=>{_kpiBackupDone=true;console.log('[KPI] Backup:',ts);}).catch(e=>console.warn('Backup falhou',e));
+    }
+  }
+  _kpiLoaded=true;
   updateAll();
 });
 });
