@@ -150,6 +150,8 @@ body{
 .lt-v{background:var(--green-soft);color:#065f46;border-color:#86efac}
 .lt-mp{background:var(--amber-soft);color:#92400e;border-color:#fcd34d}
 .lt-me{background:var(--purple-soft);color:#5b21b6;border-color:#c4b5fd}
+.lt-t{background:#ffedd5;color:#9a3412;border-color:#fdba74}
+.lt-bu{background:#fee2e2;color:#991b1b;border-color:#fca5a5}
 .lt-e{background:var(--nude);color:var(--ink-2);border-color:var(--line-2)}
 .loja-stat{
   display:flex;justify-content:space-between;padding:6px 0;
@@ -753,7 +755,6 @@ firebase.auth().onAuthStateChanged(async user=>{
               <option>EXPEDIDOR DE MERCADORIA I JUNIOR DIURNO</option>
               <option>EXPEDIDOR DE MERCADORIA I PLENO DIURNO</option>
               <option>EXPEDIDOR DE MERCADORIA I SENIOR DIURNO</option>
-              <option>EXPEDIDOR DE MERCADORIA II DIURNO</option>
               <option>EXPEDIDOR DE MERCADORIA II JUNIOR DIURNO</option>
               <option>EXPEDIDOR DE MERCADORIA II PLENO DIURNO</option>
               <option>EXPEDIDOR DE MERCADORIA II SENIOR DIURNO</option>
@@ -1014,10 +1015,10 @@ function showView(id, btn) {
 
 // ─── LOJA HELPERS ────────────────────────────────────────────────────────────
 function lojaClass(l) {
-  return {PERDIZES:'lt-p',BROOKLIN:'lt-b','VILA MARIANA':'lt-v','MATRIZ PRODUÇÃO':'lt-mp','MATRIZ ESCRITÓRIO':'lt-me'}[l]||'lt-e';
+  return {PERDIZES:'lt-p',BROOKLIN:'lt-b','VILA MARIANA':'lt-v','TATUAPÉ':'lt-t','BUTANTÃ':'lt-bu','MATRIZ PRODUÇÃO':'lt-mp','MATRIZ ESCRITÓRIO':'lt-me'}[l]||'lt-e';
 }
 function lojaEmoji(l) {
-  return {PERDIZES:'🔵',BROOKLIN:'🩷','VILA MARIANA':'🟢','MATRIZ PRODUÇÃO':'🟡','MATRIZ ESCRITÓRIO':'🟣'}[l]||'⚪';
+  return {PERDIZES:'🔵',BROOKLIN:'🩷','VILA MARIANA':'🟢','TATUAPÉ':'🟠','BUTANTÃ':'🔴','MATRIZ PRODUÇÃO':'🟡','MATRIZ ESCRITÓRIO':'🟣'}[l]||'⚪';
 }
 
 // ─── DASHBOARD ───────────────────────────────────────────────────────────────
