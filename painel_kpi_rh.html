@@ -720,7 +720,7 @@ function updateAll() {
 }
 
 function autoSave() {
-  kpiRef.set(data).catch(e=>console.error('Firebase save:',e));
+  kpiRef.update(data).catch(e=>console.error('Firebase save:',e));
 }
 
 function saveData() {
