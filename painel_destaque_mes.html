@@ -663,7 +663,7 @@ function renderRankings(){
 }
 
 /* ---- Util ---- */
-function autoSave(){ destaqueRef.set(data).catch(e=>console.error('Firebase save:',e)); }
+function autoSave(){ destaqueRef.update(data).catch(e=>console.error('Firebase save:',e)); }
 function saveData(){ autoSave(); const m=document.getElementById('savedMsg'); m.style.display='inline'; setTimeout(()=>m.style.display='none',2500); }
 function renderAll(){ renderYearBar(); renderMatrix(); renderRankings(); }
 
