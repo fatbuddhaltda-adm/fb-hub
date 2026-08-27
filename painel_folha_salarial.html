@@ -201,6 +201,16 @@ body{
 
 /* ═══ TABLE ═══ */
 .table-wrap{overflow-x:auto;border-radius:0 0 14px 14px}
+#view-valetransporte{max-width:1400px;margin:0 auto}
+#view-valetransporte .prov-summary{gap:8px;margin-bottom:14px}
+#view-valetransporte .prov-kpi{padding:8px 12px}
+#view-valetransporte .prov-kpi-val{font-size:16px}
+#view-valetransporte .section{margin-bottom:12px;border-radius:10px}
+#view-valetransporte .section-header{padding:10px 14px}
+#view-valetransporte table{font-size:12px}
+#view-valetransporte th{padding:6px 10px;font-size:9px}
+#view-valetransporte td{padding:5px 10px;font-size:12px}
+#view-valetransporte .vt-split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 table{width:100%;border-collapse:collapse}
 th{
   background:var(--nude);
@@ -1927,6 +1937,8 @@ const VTTIPO_ORDER = [
   'Outro'
 ];
 function vttipoRank(t){const i=VTTIPO_ORDER.indexOf(t||'');return i>=0?i:999;}
+const VTLOJA_ORDER = ['PERDIZES','BROOKLIN','VILA MARIANA','TATUAPÉ','BUTANTÃ','MATRIZ PRODUÇÃO','MATRIZ ESCRITÓRIO'];
+function vtlojaRank(l){const i=VTLOJA_ORDER.indexOf(l||'');return i>=0?i:999;}
 function renderValeTransporte() {
   const emps = data.employees;
   if (!emps.length) {
@@ -1958,6 +1970,8 @@ function renderValeTransporte() {
     const comVT = list.filter(e => (e.vt||0) > 0).sort((a,b) => {
       const dr = vttipoRank(a.vttipo) - vttipoRank(b.vttipo);
       if (dr !== 0) return dr;
+      const dl = vtlojaRank(a.loja) - vtlojaRank(b.loja);
+      if (dl !== 0) return dl;
       return (a.nome||'').localeCompare(b.nome||'');
     });
     const semVT = list.filter(e => !(e.vt||0));
