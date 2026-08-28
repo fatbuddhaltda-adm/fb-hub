@@ -209,8 +209,17 @@ body{
 #view-valetransporte .section{margin-bottom:14px;border-radius:12px}
 #view-valetransporte .section-header{padding:10px 14px}
 #view-valetransporte .section-title{font-size:13px}
-#view-valetransporte .vt-split{grid-template-columns:1fr;gap:12px;margin-bottom:14px}
-#view-valetransporte .table-wrap{overflow-x:visible}
+#view-valetransporte .vt-split{grid-template-columns:minmax(0,1fr);gap:12px;margin-bottom:14px}
+#view-valetransporte .vt-split>.section{min-width:0}
+#view-valetransporte .table-wrap{overflow-x:auto}
+#view-valetransporte table{table-layout:fixed;width:100%}
+#view-valetransporte th,#view-valetransporte td{white-space:normal;word-break:normal;overflow-wrap:anywhere}
+#view-valetransporte th:nth-child(1),#view-valetransporte td:nth-child(1){width:24%}
+#view-valetransporte th:nth-child(2),#view-valetransporte td:nth-child(2){width:11%}
+#view-valetransporte th:nth-child(3),#view-valetransporte td:nth-child(3){width:26%;font-size:10px;color:var(--ink-2);line-height:1.3}
+#view-valetransporte th:nth-child(4),#view-valetransporte td:nth-child(4){width:22%;font-size:10px;color:var(--ink-3);line-height:1.3}
+#view-valetransporte th:nth-child(5),#view-valetransporte td:nth-child(5){width:8.5%}
+#view-valetransporte th:nth-child(6),#view-valetransporte td:nth-child(6){width:8.5%}
 #view-valetransporte table{font-size:11px}
 #view-valetransporte th{padding:7px 8px;font-size:9px}
 #view-valetransporte td{padding:5px 8px;font-size:11px;line-height:1.35;vertical-align:middle}
