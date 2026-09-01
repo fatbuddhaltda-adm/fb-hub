@@ -142,6 +142,8 @@ table.grid th.loja-th{text-align:center}
 .th-brooklin{color:#0369a1}
 .th-perdizes{color:#9d174d}
 .th-vila{color:#5b21b6}
+.th-tatuape{color:#9a3412}
+.th-butanta{color:#991b1b}
 .th-matriz{color:#92400e}
 
 table.grid td{
@@ -196,6 +198,8 @@ table.grid tr:hover td{background:rgba(247,165,165,.06)}
 .strip-brooklin .winner-name.filled{background:var(--blue-soft);color:#0369a1}
 .strip-perdizes .winner-name.filled{background:#fce7f3;color:#9d174d}
 .strip-vila .winner-name.filled{background:var(--purple-soft);color:#5b21b6}
+.strip-tatuape .winner-name.filled{background:#ffedd5;color:#9a3412}
+.strip-butanta .winner-name.filled{background:#fee2e2;color:#991b1b}
 .strip-matriz .winner-name.filled{background:var(--amber-soft);color:#92400e}
 
 /* ═══ RANKING ═══ */
@@ -232,6 +236,8 @@ table.grid tr:hover td{background:rgba(247,165,165,.06)}
 .loja-brooklin{background:var(--blue-soft);color:#0369a1;border-color:#7dd3fc}
 .loja-perdizes{background:#fce7f3;color:#9d174d;border-color:#f9a8d4}
 .loja-vila{background:var(--purple-soft);color:#5b21b6;border-color:#c4b5fd}
+.loja-tatuape{background:#ffedd5;color:#9a3412;border-color:#fdba74}
+.loja-butanta{background:#fee2e2;color:#991b1b;border-color:#fca5a5}
 .loja-matriz{background:var(--amber-soft);color:#92400e;border-color:#fcd34d}
 
 .rank-list{padding:10px 14px}
@@ -476,6 +482,8 @@ firebase.auth().onAuthStateChanged(async user=>{
         <th class="loja-th th-brooklin">🔵 BROOKLIN</th>
         <th class="loja-th th-perdizes">🩷 PERDIZES</th>
         <th class="loja-th th-vila">🟣 VILA MARIANA</th>
+        <th class="loja-th th-tatuape">🟠 TATUAPÉ</th>
+        <th class="loja-th th-butanta">🔴 BUTANTÃ</th>
         <th class="loja-th th-matriz">🟡 MATRIZ</th>
       </tr></thead>
       <tbody id="matrixBody"></tbody>
@@ -502,7 +510,7 @@ firebase.auth().onAuthStateChanged(async user=>{
 <div class="modal-overlay" id="import-overlay" onclick="if(event.target===this)closeImport()">
   <div class="modal">
     <h3>⬆️ Importar CSV — Destaque do Mês</h3>
-    <p>O CSV deve ter as colunas: <b>Ano, Mes, BROOKLIN, PERDIZES, VILA MARIANA, MATRIZ</b></p>
+    <p>O CSV deve ter as colunas: <b>Ano, Mes, BROOKLIN, PERDIZES, VILA MARIANA, TATUAPÉ, BUTANTÃ, MATRIZ</b></p>
     <div class="form-group">
       <label>Arquivo CSV</label>
       <input type="file" accept=".csv" onchange="loadCSVFile(this)" style="font-size:12px;padding:8px">
@@ -526,9 +534,9 @@ firebase.auth().onAuthStateChanged(async user=>{
 </div>
 
 <script>
-const LOJAS = ['BROOKLIN','PERDIZES','VILA MARIANA','MATRIZ'];
-const LOJA_CLASS = {'BROOKLIN':'loja-brooklin','PERDIZES':'loja-perdizes','VILA MARIANA':'loja-vila','MATRIZ':'loja-matriz'};
-const LOJA_STRIP = {'BROOKLIN':'strip-brooklin','PERDIZES':'strip-perdizes','VILA MARIANA':'strip-vila','MATRIZ':'strip-matriz'};
+const LOJAS = ['BROOKLIN','PERDIZES','VILA MARIANA','TATUAPÉ','BUTANTÃ','MATRIZ'];
+const LOJA_CLASS = {'BROOKLIN':'loja-brooklin','PERDIZES':'loja-perdizes','VILA MARIANA':'loja-vila','TATUAPÉ':'loja-tatuape','BUTANTÃ':'loja-butanta','MATRIZ':'loja-matriz'};
+const LOJA_STRIP = {'BROOKLIN':'strip-brooklin','PERDIZES':'strip-perdizes','VILA MARIANA':'strip-vila','TATUAPÉ':'strip-tatuape','BUTANTÃ':'strip-butanta','MATRIZ':'strip-matriz'};
 const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const MESES_ABREV = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
@@ -677,7 +685,7 @@ function renderAll(){ renderYearBar(); renderMatrix(); renderRankings(); }
 /* ---- Export CSV ---- */
 function exportCSV(){
   const anos = Object.keys(data.years).sort();
-  const header = 'Ano,Mes,BROOKLIN,PERDIZES,VILA MARIANA,MATRIZ';
+  const header = 'Ano,Mes,BROOKLIN,PERDIZES,VILA MARIANA,TATUAPÉ,BUTANTÃ,MATRIZ';
   const rows = [];
   anos.forEach(ano => {
     MESES.forEach((mes, mi) => {
