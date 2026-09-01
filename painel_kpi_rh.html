@@ -402,8 +402,8 @@ firebase.auth().onAuthStateChanged(async user=>{
 
 <div class="year-bar">
   <span>Ano:</span>
-  <button class="year-tab active" onclick="switchYear(2025)">2025</button>
-  <button class="year-tab" onclick="switchYear(2026)">2026</button>
+  <span id="yearBar" style="display:inline-flex;gap:6px;align-items:center"></span>
+  <button class="year-tab year-add" onclick="addYear()" title="Adicionar novo ano" style="border-style:dashed;background:transparent">+ Novo ano</button>
   <span class="hint">Campos editáveis em <b>destaque</b> — gráficos atualizam automaticamente</span>
 </div>
 
@@ -509,10 +509,32 @@ let data = JSON.parse(JSON.stringify(DEFAULT_DATA));
 
 function switchYear(year) {
   currentYear = year;
-  document.querySelectorAll('.year-tab').forEach((t,i) => {
-    t.classList.toggle('active', (i===0 && year===2025)||(i===1 && year===2026));
-  });
   document.getElementById('currentYearLabel').textContent = year;
+  renderYearBar();
+  renderTable();
+  updateAll();
+}
+
+function renderYearBar() {
+  const bar = document.getElementById('yearBar');
+  if(!bar) return;
+  const years = Object.keys(data||{}).map(y=>parseInt(y)).filter(y=>!isNaN(y)).sort((a,b)=>a-b);
+  bar.innerHTML = years.map(y=>`<button class="year-tab${y===currentYear?' active':''}" onclick="switchYear(${y})">${y}</button>`).join('');
+}
+
+function addYear() {
+  const existing = Object.keys(data||{}).map(y=>parseInt(y)).filter(y=>!isNaN(y));
+  const suggested = (existing.length ? Math.max(...existing) : new Date().getFullYear()) + 1;
+  const input = prompt('Qual ano deseja adicionar?', suggested);
+  if(!input) return;
+  const y = parseInt(input);
+  if(isNaN(y) || y<2000 || y>2100){ alert('Ano inválido'); return; }
+  if(data[y]){ alert('Ano '+y+' já existe'); return; }
+  data[y] = { adm:['','','','','','','','','','','',''], dem:['','','','','','','','','','','',''], func:['','','','','','','','','','','',''] };
+  currentYear = y;
+  autoSave();
+  document.getElementById('currentYearLabel').textContent = y;
+  renderYearBar();
   renderTable();
   updateAll();
 }
@@ -714,6 +736,7 @@ function updateInsights() {
 }
 
 function updateAll() {
+  renderYearBar();
   renderTable();
   updateKPIs();
   updateCharts();
