@@ -1197,29 +1197,7 @@ function renderDashDiagnostico(emps, clts, pjs, totalSal, totalMensal, totalAnua
     if (pjMedio < cltMedio * 1.4 && pjMedio > 0) ins.push({ sev:'aten', text:`PJ médio <b>${fmt(pjMedio)}</b> < CLT médio <b>${fmt(cltMedio)}</b> × 1.4 — PJ deveria custar mais para compensar ausência de encargos. Diferença pequena sugere PJ assumindo encargos sozinho (risco de reclassificação)` });
   }
 
-  // 7a) Dispersao salarial no mesmo cargo
-  const porCargoSal = {};
-  emps.forEach(e => {
-    const c = (e.cargo||'').trim();
-    if(!c || !e.salario) return;
-    if(!porCargoSal[c]) porCargoSal[c] = [];
-    porCargoSal[c].push({nome:e.nome, sal:e.salario});
-  });
-  const disparities = [];
-  Object.entries(porCargoSal).forEach(([cargo, arr]) => {
-    if(arr.length < 2) return;
-    const sals = arr.map(x=>x.sal).sort((a,b)=>a-b);
-    const min = sals[0], max = sals[sals.length-1];
-    if(min > 0 && max/min >= 1.5) disparities.push({cargo, min, max, ratio: max/min, count: arr.length});
-  });
-  if(disparities.length > 0) {
-    const topD = disparities.sort((a,b)=>b.ratio-a.ratio)[0];
-    const others = disparities.length - 1;
-    const extra = others > 0 ? ' (+'+others+' outro'+(others>1?'s':'')+' cargo'+(others>1?'s':'')+' com disparidade ≥1.5×)' : '';
-    ins.push({ sev:'aten', text:'<b>Disparidade salarial no mesmo cargo:</b> <b>'+topD.cargo+'</b> varia de '+fmt(topD.min)+' a '+fmt(topD.max)+' ('+topD.ratio.toFixed(1)+'× entre menor e maior, '+topD.count+' pessoas) — revisar equidade'+extra });
-  }
-
-  // 7b) Concentracao top 5 salarios
+// 7b) Concentracao top 5 salarios
   if(emps.length >= 8) {
     const top5 = [...emps].sort((a,b) => (b.salario||0) - (a.salario||0)).slice(0,5);
     const top5Sum = top5.reduce((s,e) => s + calc(e).total, 0);
@@ -1259,29 +1237,7 @@ function renderDashDiagnostico(emps, clts, pjs, totalSal, totalMensal, totalAnua
     ins.push({ sev:'aten', text:'<b>Sem cobertura noturna</b>: '+lojasSemNoturno.join(', ')+' — nenhum funcionário com cargo NOTURNO cadastrado, revisar se é intencional' });
   }
 
-  // 7e) Vencimento de contrato de experiencia
-  const _hoje = new Date();
-  const exp75d = [];
-  const exp30d = [];
-  emps.forEach(e => {
-    if(!e.inicio || e.tipo !== 'CLT') return;
-    const dInicio = new Date(e.inicio);
-    if(isNaN(dInicio.getTime())) return;
-    const dias = Math.floor((_hoje - dInicio) / 86400000);
-    if(dias >= 75 && dias <= 90) exp75d.push({nome: e.nome, dias});
-    else if(dias >= 30 && dias <= 45) exp30d.push({nome: e.nome, dias});
-  });
-  if(exp75d.length > 0) {
-    const nomes = exp75d.map(x => x.nome+' ('+(90-x.dias)+'d)').join(', ');
-    ins.push({ sev:'crit', text:'<b>Vencimento de experiência ≤15 dias</b>: '+nomes+' — decisão de efetivação/desligamento URGENTE' });
-  }
-  if(exp30d.length > 0) {
-    const nomes = exp30d.map(x => x.nome).slice(0,5).join(', ');
-    const rest = exp30d.length > 5 ? ' +'+(exp30d.length-5) : '';
-    ins.push({ sev:'aten', text:'<b>1ª avaliação de experiência (45d)</b>: '+exp30d.length+' funcionário'+(exp30d.length>1?'s':'')+' — '+nomes+rest+' — agendar avaliação' });
-  }
-
-  // 7f) Custo estimado de rescisao da loja mais cara
+// 7f) Custo estimado de rescisao da loja mais cara
   if(lojasArr.length >= 1) {
     const [ln] = lojasArr[0];
     const empsResc = emps.filter(e => e.loja === ln && e.tipo === 'CLT');
@@ -1292,6 +1248,36 @@ function renderDashDiagnostico(emps, clts, pjs, totalSal, totalMensal, totalAnua
         cResc += sal + (sal * 12 * 0.08 * 0.40) + (sal * 0.5) + (sal * (1 + 1/3) * 0.5);
       });
       ins.push({ sev:'info', text:'<b>Custo estimado de fechar '+ln+'</b> ('+empsResc.length+' CLT): ~'+fmt(cResc)+' entre aviso + multa FGTS 40% + 13º + férias proporcionais (assume 12m médio de casa)' });
+    }
+  }
+
+  // 7g) Lojas vs banda de mercado
+  const MERCADO_MIN = 3800;
+  const MERCADO_MAX = 5500;
+  const lojasVsMercado = [];
+  _LOJAS_OP.forEach(l => {
+    const empsL = emps.filter(e => e.loja === l && e.tipo === 'CLT');
+    if(empsL.length < 3) return;
+    const custoL = empsL.reduce((s,e) => s + calc(e).total, 0);
+    const custoMedio = custoL / empsL.length;
+    lojasVsMercado.push({l, custoMedio, n: empsL.length});
+  });
+  if(lojasVsMercado.length > 0) {
+    const acima = lojasVsMercado.filter(x => x.custoMedio > MERCADO_MAX);
+    const abaixo = lojasVsMercado.filter(x => x.custoMedio < MERCADO_MIN);
+    const dentro = lojasVsMercado.filter(x => x.custoMedio >= MERCADO_MIN && x.custoMedio <= MERCADO_MAX);
+    if(acima.length > 0) {
+      const list = acima.map(x => '<b>'+x.l+'</b> ('+fmt(x.custoMedio)+'/pessoa)').join(', ');
+      ins.push({ sev:'aten', text:'<b>Loja acima da banda de mercado</b> (R$ 3.800–5.500 food service SP): '+list+' — mix de cargos mais senior ou justificar por diferencial operacional' });
+    }
+    if(abaixo.length > 0) {
+      const list = abaixo.map(x => '<b>'+x.l+'</b> ('+fmt(x.custoMedio)+'/pessoa)').join(', ');
+      ins.push({ sev:'aten', text:'<b>Loja abaixo da banda de mercado</b> (R$ 3.800–5.500 food service SP): '+list+' — risco de turnover, benefícios ou encargos faltando' });
+    }
+    if(dentro.length === lojasVsMercado.length) {
+      ins.push({ sev:'ok', text:'<b>Todas as lojas dentro da banda de mercado</b> (R$ 3.800–5.500/pessoa food service SP) — custo humano competitivo' });
+    } else if(dentro.length > 0) {
+      ins.push({ sev:'info', text:'Dentro da banda de mercado: '+dentro.map(x => x.l).join(', ')+' — custo humano competitivo' });
     }
   }
 
