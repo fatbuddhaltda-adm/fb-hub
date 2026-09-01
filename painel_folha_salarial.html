@@ -1196,6 +1196,104 @@ function renderDashDiagnostico(emps, clts, pjs, totalSal, totalMensal, totalAnua
     if (pjMedio < cltMedio * 1.4 && pjMedio > 0) ins.push({ sev:'aten', text:`PJ médio <b>${fmt(pjMedio)}</b> < CLT médio <b>${fmt(cltMedio)}</b> × 1.4 — PJ deveria custar mais para compensar ausência de encargos. Diferença pequena sugere PJ assumindo encargos sozinho (risco de reclassificação)` });
   }
 
+  // 7a) Dispersao salarial no mesmo cargo
+  const porCargoSal = {};
+  emps.forEach(e => {
+    const c = (e.cargo||'').trim();
+    if(!c || !e.salario) return;
+    if(!porCargoSal[c]) porCargoSal[c] = [];
+    porCargoSal[c].push({nome:e.nome, sal:e.salario});
+  });
+  const disparities = [];
+  Object.entries(porCargoSal).forEach(([cargo, arr]) => {
+    if(arr.length < 2) return;
+    const sals = arr.map(x=>x.sal).sort((a,b)=>a-b);
+    const min = sals[0], max = sals[sals.length-1];
+    if(min > 0 && max/min >= 1.5) disparities.push({cargo, min, max, ratio: max/min, count: arr.length});
+  });
+  if(disparities.length > 0) {
+    const topD = disparities.sort((a,b)=>b.ratio-a.ratio)[0];
+    const others = disparities.length - 1;
+    const extra = others > 0 ? ' (+'+others+' outro'+(others>1?'s':'')+' cargo'+(others>1?'s':'')+' com disparidade ≥1.5×)' : '';
+    ins.push({ sev:'aten', text:'<b>Disparidade salarial no mesmo cargo:</b> <b>'+topD.cargo+'</b> varia de '+fmt(topD.min)+' a '+fmt(topD.max)+' ('+topD.ratio.toFixed(1)+'× entre menor e maior, '+topD.count+' pessoas) — revisar equidade'+extra });
+  }
+
+  // 7b) Concentracao top 5 salarios
+  if(emps.length >= 8) {
+    const top5 = [...emps].sort((a,b) => (b.salario||0) - (a.salario||0)).slice(0,5);
+    const top5Sum = top5.reduce((s,e) => s + calc(e).total, 0);
+    const pctTop5 = Math.round(top5Sum / totalMensal * 100);
+    if(pctTop5 >= 40) ins.push({ sev:'aten', text:'<b>Top 5 salários = '+pctTop5+'% da folha</b> ('+fmt(top5Sum)+') — concentração alta, saída de qualquer um deles pesa muito no orçamento' });
+    else if(pctTop5 >= 30) ins.push({ sev:'info', text:'Top 5 salários concentram <b>'+pctTop5+'%</b> da folha ('+fmt(top5Sum)+')' });
+    else ins.push({ sev:'ok', text:'Top 5 salários = <b>'+pctTop5+'%</b> da folha ('+fmt(top5Sum)+') — distribuição equilibrada' });
+  }
+
+  // 7c) % Lideranca vs Operacional
+  const lideranca = emps.filter(e => /GERENTE|COORDENADOR|SUPERVISOR|CHEF/i.test(e.cargo||''));
+  const operacional = emps.length - lideranca.length;
+  if(lideranca.length > 0 && operacional > 0) {
+    const rat = operacional / lideranca.length;
+    if(rat < 4) ins.push({ sev:'aten', text:'<b>Estrutura pesada</b>: '+lideranca.length+' lideranças (Gerente/Coord/Sup/Chef) pra '+operacional+' operacionais — 1 líder pra cada '+rat.toFixed(1)+', pouca alavancagem' });
+    else if(rat > 15) ins.push({ sev:'aten', text:'<b>Poucas lideranças</b>: '+lideranca.length+' líder'+(lideranca.length>1?'es':'')+' pra '+operacional+' operacionais (1:'+rat.toFixed(0)+') — sobrecarga de gestão' });
+    else ins.push({ sev:'ok', text:'Span de controle saudável: <b>1 liderança pra cada '+rat.toFixed(1)+' operacionais</b> ('+lideranca.length+' liderança'+(lideranca.length>1?'s':'')+', '+operacional+' operacionais)' });
+  }
+
+  // 7d) Cadeia fragil + cobertura noturna por loja
+  const _LOJAS_OP = ['PERDIZES','BROOKLIN','VILA MARIANA','TATUAPÉ','BUTANTÃ'];
+  const lojasSemLider = [];
+  const lojasSemNoturno = [];
+  _LOJAS_OP.forEach(l => {
+    const empsL = emps.filter(e => e.loja === l);
+    if(empsL.length < 3) return;
+    const temLider = empsL.some(e => /GERENTE|COORDENADOR|SUPERVISOR/i.test(e.cargo||''));
+    if(!temLider) lojasSemLider.push({l, n: empsL.length});
+    const temNoturno = empsL.some(e => /NOTURNO/i.test(e.cargo||''));
+    if(!temNoturno) lojasSemNoturno.push(l);
+  });
+  if(lojasSemLider.length > 0) {
+    const list = lojasSemLider.map(x => '<b>'+x.l+'</b> ('+x.n+' pessoas)').join(', ');
+    ins.push({ sev:'crit', text:'<b>Loja sem liderança cadastrada</b>: '+list+' — nenhum Gerente/Coordenador/Supervisor com 3+ subordinados. Cadastrar ou revisar' });
+  }
+  if(lojasSemNoturno.length > 0) {
+    ins.push({ sev:'aten', text:'<b>Sem cobertura noturna</b>: '+lojasSemNoturno.join(', ')+' — nenhum funcionário com cargo NOTURNO cadastrado, revisar se é intencional' });
+  }
+
+  // 7e) Vencimento de contrato de experiencia
+  const _hoje = new Date();
+  const exp75d = [];
+  const exp30d = [];
+  emps.forEach(e => {
+    if(!e.inicio || e.tipo !== 'CLT') return;
+    const dInicio = new Date(e.inicio);
+    if(isNaN(dInicio.getTime())) return;
+    const dias = Math.floor((_hoje - dInicio) / 86400000);
+    if(dias >= 75 && dias <= 90) exp75d.push({nome: e.nome, dias});
+    else if(dias >= 30 && dias <= 45) exp30d.push({nome: e.nome, dias});
+  });
+  if(exp75d.length > 0) {
+    const nomes = exp75d.map(x => x.nome+' ('+(90-x.dias)+'d)').join(', ');
+    ins.push({ sev:'crit', text:'<b>Vencimento de experiência ≤15 dias</b>: '+nomes+' — decisão de efetivação/desligamento URGENTE' });
+  }
+  if(exp30d.length > 0) {
+    const nomes = exp30d.map(x => x.nome).slice(0,5).join(', ');
+    const rest = exp30d.length > 5 ? ' +'+(exp30d.length-5) : '';
+    ins.push({ sev:'aten', text:'<b>1ª avaliação de experiência (45d)</b>: '+exp30d.length+' funcionário'+(exp30d.length>1?'s':'')+' — '+nomes+rest+' — agendar avaliação' });
+  }
+
+  // 7f) Custo estimado de rescisao da loja mais cara
+  if(lojasArr.length >= 1) {
+    const [ln] = lojasArr[0];
+    const empsResc = emps.filter(e => e.loja === ln && e.tipo === 'CLT');
+    if(empsResc.length >= 3) {
+      let cResc = 0;
+      empsResc.forEach(e => {
+        const sal = e.salario || 0;
+        cResc += sal + (sal * 12 * 0.08 * 0.40) + (sal * 0.5) + (sal * (1 + 1/3) * 0.5);
+      });
+      ins.push({ sev:'info', text:'<b>Custo estimado de fechar '+ln+'</b> ('+empsResc.length+' CLT): ~'+fmt(cResc)+' entre aviso + multa FGTS 40% + 13º + férias proporcionais (assume 12m médio de casa)' });
+    }
+  }
+
   // 7) Data quality
   const semPix = emps.filter(e => !e.pix || !e.pix.trim()).length;
   const semCargo = emps.filter(e => !e.cargo || !e.cargo.trim()).length;
