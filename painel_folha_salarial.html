@@ -724,15 +724,26 @@ firebase.auth().onAuthStateChanged(async user=>{
 
 <!-- ═══════════════ GRUPO (VISÃO GERAL) ═══════════════ -->
 <div id="view-grupo" class="view">
-  <div class="section">
+  <div class="section" id="grupo-clt-section">
     <div class="section-header">
-      <span class="section-title">📇 Visão geral do grupo — <span id="grupo-count"></span> funcionários</span>
-      <small id="grupo-meta" style="color:var(--ink-3);font-family:'JetBrains Mono',monospace"></small>
+      <span class="section-title"><span class="badge badge-clt">CLT</span> &nbsp;Grupo — CLT (<span id="grupo-clt-count"></span>)</span>
+      <small id="grupo-clt-meta" style="color:var(--ink-3);font-family:'JetBrains Mono',monospace"></small>
     </div>
     <div class="table-wrap">
       <table><thead><tr>
         <th>#</th><th>Nome</th><th>Cargo</th><th>Loja</th>
-      </tr></thead><tbody id="grupo-tbody"></tbody></table>
+      </tr></thead><tbody id="grupo-clt-tbody"></tbody></table>
+    </div>
+  </div>
+  <div class="section" id="grupo-pj-section">
+    <div class="section-header">
+      <span class="section-title"><span class="badge badge-pj">PJ</span> &nbsp;Grupo — PJ (<span id="grupo-pj-count"></span>)</span>
+      <small id="grupo-pj-meta" style="color:var(--ink-3);font-family:'JetBrains Mono',monospace"></small>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr>
+        <th>#</th><th>Nome</th><th>Cargo</th><th>Loja</th>
+      </tr></thead><tbody id="grupo-pj-tbody"></tbody></table>
     </div>
   </div>
 </div>
@@ -2058,24 +2069,30 @@ function exportCSV() {
 // ─── GRUPO (VISÃO GERAL) ─────────────────────────────────────────
 function renderGrupo() {
   const emps = data.employees || [];
-  const sorted = [...emps].sort((a,b) => (a.nome||'').localeCompare(b.nome||'', 'pt-BR'));
-  document.getElementById('grupo-count').textContent = sorted.length;
-  const semLoja = sorted.filter(e => !e.loja || !String(e.loja).trim()).length;
-  const semCargo = sorted.filter(e => !e.cargo || !String(e.cargo).trim()).length;
-  const parts = [];
-  if(semLoja > 0) parts.push(semLoja+' sem loja');
-  if(semCargo > 0) parts.push(semCargo+' sem cargo');
-  document.getElementById('grupo-meta').textContent = parts.length ? '· '+parts.join(' · ') : '· ordenado alfabeticamente';
-  if(!sorted.length) {
-    document.getElementById('grupo-tbody').innerHTML = '<tr><td colspan="4" class="empty-state">Nenhum funcionário cadastrado.</td></tr>';
-    return;
+  const clts = emps.filter(e => e.tipo === 'CLT');
+  const pjs  = emps.filter(e => e.tipo === 'PJ');
+  function fillGrupoTable(list, tbodyId, countId, metaId) {
+    const sorted = [...list].sort((a,b) => (a.nome||'').localeCompare(b.nome||'', 'pt-BR'));
+    document.getElementById(countId).textContent = sorted.length;
+    const semLoja = sorted.filter(e => !e.loja || !String(e.loja).trim()).length;
+    const semCargo = sorted.filter(e => !e.cargo || !String(e.cargo).trim()).length;
+    const parts = [];
+    if(semLoja > 0) parts.push(semLoja+' sem loja');
+    if(semCargo > 0) parts.push(semCargo+' sem cargo');
+    document.getElementById(metaId).textContent = parts.length ? '· '+parts.join(' · ') : '· ordenado alfabeticamente';
+    if(!sorted.length) {
+      document.getElementById(tbodyId).innerHTML = '<tr><td colspan="4" class="empty-state">Nenhum funcionário nesta categoria.</td></tr>';
+      return;
+    }
+    const rows = sorted.map((e,i) => {
+      const loja = e.loja ? '<span class="loja-tag '+lojaClass(e.loja)+'">'+e.loja+'</span>' : '<span style="color:var(--ink-3)">—</span>';
+      const cargo = e.cargo || '<span style="color:var(--ink-3)">—</span>';
+      return '<tr><td>'+(i+1)+'</td><td><b>'+(e.nome||'—')+'</b></td><td>'+cargo+'</td><td>'+loja+'</td></tr>';
+    }).join('');
+    document.getElementById(tbodyId).innerHTML = rows;
   }
-  const rows = sorted.map((e,i) => {
-    const loja = e.loja ? '<span class="loja-tag '+lojaClass(e.loja)+'">'+e.loja+'</span>' : '<span style="color:var(--ink-3)">—</span>';
-    const cargo = e.cargo || '<span style="color:var(--ink-3)">—</span>';
-    return '<tr><td>'+(i+1)+'</td><td><b>'+(e.nome||'—')+'</b></td><td>'+cargo+'</td><td>'+loja+'</td></tr>';
-  }).join('');
-  document.getElementById('grupo-tbody').innerHTML = rows;
+  fillGrupoTable(clts, 'grupo-clt-tbody', 'grupo-clt-count', 'grupo-clt-meta');
+  fillGrupoTable(pjs,  'grupo-pj-tbody',  'grupo-pj-count',  'grupo-pj-meta');
 }
 
 // ─── VALE TRANSPORTE ────────────────────────────────────────────────────────
