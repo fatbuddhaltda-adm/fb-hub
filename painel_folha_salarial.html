@@ -220,6 +220,19 @@ body{
 #view-valetransporte th:nth-child(4),#view-valetransporte td:nth-child(4){width:22%;font-size:10px;color:var(--ink-3);line-height:1.3}
 #view-valetransporte th:nth-child(5),#view-valetransporte td:nth-child(5){width:8.5%}
 #view-valetransporte th:nth-child(6),#view-valetransporte td:nth-child(6){width:8.5%}
+#view-grupo{max-width:1000px;margin:0 auto;padding:0 8px}
+#view-grupo .section{margin-bottom:14px;border-radius:12px}
+#view-grupo .section-header{padding:10px 14px}
+#view-grupo .section-title{font-size:13px}
+#view-grupo .table-wrap{overflow-x:auto}
+#view-grupo table{table-layout:fixed;width:100%}
+#view-grupo th,#view-grupo td{white-space:normal;word-break:normal;overflow-wrap:anywhere}
+#view-grupo th:nth-child(1),#view-grupo td:nth-child(1){width:6%;color:var(--ink-3);font-family:'JetBrains Mono',monospace}
+#view-grupo th:nth-child(2),#view-grupo td:nth-child(2){width:36%;font-weight:600}
+#view-grupo th:nth-child(3),#view-grupo td:nth-child(3){width:40%;font-size:11px;color:var(--ink-2)}
+#view-grupo th:nth-child(4),#view-grupo td:nth-child(4){width:18%}
+#view-grupo th{padding:7px 8px;font-size:9px}
+#view-grupo td{padding:6px 8px;font-size:12px;line-height:1.35}
 #view-valetransporte table{font-size:11px}
 #view-valetransporte th{padding:7px 8px;font-size:9px}
 #view-valetransporte td{padding:5px 8px;font-size:11px;line-height:1.35;vertical-align:middle}
@@ -572,6 +585,7 @@ firebase.auth().onAuthStateChanged(async user=>{
   <button class="nav-btn" onclick="showView('porloja',this)">🏪 Por Loja</button>
   <button class="nav-btn" onclick="showView('provisionamento',this)">📋 Provisionamento</button>
   <button class="nav-btn" onclick="showView('valetransporte',this)">🚌 Vale Transporte</button>
+  <button class="nav-btn" onclick="showView('grupo',this)">📇 Grupo</button>
 </nav>
 
 <!-- ═══════════════ DASHBOARD ═══════════════ -->
@@ -704,6 +718,21 @@ firebase.auth().onAuthStateChanged(async user=>{
       <table><thead><tr>
         <th>Tipo de Transporte</th><th class="money">Qtd CLT</th><th class="money">VT CLT</th><th class="money">Qtd PJ</th><th class="money">VT PJ</th><th class="money">Total Funcionários</th><th class="money">Total VT/mês</th>
       </tr></thead><tbody id="vt-tipo-tbody"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ GRUPO (VISÃO GERAL) ═══════════════ -->
+<div id="view-grupo" class="view">
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">📇 Visão geral do grupo — <span id="grupo-count"></span> funcionários</span>
+      <small id="grupo-meta" style="color:var(--ink-3);font-family:'JetBrains Mono',monospace"></small>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr>
+        <th>#</th><th>Nome</th><th>Cargo</th><th>Loja</th>
+      </tr></thead><tbody id="grupo-tbody"></tbody></table>
     </div>
   </div>
 </div>
@@ -1037,6 +1066,7 @@ function showView(id, btn) {
   if (id === 'porloja') renderPorLoja();
   if (id === 'provisionamento') renderProvisionamento();
   if (id === 'valetransporte') renderValeTransporte();
+  if (id === 'grupo') renderGrupo();
 }
 
 // ─── LOJA HELPERS ────────────────────────────────────────────────────────────
@@ -2025,7 +2055,30 @@ function exportCSV() {
   a.click();
 }
 
-// ─── VALE TRANSPORTE ─────────────────────────────────────────────────────────
+// ─── GRUPO (VISÃO GERAL) ─────────────────────────────────────────
+function renderGrupo() {
+  const emps = data.employees || [];
+  const sorted = [...emps].sort((a,b) => (a.nome||'').localeCompare(b.nome||'', 'pt-BR'));
+  document.getElementById('grupo-count').textContent = sorted.length;
+  const semLoja = sorted.filter(e => !e.loja || !String(e.loja).trim()).length;
+  const semCargo = sorted.filter(e => !e.cargo || !String(e.cargo).trim()).length;
+  const parts = [];
+  if(semLoja > 0) parts.push(semLoja+' sem loja');
+  if(semCargo > 0) parts.push(semCargo+' sem cargo');
+  document.getElementById('grupo-meta').textContent = parts.length ? '· '+parts.join(' · ') : '· ordenado alfabeticamente';
+  if(!sorted.length) {
+    document.getElementById('grupo-tbody').innerHTML = '<tr><td colspan="4" class="empty-state">Nenhum funcionário cadastrado.</td></tr>';
+    return;
+  }
+  const rows = sorted.map((e,i) => {
+    const loja = e.loja ? '<span class="loja-tag '+lojaClass(e.loja)+'">'+e.loja+'</span>' : '<span style="color:var(--ink-3)">—</span>';
+    const cargo = e.cargo || '<span style="color:var(--ink-3)">—</span>';
+    return '<tr><td>'+(i+1)+'</td><td><b>'+(e.nome||'—')+'</b></td><td>'+cargo+'</td><td>'+loja+'</td></tr>';
+  }).join('');
+  document.getElementById('grupo-tbody').innerHTML = rows;
+}
+
+// ─── VALE TRANSPORTE ────────────────────────────────────────────────────────
 const VTTIPO_ORDER = [
   'Bilhete único mensal integrado',
   'Bilhete único mensal comum ônibus',
